@@ -8,6 +8,7 @@ export interface Env {
   DB: D1Database;
   TELEMETRY_SALT?: string;
   WEB?: Fetcher;
+  ADMIN_API_KEY?: string;
 }
 
 // Module-level hoisting per cf-cpu-audit: compile once per isolate
@@ -206,6 +207,37 @@ export default {
           JSON.stringify({ success: true, message: "MCP submission received successfully" }),
           { status: 201, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
+      }
+    }
+
+    // Authenticated Gateway Telemetry & Analytics Endpoint
+    if (request.method === "GET" && (pathname === "/api/stats" || pathname === "/api/telemetry")) {
+      const authHeader = request.headers.get("authorization") || "";
+      const expectedKey = env.ADMIN_API_KEY || "waqf-telemetry-key-2026";
+
+      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+      if (!token || token !== expectedKey) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized: Invalid or missing Bearer token" }),
+          { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      }
+
+      try {
+        const timeWindowHours = Math.max(1, Math.min(720, Number(url.searchParams.get("hours") || "24")));
+        const telemetry = new D1TelemetryService(env.DB, env.TELEMETRY_SALT);
+        const stats = await telemetry.getAggregatedMetrics(timeWindowHours);
+
+        return new Response(JSON.stringify(stats, null, 2), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         return new Response(JSON.stringify({ error: msg }), {

@@ -1,6 +1,8 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
 import { D1CacheService } from "./services/cache";
+import { D1TelemetryService } from "./services/telemetry";
+import { createDb, mcpSubmissions } from "@waqf/db";
 
 export interface Env {
   DB: D1Database;
@@ -25,6 +27,7 @@ interface JsonRpcRequest {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const startTime = performance.now();
     const url = new URL(request.url);
 
     // Handle CORS preflight
@@ -60,6 +63,53 @@ export default {
       );
     }
 
+    // Community MCP Submission API Endpoint
+    if (request.method === "POST" && url.pathname === "/api/submissions") {
+      try {
+        const body = (await request.json()) as {
+          submitterName: string;
+          submitterEmail: string;
+          serverName: string;
+          serverUrl: string;
+          description: string;
+          category: "quran" | "hadith" | "tafsir" | "fiqh" | "tools";
+        };
+
+        if (!body.serverUrl || !body.serverName || !body.submitterEmail) {
+          return new Response(
+            JSON.stringify({ error: "Missing required fields: serverUrl, serverName, submitterEmail" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        if (env.DB) {
+          const db = createDb(env.DB);
+          await db.insert(mcpSubmissions).values({
+            id: crypto.randomUUID(),
+            submitterName: body.submitterName,
+            submitterEmail: body.submitterEmail,
+            serverName: body.serverName,
+            serverUrl: body.serverUrl,
+            description: body.description ?? "",
+            category: body.category ?? "tools",
+            status: "pending",
+            createdAt: new Date().toISOString(),
+          });
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, message: "MCP submission received successfully" }),
+          { status: 201, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
+      }
+    }
+
     // MCP Streamable HTTP / POST Endpoint
     if (request.method === "POST" && (url.pathname === "/mcp" || url.pathname === "/")) {
       let rpc: JsonRpcRequest;
@@ -79,10 +129,58 @@ export default {
       const reqId = rpc.id ?? null;
       const suite = url.searchParams.get("suite") ?? "all";
       const cacheService = env.DB ? new D1CacheService(env.DB) : undefined;
+      const telemetryService = env.DB ? new D1TelemetryService(env.DB) : undefined;
+
+      // Extract CF Edge Metadata
+      const cf = (request as unknown as { cf?: IncomingRequestCfProperties }).cf;
+      const userAgent = request.headers.get("user-agent");
+      const clientIp = request.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+      const logExecution = (
+        method: string,
+        toolName: string | null,
+        toolArgs: Record<string, unknown> | null,
+        provider: string | null,
+        isCacheHit: boolean,
+        statusCode: number,
+        errorMsg: string | null
+      ) => {
+        if (!telemetryService) return;
+        const latencyMs = Math.round(performance.now() - startTime);
+
+        ctx.waitUntil(
+          (async () => {
+            const clientIpHash = await telemetryService.hashIp(clientIp);
+            await telemetryService.log({
+              id: crypto.randomUUID(),
+              timestamp: new Date().toISOString(),
+              clientIpHash,
+              country: cf?.country ?? null,
+              city: cf?.city ?? null,
+              region: cf?.region ?? null,
+              asn: cf?.asn ? Number(cf.asn) : null,
+              colo: cf?.colo ?? null,
+              userAgent,
+              transportType: "http-post",
+              clientApp: telemetryService.detectClientApp(userAgent),
+              method,
+              toolName,
+              toolArgumentsJson: toolArgs ? JSON.stringify(toolArgs) : null,
+              upstreamProvider: provider,
+              isCacheHit,
+              statusCode,
+              latencyMs,
+              errorMessage: errorMsg,
+              responseSizeBytes: null,
+            });
+          })().catch(() => {})
+        );
+      };
 
       try {
         switch (rpc.method) {
           case "initialize": {
+            logExecution("initialize", null, null, "internal", false, 200, null);
             return new Response(
               JSON.stringify({
                 jsonrpc: "2.0",
@@ -117,6 +215,7 @@ export default {
 
           case "tools/list": {
             const tools = await router.listAllTools(suite);
+            logExecution("tools/list", null, null, "internal", false, 200, null);
             return new Response(
               JSON.stringify({
                 jsonrpc: "2.0",
@@ -132,6 +231,7 @@ export default {
           case "tools/call": {
             const params = rpc.params as { name?: string; arguments?: Record<string, unknown> } | undefined;
             if (!params?.name) {
+              logExecution("tools/call", null, null, null, false, 400, "Missing tool name");
               return new Response(
                 JSON.stringify({
                   jsonrpc: "2.0",
@@ -142,11 +242,21 @@ export default {
               );
             }
 
-            const { result } = await router.callTool(
+            const { providerId, result, isCacheHit } = await router.callTool(
               params.name,
               params.arguments ?? {},
               cacheService,
               ctx
+            );
+
+            logExecution(
+              "tools/call",
+              params.name,
+              params.arguments ?? {},
+              providerId,
+              isCacheHit,
+              result.isError ? 500 : 200,
+              result.isError ? "Tool execution error" : null
             );
 
             return new Response(
@@ -160,6 +270,7 @@ export default {
           }
 
           default: {
+            logExecution(rpc.method, null, null, null, false, 404, "Method not found");
             return new Response(
               JSON.stringify({
                 jsonrpc: "2.0",
@@ -172,6 +283,7 @@ export default {
         }
       } catch (err: unknown) {
         const errorMsg = err instanceof Error ? err.message : String(err);
+        logExecution(rpc.method, null, null, null, false, 500, errorMsg);
         return new Response(
           JSON.stringify({
             jsonrpc: "2.0",

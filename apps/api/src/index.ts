@@ -8,6 +8,7 @@ import { ROBOTS_TXT } from "./robots";
 import { SITEMAP_XML } from "./sitemap";
 import { API_CATALOG_JSON } from "./api-catalog";
 import { MCP_SERVER_CARD_JSON } from "./server-card";
+import { AI_CATALOG_JSON } from "./ai-catalog";
 
 export interface Env {
   DB: D1Database;
@@ -115,6 +116,16 @@ export default {
 
     if (request.method === "GET" && pathname === "/.well-known/mcp/server-card.json") {
       return new Response(MCP_SERVER_CARD_JSON, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/.well-known/ai-catalog.json") {
+      return new Response(AI_CATALOG_JSON, {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=3600",

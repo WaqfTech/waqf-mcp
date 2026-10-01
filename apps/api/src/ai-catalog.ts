@@ -1,0 +1,74 @@
+export const AI_CATALOG_JSON = JSON.stringify(
+  {
+    specVersion: "1.0.0",
+    host: {
+      name: "mcp.waqf.dev",
+      url: "https://mcp.waqf.dev",
+    },
+    entries: [
+      {
+        id: "urn:air:mcp.waqf.dev:mcp:core",
+        displayName: "Waqf Islamic Core MCP Tools",
+        description:
+          "Normalized high-level canonical tools for Quran recitation/tafsir, Hadith verification, Turath book searches, and scholarly inquiries.",
+        type: "application/json",
+        url: "https://mcp.waqf.dev/mcp?suite=core",
+        representativeQueries: [
+          "Search Quran verse and tafsir",
+          "Find Sahih hadith about intentions",
+          "Search Shamela and Turath heritage books",
+          "Query verified Islamic scholarship",
+        ],
+      },
+      {
+        id: "urn:air:mcp.waqf.dev:mcp:quran",
+        displayName: "Quran & Tafsir Gateway",
+        description: "Specialized tools for Quran text retrieval, comparative Tafsir, and translation.",
+        type: "application/json",
+        url: "https://mcp.waqf.dev/mcp?suite=quran",
+        representativeQueries: [
+          "Look up Surah Al-Ikhlas verse 1",
+          "Tafsir Ibn Kathir for Ayah 255",
+          "Search Holy Quran text in Arabic",
+        ],
+      },
+      {
+        id: "urn:air:mcp.waqf.dev:mcp:turath",
+        displayName: "Islamic Heritage & Hadith Library",
+        description: "Classical Islamic library and Hadith verification tools powered by Turath and Bahouth.",
+        type: "application/json",
+        url: "https://mcp.waqf.dev/mcp?suite=turath",
+        representativeQueries: [
+          "Search Sahih al-Bukhari hadith",
+          "Browse Islamic jurisprudence fiqh treatises",
+          "Query classical Arabic biographical dictionaries",
+        ],
+      },
+      {
+        id: "urn:air:mcp.waqf.dev:mcp:search",
+        displayName: "Fihris Islamic Scholarship Search",
+        description: "Specialized web discovery across 38+ verified Islamic portals, seminaries, and fatwa archives.",
+        type: "application/json",
+        url: "https://mcp.waqf.dev/mcp?suite=search",
+        representativeQueries: [
+          "Scholarly fatwa search on Zakat calculation",
+          "Articles on Usul al-Fiqh methodology",
+          "Search Islamic seminary portals",
+        ],
+      },
+      {
+        id: "urn:air:mcp.waqf.dev:doc:llms",
+        displayName: "Waqf MCP Agent Instruction Documentation",
+        description: "Machine-readable documentation and setup instructions for AI coding assistants and LLMs.",
+        type: "text/markdown",
+        url: "https://mcp.waqf.dev/llms.txt",
+        representativeQueries: [
+          "How to connect AI assistant to Islamic sources",
+          "MCP configuration for Quran and Hadith",
+        ],
+      },
+    ],
+  },
+  null,
+  2
+);

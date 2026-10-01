@@ -339,5 +339,19 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.transport.endpoint).toBe("https://mcp.waqf.dev/mcp");
     expect(data.capabilities.tools).toBeDefined();
   });
+
+  it("GET /.well-known/ai-catalog.json returns ARD manifest with specVersion and urn:air entries", async () => {
+    const req = new Request("http://localhost:8787/.well-known/ai-catalog.json");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { specVersion: string; host: { name: string }; entries: Array<{ id: string; representativeQueries: string[] }> };
+    expect(data.specVersion).toBe("1.0.0");
+    expect(data.host.name).toBe("mcp.waqf.dev");
+    expect(Array.isArray(data.entries)).toBe(true);
+    expect(data.entries.some((e) => e.id === "urn:air:mcp.waqf.dev:mcp:core")).toBe(true);
+    expect(data.entries.every((e) => Array.isArray(e.representativeQueries) && e.representativeQueries.length >= 2)).toBe(true);
+  });
 });
 

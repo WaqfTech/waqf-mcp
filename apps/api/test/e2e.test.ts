@@ -403,5 +403,65 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("Open Waqf");
     expect(text).toContain("mcp.waqf.dev");
   });
+
+  it("POST /oauth/register implements RFC 7591 Dynamic Client Registration", async () => {
+    const req = new Request("http://localhost:8787/oauth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_name: "Google Gemini",
+        redirect_uris: ["https://gemini.google.com/auth/callback"],
+      }),
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(201);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { client_id: string; client_name: string; redirect_uris: string[] };
+    expect(data.client_id).toMatch(/^waqf_client_/);
+    expect(data.client_name).toBe("Google Gemini");
+    expect(data.redirect_uris).toContain("https://gemini.google.com/auth/callback");
+  });
+
+  it("GET /oauth/authorize redirects with code and state when redirect_uri is provided", async () => {
+    const req = new Request("http://localhost:8787/oauth/authorize?redirect_uri=https%3A%2F%2Fgemini.google.com%2Fcallback&state=xyz123");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(302);
+    const location = res.headers.get("Location");
+    expect(location).toBeDefined();
+    expect(location).toContain("gemini.google.com/callback");
+    expect(location).toContain("code=waqf_code_");
+    expect(location).toContain("state=xyz123");
+  });
+
+  it("POST /oauth/token returns bearer access token", async () => {
+    const req = new Request("http://localhost:8787/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "authorization_code",
+        code: "waqf_code_test",
+      }),
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { access_token: string; token_type: string; expires_in: number };
+    expect(data.access_token).toMatch(/^waqf_token_/);
+    expect(data.token_type).toBe("Bearer");
+    expect(data.expires_in).toBeGreaterThan(0);
+  });
+
+  it("GET /.well-known/jwks.json returns empty JWKS set", async () => {
+    const req = new Request("http://localhost:8787/.well-known/jwks.json");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as { keys: unknown[] };
+    expect(Array.isArray(data.keys)).toBe(true);
+  });
 });
+
 

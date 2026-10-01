@@ -10,7 +10,13 @@ import { API_CATALOG_JSON } from "./api-catalog";
 import { MCP_SERVER_CARD_JSON } from "./server-card";
 import { AI_CATALOG_JSON } from "./ai-catalog";
 import { AGENT_SKILLS_INDEX_JSON } from "./agent-skills";
-import { OAUTH_AUTH_SERVER_JSON, OAUTH_PROTECTED_RESOURCE_JSON } from "./oauth";
+import {
+  OAUTH_AUTH_SERVER_JSON,
+  OAUTH_PROTECTED_RESOURCE_JSON,
+  handleOAuthRegister,
+  handleOAuthAuthorize,
+  handleOAuthToken,
+} from "./oauth";
 import { AUTH_MD } from "./auth-doc";
 
 export interface Env {
@@ -177,6 +183,28 @@ export default {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=3600",
           ...DISCOVERY_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "POST" && pathname === "/oauth/register") {
+      return handleOAuthRegister(request, CORS_HEADERS);
+    }
+
+    if ((request.method === "GET" || request.method === "POST" || request.method === "HEAD") && pathname === "/oauth/authorize") {
+      return handleOAuthAuthorize(request, CORS_HEADERS);
+    }
+
+    if (request.method === "POST" && pathname === "/oauth/token") {
+      return handleOAuthToken(request, CORS_HEADERS);
+    }
+
+    if (request.method === "GET" && pathname === "/.well-known/jwks.json") {
+      return new Response(JSON.stringify({ keys: [] }), {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=86400",
+          ...CORS_HEADERS,
         },
       });
     }

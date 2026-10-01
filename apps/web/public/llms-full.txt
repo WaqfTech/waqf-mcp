@@ -279,31 +279,49 @@ User-Agent: MyResearchAgent/1.0
 }
 ```
 
-### Response Example
+### Response Example (Actual Gateway Output)
 ```json
 {
   "jsonrpc": "2.0",
   "id": "req-001",
   "result": {
+    "isError": false,
     "content": [
       {
         "type": "text",
-        "text": "### سورة الإخلاص - آية 1\n**النص القرآني:**\nقُلْ هُوَ اللَّهُ أَحَدٌ\n\n**التفسير (المختصر في تفسير القرآن الكريم):**\nقل -أيها الرسول-: هو الله المنفرد بالألوهية والربوبية والأسماء والصفات، لا شريك له في شيء منها."
+        "text": "[Source: Tafsir.net]\n{\n  \"surah\": 112,\n  \"ayah\": 1,\n  \"text\": \"قل هو الله أحد\",\n  \"text_uthmani\": \"قل هو الله أحد\",\n  \"text_simple\": \"قل هو الله أحد\",\n  \"tajweed\": null,\n  \"irab\": null,\n  \"word_count\": 4,\n  \"gharib\": \"﴿ هُوَ ٱللَّهُ أَحَدٌ ﴾: هُو اللهُ المتفرِّدُ بالأُلُوهِيَّةِ والرُّبُوبِيَّةِ والأسْماءِ والصِّفاتِ، لا يُشارِكُه أَحَدٌ فِيها.\",\n  \"tadabbur\": \"اعلم أيها المسلمُ أن ربَّك متفرِّد في عَليائه وصفاته، ومنزَّهٌ عن كلِّ عيب ونقص، فأقبِل عليه بقلبك وعقلك، وسَله الهدايةَ والثبات؟\\nــــــــــــــــــــــــــــــــــــــــــــــــ\\nفي أمر الله لنبيِّه ﷺ بأن يبيِّنَ للعالمين تفرُّدَه سبحانه في صفات الجلال والكمال، أمرٌ لكلِّ مسلم، وهو من أعظم الجهاد.\",\n  \"_display\": \"اعرض هذا النص حرفياً وكاملاً بين علامتي اقتباس مع ذكر النسبة (attribution): (١) انسخ كل حرف كما ورد — بما فيه ترويسة المؤلف في مطلع السورة (مثل «تفسير سورة الناس وهي مدنية») والبسملة، وعلامات الهوامش مثل {[1]} و{[2]}، وجهاز النقد ¬...¥ (فروق النسخ)؛ كلها محتوى علمي من النص — لا تُسقِط شيئاً بوصفه «عنواناً» أو «رمزاً» أو «بيانات». (٢) لا تختصر ولا تلخّص ولا تُعِد الصياغة ولا تترجم، ولو بدا النص قصيراً؛ إن طال فاستعمل التقسيم (part/total_parts) لا التلخيص.\"\n}"
       }
     ]
   }
 }
 ```
 
-### Standard Error Envelopes
-If a call fails or parameters are invalid, the gateway returns a standard JSON-RPC 2.0 error:
+### Standard Error Envelopes (Actual Gateway Output)
+If a protocol method is unknown or invalid, the gateway returns a standard JSON-RPC 2.0 error:
 ```json
 {
   "jsonrpc": "2.0",
-  "id": "req-001",
+  "id": "req-err-02",
   "error": {
-    "code": -32602,
-    "message": "Invalid params: 'surah' must be between 1 and 114"
+    "code": -32601,
+    "message": "Method 'unknown_method' not found"
+  }
+}
+```
+
+If an upstream tool call fails (e.g. invalid arguments or range violation), the gateway returns an MCP tool execution error (`isError: true`):
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req-err-01",
+  "result": {
+    "isError": true,
+    "content": [
+      {
+        "type": "text",
+        "text": "[Source: Bahouth]\nError executing tool get_verse: verse_key is outside the supported Quranic range"
+      }
+    ]
   }
 }
 ```

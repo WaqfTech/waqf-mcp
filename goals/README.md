@@ -28,12 +28,11 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 
 ## Summary
 - **Total Goals**: 7
-- 🟢 **Implemented & Verified**: 5
+- 🟢 **Implemented & Verified**: 6
 - 🔵 **In Progress (Claimed)**: 1
 - 🟡 **Ready to Execute (Pending)**: 0 (0 independent ⚡, 0 unblocked 🔗)
-- ⛔ **Blocked on Prerequisites**: 1
 - 🎯 **By Tier**: 7 immediate (Tier 1), 0 roadmap (Tier 2), 0 nice-to-have (Tier 3), 0 wont-fix (Tier 4)
-- 📋 **Execution Tasks Progress**: 20/30 completed (66%)
+- 📋 **Execution Tasks Progress**: 25/30 completed (83%)
 
 ---
 
@@ -41,15 +40,7 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 
 | Goal Package | Tier | Mode | Agent | Status & Note | Started |
 | :--- | :---: | :---: | :--- | :--- | :--- |
-| [`multilingual-landing-page`](multilingual-landing-page/goal.md) | `🎯 Immediate` | `🔗 Dep` | `@antigravity` | Build multi-lingual Astro landing page with Arabic-first layout, 5 language dictionaries, WaqfTech design tokens, and submission form | 0s ago |
-
----
-
-## 🟡 Ready to Execute (Pending Goals)
-
-| Goal Package | Tier | Mode & Sequence | Dependencies | Focus & Description | Launch Command |
-| :--- | :---: | :---: | :--- | :--- | :--- |
-| [`e2e-testing-and-deployment`](e2e-testing-and-deployment/goal.md) | `🎯 Immediate` | `🚢 SHIP ⛔ Blocked (#7)` | Prereqs: multilingual-landing-page | End-to-End Verification and Deployment Preparation — Add Vitest test suites, test live queries with curl and MCP inspector, verify D1... | `/goal goals/e2e-testing-and-deployment/goal.md` |
+| [`e2e-testing-and-deployment`](e2e-testing-and-deployment/goal.md) | `🎯 Immediate` | `🔗 Dep` | `@antigravity` | Write e2e test suite, test full worker lifecycle with D1 mock, and author production README | 0s ago |
 
 ---
 
@@ -59,6 +50,7 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 | :--- | :---: | :--- | :--- | :--- |
 | [`monorepo-scaffold`](monorepo-scaffold/goal.md) | `⚡ Indep` | 🚢 SHIP | Git Commit | `eda6b93` |
 | [`d1-database-schema`](d1-database-schema/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `397a013` |
+| [`multilingual-landing-page`](multilingual-landing-page/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `59179e0` |
 | [`core-mcp-federation-engine`](core-mcp-federation-engine/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `97e86ef` |
 | [`canonical-schemas-and-caching`](canonical-schemas-and-caching/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `13bd241` |
 | [`telemetry-and-logging`](telemetry-and-logging/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `e4ec105` |

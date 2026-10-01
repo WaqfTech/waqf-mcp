@@ -7,7 +7,7 @@
     "dev": "aube run --recursive dev",
     "build": "aube run --recursive build",
     "typecheck": "aube run --recursive typecheck",
-    "test": "aube run --recursive test"
+    "test": "aube -F @waqf/api run test"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

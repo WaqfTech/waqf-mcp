@@ -1,0 +1,121 @@
+import { describe, it, expect, vi } from "vitest";
+import worker from "../src/index";
+
+describe("Waqf MCP Gateway Worker E2E", () => {
+  const mockCtx = {
+    waitUntil: vi.fn((promise: Promise<unknown>) => promise),
+    passThroughOnException: vi.fn(),
+  } as unknown as ExecutionContext;
+
+  const mockEnv = {
+    DB: {
+      prepare: vi.fn().mockReturnValue({
+        bind: vi.fn().mockReturnThis(),
+        all: vi.fn().mockResolvedValue({ results: [] }),
+        first: vi.fn().mockResolvedValue(null),
+        run: vi.fn().mockResolvedValue({ success: true }),
+      }),
+    } as unknown as D1Database,
+  };
+
+  it("GET / returns gateway health and provider status", async () => {
+    const req = new Request("http://localhost:8787/");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { status: string; providers: unknown[] };
+    expect(body.status).toBe("healthy");
+    expect(body.providers.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("POST /mcp handles 'initialize' method", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {},
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { result: { serverInfo: { name: string } } };
+    expect(body.result.serverInfo.name).toBe("waqf-islamic-federation");
+  });
+
+  it("POST /mcp handles 'ping' method", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 42,
+        method: "ping",
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { id: number; result: Record<string, unknown> };
+    expect(body.id).toBe(42);
+  });
+
+  it("POST /mcp?suite=core returns only canonical tools", async () => {
+    const req = new Request("http://localhost:8787/mcp?suite=core", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {},
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { result: { tools: Array<{ name: string }> } };
+    expect(body.result.tools.length).toBeGreaterThanOrEqual(3);
+    expect(body.result.tools.every((t) => t.name.startsWith("waqf_"))).toBe(true);
+  });
+
+  it("POST /mcp returns -32601 for unrecognized methods", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 99,
+        method: "non_existent_method",
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as { error: { code: number } };
+    expect(body.error.code).toBe(-32601);
+  });
+
+  it("POST /api/submissions accepts community MCP submissions", async () => {
+    const req = new Request("http://localhost:8787/api/submissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submitterName: "Zayd",
+        submitterEmail: "zayd@example.com",
+        serverName: "Qiraat Al-Madinah",
+        serverUrl: "https://qiraat.example.com/mcp",
+        category: "quran",
+        description: "10 Mutawatir recitations MCP server",
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { success: boolean };
+    expect(body.success).toBe(true);
+  });
+});

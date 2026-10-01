@@ -1,19 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "waqf-mcp-api",
+  "name": "waqf-mcp-web",
   "account_id": "<CLOUDFLARE_ACCOUNT_ID>",
-  "main": "src/index.ts",
+  "main": "dist/_worker.js/index.js",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "waqf-app",
-      "database_id": "00000000-0000-0000-0000-000000000000"
-    }
-  ],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "dist"
+  },
   "observability": {
     "enabled": true
   }

@@ -1,4 +1,4 @@
-CREATE TABLE `mcp_cache` (
+CREATE TABLE IF NOT EXISTS `mcp_cache` (
 	`cache_key` text PRIMARY KEY NOT NULL,
 	`provider_id` text NOT NULL,
 	`tool_name` text NOT NULL,
@@ -8,9 +8,9 @@ CREATE TABLE `mcp_cache` (
 	`expires_at` text
 );
 --> statement-breakpoint
-CREATE INDEX `idx_mcp_cache_provider_tool` ON `mcp_cache` (`provider_id`,`tool_name`);--> statement-breakpoint
-CREATE INDEX `idx_mcp_cache_expires_at` ON `mcp_cache` (`expires_at`);--> statement-breakpoint
-CREATE TABLE `mcp_logs` (
+CREATE INDEX IF NOT EXISTS `idx_mcp_cache_provider_tool` ON `mcp_cache` (`provider_id`,`tool_name`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `idx_mcp_cache_expires_at` ON `mcp_cache` (`expires_at`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `mcp_logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`timestamp` text NOT NULL,
 	`client_ip_hash` text NOT NULL,
@@ -33,11 +33,11 @@ CREATE TABLE `mcp_logs` (
 	`response_size_bytes` integer
 );
 --> statement-breakpoint
-CREATE INDEX `idx_mcp_logs_timestamp` ON `mcp_logs` (`timestamp`);--> statement-breakpoint
-CREATE INDEX `idx_mcp_logs_tool_name` ON `mcp_logs` (`tool_name`);--> statement-breakpoint
-CREATE INDEX `idx_mcp_logs_client_app` ON `mcp_logs` (`client_app`);--> statement-breakpoint
-CREATE INDEX `idx_mcp_logs_country` ON `mcp_logs` (`country`);--> statement-breakpoint
-CREATE TABLE `mcp_submissions` (
+CREATE INDEX IF NOT EXISTS `idx_mcp_logs_timestamp` ON `mcp_logs` (`timestamp`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `idx_mcp_logs_tool_name` ON `mcp_logs` (`tool_name`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `idx_mcp_logs_client_app` ON `mcp_logs` (`client_app`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `idx_mcp_logs_country` ON `mcp_logs` (`country`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `mcp_submissions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`submitter_name` text NOT NULL,
 	`submitter_email` text NOT NULL,
@@ -49,4 +49,4 @@ CREATE TABLE `mcp_submissions` (
 	`created_at` text NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `idx_mcp_submissions_status` ON `mcp_submissions` (`status`);
+CREATE INDEX IF NOT EXISTS `idx_mcp_submissions_status` ON `mcp_submissions` (`status`);

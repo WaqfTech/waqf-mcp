@@ -335,7 +335,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("application/json");
     const data = (await res.json()) as { serverInfo: { name: string; version: string }; transport: { endpoint: string }; capabilities: Record<string, unknown> };
-    expect(data.serverInfo.name).toBe("mcp.waqf.dev");
+    expect(data.serverInfo.name).toBe("IslamicSources");
     expect(data.transport.endpoint).toBe("https://mcp.waqf.dev/mcp");
     expect(data.capabilities.tools).toBeDefined();
   });

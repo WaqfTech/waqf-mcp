@@ -267,6 +267,20 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("User-agent: GPTBot");
     expect(text).toContain("User-agent: ClaudeBot");
     expect(text).toContain("User-agent: Google-Extended");
+    expect(text).toContain("Sitemap: https://mcp.waqf.dev/sitemap.xml");
+  });
+
+  it("GET /sitemap.xml returns XML sitemap with 200 and application/xml", async () => {
+    const req = new Request("http://localhost:8787/sitemap.xml");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/xml");
+    const text = await res.text();
+    expect(text).toContain("<urlset");
+    expect(text).toContain("<loc>https://mcp.waqf.dev/</loc>");
+    expect(text).toContain("hreflang=\"ar\"");
+    expect(text).toContain("hreflang=\"en\"");
   });
 });
 

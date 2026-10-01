@@ -40,4 +40,7 @@ User-agent: Google-Extended
 Allow: /
 Disallow: /api/stats
 Disallow: /api/telemetry
+
+# Sitemap index
+Sitemap: https://mcp.waqf.dev/sitemap.xml
 `;

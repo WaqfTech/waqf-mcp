@@ -5,6 +5,7 @@ import { D1TelemetryService } from "./services/telemetry";
 import { createDb, mcpSubmissions } from "@waqf/db";
 import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
 import { ROBOTS_TXT } from "./robots";
+import { SITEMAP_XML } from "./sitemap";
 
 export interface Env {
   DB: D1Database;
@@ -72,6 +73,16 @@ export default {
       return new Response(ROBOTS_TXT, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...CORS_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/sitemap.xml") {
+      return new Response(SITEMAP_XML, {
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
           "Cache-Control": "public, max-age=3600",
           ...CORS_HEADERS,
         },

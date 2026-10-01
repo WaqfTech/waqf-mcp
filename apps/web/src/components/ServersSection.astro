@@ -3,9 +3,11 @@ import type { getTranslations } from "../lib/i18n";
 
 interface Props {
   t: ReturnType<typeof getTranslations>;
+  lang?: string;
 }
 
-const { t } = Astro.props;
+const { t, lang = "ar" } = Astro.props;
+const isArabic = lang === "ar";
 
 const SERVERS = [
   {
@@ -62,15 +64,18 @@ const SERVERS = [
     </div>
 
     <div class="servers-grid">
-      {SERVERS.map((server) => (
-        <article class="server-card">
-          <div class="card-top">
-            <div>
-              <h3>{server.name}</h3>
-              <span class="provider-pill">{server.provider}</span>
+      {SERVERS.map((server) => {
+        const cardTitle = isArabic ? server.provider : server.name;
+        const cardSubtitle = isArabic ? server.name : server.provider;
+        return (
+          <article class="server-card">
+            <div class="card-top">
+              <div>
+                <h3>{cardTitle}</h3>
+                <span class="provider-pill">{cardSubtitle}</span>
+              </div>
+              <span class="status-badge">{t.servers.active_badge}</span>
             </div>
-            <span class="status-badge">{t.servers.active_badge}</span>
-          </div>
 
           <p class="server-desc">{server.desc}</p>
 
@@ -88,9 +93,9 @@ const SERVERS = [
             <a href={server.url} target="_blank" rel="noopener noreferrer" class="source-link">
               {t.servers.view_source} ↗
             </a>
-          </div>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </div>
   </div>
 </section>

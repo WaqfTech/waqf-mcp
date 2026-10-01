@@ -98,10 +98,12 @@ export class FederationRouter {
       throw new Error(`Unknown upstream provider: '${providerId}' in tool '${fullName}'`);
     }
 
+    const sanitizedArgs = this.normalizer.sanitizeProviderArgs(providerId, originalToolName, args);
+
     // Cache lookup
     let cacheKey: string | null = null;
     if (cacheService) {
-      cacheKey = await cacheService.computeKey(providerId, originalToolName, args);
+      cacheKey = await cacheService.computeKey(providerId, originalToolName, sanitizedArgs);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
         if (ctx) {
@@ -118,7 +120,7 @@ export class FederationRouter {
       }
     }
 
-    const result = await provider.callTool(originalToolName, args);
+    const result = await provider.callTool(originalToolName, sanitizedArgs);
 
     // Save to cache asynchronously
     if (cacheService && cacheKey && !result.isError) {
@@ -162,7 +164,7 @@ export class FederationRouter {
       }
     }
 
-    let result: ToolResult;
+    let result: ToolResult = { content: [] };
     let targetProvider = "canonical";
 
     switch (toolName) {
@@ -172,23 +174,39 @@ export class FederationRouter {
         const tafsirProvider = this.registry.get("tafsir_net");
         const bahouthProvider = this.registry.get("bahouth");
 
+        let fetched = false;
+
+        // Primary: Tafsir.net
         if (tafsirProvider) {
-          targetProvider = "tafsir_net";
-          const upstreamArgs = this.normalizer.toTafsirNetAyahArgs({
-            surah,
-            ayah,
-            includeTafsir: Boolean(args.includeTafsir),
-          });
-          const raw = await tafsirProvider.callTool("fetch_ayah", upstreamArgs);
-          result = this.normalizer.normalizeToolResult(raw, "Tafsir.net");
-        } else if (bahouthProvider) {
+          try {
+            targetProvider = "tafsir_net";
+            const upstreamArgs = this.normalizer.toTafsirNetAyahArgs({
+              surah,
+              ayah,
+              includeTafsir: Boolean(args.includeTafsir),
+            });
+            const raw = await tafsirProvider.callTool("fetch_ayah", upstreamArgs);
+            if (!raw.isError) {
+              result = this.normalizer.normalizeToolResult(raw, "Tafsir.net");
+              fetched = true;
+            }
+          } catch {
+            // Fall through to Bahouth fallback
+          }
+        }
+
+        // Fallback: Bahouth
+        if (!fetched && bahouthProvider) {
           targetProvider = "bahouth";
           const raw = await bahouthProvider.callTool("get_verse", {
             verse_key: this.normalizer.toBahouthVerseKey({ surah, ayah }),
           });
           result = this.normalizer.normalizeToolResult(raw, "Bahouth");
-        } else {
-          throw new Error("No Quran provider available");
+          fetched = true;
+        }
+
+        if (!fetched) {
+          throw new Error("No Quran provider available or all upstreams failed");
         }
         break;
       }

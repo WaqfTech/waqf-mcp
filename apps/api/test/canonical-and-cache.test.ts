@@ -73,4 +73,124 @@ describe("Canonical Tools & Schema Normalization", () => {
     expect(key1).toBe(key2);
     expect(key1).toHaveLength(64); // SHA-256 hex is 64 characters
   });
+
+  describe("Provider Argument Sanitization", () => {
+    it("normalizes colon-separated verse keys for Bahouth", () => {
+      const sanitized = normalizer.sanitizeProviderArgs("bahouth", "get_verse", {
+        verse_key: "112:1",
+      });
+      expect(sanitized.verse_key).toBe("112-1");
+    });
+
+    it("synthesizes verse_key from surah and ayah numbers for Bahouth", () => {
+      const sanitized = normalizer.sanitizeProviderArgs("bahouth", "get_verse", {
+        surah: 112,
+        ayah: 1,
+      });
+      expect(sanitized.verse_key).toBe("112-1");
+    });
+
+    it("leaves non-Bahouth arguments untouched", () => {
+      const raw = { surah_number: 2, ayah_number: 255 };
+      const sanitized = normalizer.sanitizeProviderArgs("tafsir_net", "fetch_ayah", raw);
+      expect(sanitized).toEqual(raw);
+    });
+  });
+
+  describe("Canonical Fallback Routing", () => {
+    it("falls back to Bahouth when Tafsir.net throws an error", async () => {
+      const registry = new ProviderRegistry([]);
+
+      const mockTafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir",
+      });
+      vi.spyOn(mockTafsir, "callTool").mockRejectedValue(new Error("Upstream 502 Bad Gateway"));
+
+      const mockBahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+      const bahouthSpy = vi.spyOn(mockBahouth, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: "قل هو الله أحد",
+          },
+        ],
+      });
+
+      registry.register(mockTafsir);
+      registry.register(mockBahouth);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_quran_get_ayah", { surah: 112, ayah: 1 });
+      expect(res.providerId).toBe("bahouth");
+      expect(bahouthSpy).toHaveBeenCalledWith("get_verse", { verse_key: "112-1" });
+      expect(res.result.content[0].type).toBe("text");
+      expect((res.result.content[0] as { text: string }).text).toContain("قل هو الله أحد");
+    });
+
+    it("falls back to Bahouth when Tafsir.net returns isError: true", async () => {
+      const registry = new ProviderRegistry([]);
+
+      const mockTafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir",
+      });
+      vi.spyOn(mockTafsir, "callTool").mockResolvedValue({
+        isError: true,
+        content: [{ type: "text", text: "Rate limit exceeded" }],
+      });
+
+      const mockBahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+      vi.spyOn(mockBahouth, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "قل هو الله أحد" }],
+      });
+
+      registry.register(mockTafsir);
+      registry.register(mockBahouth);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_quran_get_ayah", { surah: 112, ayah: 1 });
+      expect(res.providerId).toBe("bahouth");
+    });
+
+    it("sanitizes arguments when routing direct bahouth__* tools", async () => {
+      const registry = new ProviderRegistry([]);
+
+      const mockBahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+      const bahouthSpy = vi.spyOn(mockBahouth, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "قل هو الله أحد" }],
+      });
+
+      registry.register(mockBahouth);
+      const router = new FederationRouter(registry, normalizer);
+
+      await router.callTool("bahouth__get_verse", { verse_key: "112:1" });
+      expect(bahouthSpy).toHaveBeenCalledWith("get_verse", { verse_key: "112-1" });
+    });
+  });
 });
+

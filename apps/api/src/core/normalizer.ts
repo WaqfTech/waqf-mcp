@@ -108,4 +108,27 @@ export class SchemaNormalizer {
       }),
     };
   }
+
+  // Sanitizes provider-specific arguments to prevent schema mismatches
+  public sanitizeProviderArgs(
+    providerId: string,
+    toolName: string,
+    args: Record<string, unknown>
+  ): Record<string, unknown> {
+    if (providerId === "bahouth") {
+      const sanitized = { ...args };
+      // Normalize verse_key if provided with colon (e.g. "112:1" -> "112-1")
+      if (typeof sanitized.verse_key === "string" && sanitized.verse_key.includes(":")) {
+        sanitized.verse_key = sanitized.verse_key.replace(":", "-");
+      }
+      // If numerical surah/ayah properties are passed instead of verse_key, synthesize verse_key
+      const surah = sanitized.surah ?? sanitized.surah_number;
+      const ayah = sanitized.ayah ?? sanitized.verse_number ?? sanitized.ayah_number;
+      if (!sanitized.verse_key && surah !== undefined && ayah !== undefined) {
+        sanitized.verse_key = `${surah}-${ayah}`;
+      }
+      return sanitized;
+    }
+    return args;
+  }
 }

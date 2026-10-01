@@ -1,5 +1,6 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
+import { D1CacheService } from "./services/cache";
 
 export interface Env {
   DB: D1Database;
@@ -34,18 +35,22 @@ export default {
     // Health and info endpoint
     if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/health")) {
       return new Response(
-        JSON.stringify({
-          status: "healthy",
-          name: "Waqf Islamic MCP Federation Gateway",
-          version: "1.0.0",
-          endpoint: "/mcp",
-          providers: registry.getAll().map((p) => ({
-            id: p.id,
-            name: p.name,
-            transport: p.transport,
-            description: p.description,
-          })),
-        }, null, 2),
+        JSON.stringify(
+          {
+            status: "healthy",
+            name: "Waqf Islamic MCP Federation Gateway",
+            version: "1.0.0",
+            endpoint: "/mcp",
+            providers: registry.getAll().map((p) => ({
+              id: p.id,
+              name: p.name,
+              transport: p.transport,
+              description: p.description,
+            })),
+          },
+          null,
+          2
+        ),
         {
           headers: {
             "Content-Type": "application/json; charset=utf-8",
@@ -73,6 +78,7 @@ export default {
 
       const reqId = rpc.id ?? null;
       const suite = url.searchParams.get("suite") ?? "all";
+      const cacheService = env.DB ? new D1CacheService(env.DB) : undefined;
 
       try {
         switch (rpc.method) {
@@ -136,7 +142,13 @@ export default {
               );
             }
 
-            const { result } = await router.callTool(params.name, params.arguments ?? {});
+            const { result } = await router.callTool(
+              params.name,
+              params.arguments ?? {},
+              cacheService,
+              ctx
+            );
+
             return new Response(
               JSON.stringify({
                 jsonrpc: "2.0",

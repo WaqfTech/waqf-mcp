@@ -1,0 +1,21 @@
+{
+  "goal_slug": "canonical-schemas-and-caching",
+  "agent": "antigravity",
+  "allow_paths": [
+    "apps/api/src/canonical",
+    "apps/api/src/core/normalizer.ts",
+    "apps/api/src/services/cache.ts",
+    "goals/canonical-schemas-and-caching/*"
+  ],
+  "deny_paths": [
+    "research/*",
+    ".git/*"
+  ],
+  "required_checks": [
+    "git diff --check",
+    "sila gate"
+  ],
+  "max_duration": 7200000000000,
+  "lock_token": "46f79a2d-b335-4440-9e13-6802da5aadf7",
+  "created_at": "2026-10-01T07:21:57.280686972Z"
+}

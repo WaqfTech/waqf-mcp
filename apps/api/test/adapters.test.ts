@@ -90,7 +90,7 @@ describe("MCP Adapters & Federation Router", () => {
     registry.register(mockMaher);
 
     const router = new FederationRouter(registry);
-    const tools = await router.listAllTools();
+    const tools = await router.listAllTools("raw");
 
     expect(tools.map((t) => t.name)).toEqual([
       "turath__get_book",

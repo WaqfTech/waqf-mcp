@@ -1,0 +1,76 @@
+import { describe, it, expect, vi } from "vitest";
+import { SchemaNormalizer } from "../src/core/normalizer";
+import { FederationRouter } from "../src/core/router";
+import { ProviderRegistry } from "../src/core/registry";
+import { JsonRpcMcpAdapter } from "../src/adapters/jsonrpc";
+import { SseMcpAdapter } from "../src/adapters/sse";
+import { D1CacheService } from "../src/services/cache";
+
+describe("Canonical Tools & Schema Normalization", () => {
+  const normalizer = new SchemaNormalizer();
+
+  it("translates Quran input to Bahouth and Tafsir formats", () => {
+    const verseKey = normalizer.toBahouthVerseKey({ surah: 2, ayah: 255 });
+    expect(verseKey).toBe("2-255");
+
+    const tafsirArgs = normalizer.toTafsirNetAyahArgs({
+      surah: 2,
+      ayah: 255,
+      includeTafsir: true,
+    });
+    expect(tafsirArgs).toEqual({
+      surah_number: 2,
+      ayah_number: 255,
+      include: ["tadabbur", "gharib"],
+    });
+  });
+
+  it("filters tools by suite query parameter", async () => {
+    const registry = new ProviderRegistry([]);
+    const router = new FederationRouter(registry, normalizer);
+
+    const coreTools = await router.listAllTools("core");
+    expect(coreTools.length).toBeGreaterThanOrEqual(3);
+    expect(coreTools.every((t) => t.name.startsWith("waqf_"))).toBe(true);
+  });
+
+  it("executes canonical waqf_quran_get_ayah routing through available provider", async () => {
+    const registry = new ProviderRegistry([]);
+    const mockTafsir = new SseMcpAdapter({
+      id: "tafsir_net",
+      name: "Tafsir.net",
+      baseUrl: "https://mcp.tafsir.net/mcp",
+      transport: "sse",
+      description: "Tafsir",
+    });
+
+    vi.spyOn(mockTafsir, "callTool").mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ",
+        },
+      ],
+    });
+
+    registry.register(mockTafsir);
+    const router = new FederationRouter(registry, normalizer);
+
+    const res = await router.callTool("waqf_quran_get_ayah", { surah: 2, ayah: 255 });
+    expect(res.providerId).toBe("tafsir_net");
+    expect(res.result.content[0].type).toBe("text");
+    expect((res.result.content[0] as { text: string }).text).toContain("اللَّهُ لَا إِلَٰهَ");
+  });
+
+  it("D1CacheService computes deterministic SHA-256 keys", async () => {
+    const fakeD1 = {} as D1Database;
+    const cacheService = new D1CacheService(fakeD1);
+
+    const key1 = await cacheService.computeKey("tafsir_net", "fetch_ayah", { surah_number: 2, ayah_number: 255 });
+    const key2 = await cacheService.computeKey("tafsir_net", "fetch_ayah", { ayah_number: 255, surah_number: 2 });
+
+    // Order of keys should not change the SHA-256 hash
+    expect(key1).toBe(key2);
+    expect(key1).toHaveLength(64); // SHA-256 hex is 64 characters
+  });
+});

@@ -8,8 +8,8 @@ CREATE TABLE `mcp_cache` (
 	`expires_at` text
 );
 --> statement-breakpoint
-CREATE INDEX `idx_cache_provider_tool` ON `mcp_cache` (`provider_id`,`tool_name`);--> statement-breakpoint
-CREATE INDEX `idx_cache_expires_at` ON `mcp_cache` (`expires_at`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_cache_provider_tool` ON `mcp_cache` (`provider_id`,`tool_name`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_cache_expires_at` ON `mcp_cache` (`expires_at`);--> statement-breakpoint
 CREATE TABLE `mcp_logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`timestamp` text NOT NULL,
@@ -33,10 +33,10 @@ CREATE TABLE `mcp_logs` (
 	`response_size_bytes` integer
 );
 --> statement-breakpoint
-CREATE INDEX `idx_logs_timestamp` ON `mcp_logs` (`timestamp`);--> statement-breakpoint
-CREATE INDEX `idx_logs_tool_name` ON `mcp_logs` (`tool_name`);--> statement-breakpoint
-CREATE INDEX `idx_logs_client_app` ON `mcp_logs` (`client_app`);--> statement-breakpoint
-CREATE INDEX `idx_logs_country` ON `mcp_logs` (`country`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_logs_timestamp` ON `mcp_logs` (`timestamp`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_logs_tool_name` ON `mcp_logs` (`tool_name`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_logs_client_app` ON `mcp_logs` (`client_app`);--> statement-breakpoint
+CREATE INDEX `idx_mcp_logs_country` ON `mcp_logs` (`country`);--> statement-breakpoint
 CREATE TABLE `mcp_submissions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`submitter_name` text NOT NULL,
@@ -49,4 +49,4 @@ CREATE TABLE `mcp_submissions` (
 	`created_at` text NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `idx_submissions_status` ON `mcp_submissions` (`status`);
+CREATE INDEX `idx_mcp_submissions_status` ON `mcp_submissions` (`status`);

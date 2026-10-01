@@ -26,10 +26,10 @@ export const mcpLogs = sqliteTable(
     responseSizeBytes: integer("response_size_bytes"),
   },
   (table) => [
-    index("idx_logs_timestamp").on(table.timestamp),
-    index("idx_logs_tool_name").on(table.toolName),
-    index("idx_logs_client_app").on(table.clientApp),
-    index("idx_logs_country").on(table.country),
+    index("idx_mcp_logs_timestamp").on(table.timestamp),
+    index("idx_mcp_logs_tool_name").on(table.toolName),
+    index("idx_mcp_logs_client_app").on(table.clientApp),
+    index("idx_mcp_logs_country").on(table.country),
   ]
 );
 
@@ -46,8 +46,8 @@ export const mcpCache = sqliteTable(
     expiresAt: text("expires_at"),
   },
   (table) => [
-    index("idx_cache_provider_tool").on(table.providerId, table.toolName),
-    index("idx_cache_expires_at").on(table.expiresAt),
+    index("idx_mcp_cache_provider_tool").on(table.providerId, table.toolName),
+    index("idx_mcp_cache_expires_at").on(table.expiresAt),
   ]
 );
 
@@ -66,7 +66,7 @@ export const mcpSubmissions = sqliteTable(
     createdAt: text("created_at").notNull(),
   },
   (table) => [
-    index("idx_submissions_status").on(table.status),
+    index("idx_mcp_submissions_status").on(table.status),
   ]
 );
 

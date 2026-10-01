@@ -9,11 +9,12 @@
 Islamic Sources (@IslamicSources) is an edge-native federation gateway connecting Muslim developers, researchers, and AI agents to authentic Islamic sources. It runs on Cloudflare Workers (stateless V8 isolates) and Cloudflare D1 SQLite.
 
 ### Key Architectural Tenets
-1. **Stateless Edge Runtime**: Employs Streamable HTTP / JSON-RPC 2.0 without Durable Objects. No stateful connection leases.
-2. **Deterministic SHA-256 Edge Caching**: Immutable Islamic texts (Quranic verses, Hadiths, Tafsirs) and search queries are hashed and cached in Cloudflare D1 (`mcp_cache`). Latency for cached hits is typically `< 15ms`.
-3. **Non-blocking Telemetry**: Gateway logs (anonymized IP hash, Geo, ASN, latency, tool, error status) are written asynchronously using Cloudflare's `ctx.waitUntil()`. Telemetry overhead on the response stream is zero milliseconds.
-4. **Collision Defense**: Upstream server tools are namespaced (e.g. `bahouth__get_verse`, `tafsir_net__fetch_ayah`, `turath__get_book`, `fihris__search_islamic_sources`) while canonical adapters provide unified interfaces (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`, `waqf_search_scholarship`).
-5. **Bidirectional Loop Prevention**: Gateway requests to upstream servers include the header `X-Waqf-Federated-By: mcp.waqf.dev`. If an upstream worker forwards queries, this header breaks infinite cycles.
+1. **Neutral Aggregator & As-Is Transmission**: Operates strictly as a federated aggregator and proxy. The gateway does not author, add, edit, or alter any response or text from upstream Islamic data providers. Content is relayed verbatim from original sources, and the service is provided strictly on an "as is" basis without warranties.
+2. **Stateless Edge Runtime**: Employs Streamable HTTP / JSON-RPC 2.0 without Durable Objects. No stateful connection leases.
+3. **Deterministic SHA-256 Edge Caching**: Immutable Islamic texts (Quranic verses, Hadiths, Tafsirs) and search queries are hashed and cached in Cloudflare D1 (`mcp_cache`). Latency for cached hits is typically `< 15ms`.
+4. **Non-blocking Telemetry**: Gateway logs (anonymized IP hash, Geo, ASN, latency, tool, error status) are written asynchronously using Cloudflare's `ctx.waitUntil()`. Telemetry overhead on the response stream is zero milliseconds.
+5. **Collision Defense**: Upstream server tools are namespaced (e.g. `bahouth__get_verse`, `tafsir_net__fetch_ayah`, `turath__get_book`, `fihris__search_islamic_sources`) while canonical adapters provide unified interfaces (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`, `waqf_search_scholarship`).
+6. **Bidirectional Loop Prevention**: Gateway requests to upstream servers include the header `X-Waqf-Federated-By: mcp.waqf.dev`. If an upstream worker forwards queries, this header breaks infinite cycles.
 
 ---
 

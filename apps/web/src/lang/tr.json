@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "İslami Kaynaklar (@IslamicSources) — Vakıf MCP Ağ Geçidi",
-    "description": "Özgün İslami bilgi kaynaklarını (Kur'an, Hadis, Tefsir, Miras) yapay zeka asistanları için tek bir yüksek hızlı arayüzde toplayan birleşik ağ geçidi."
+    "description": "Özgün İslami bilgi kaynaklarını (Kur'an, Hadis, Tefsir, Miras) olduğu gibi toplayan ve yapay zeka asistanları için hiçbir değişiklik yapmadan aktaran birleşik ağ geçidi."
   },
   "nav": {
     "brand": "Islamic Sources",
@@ -17,19 +17,21 @@
   "hero": {
     "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Tüm İslami Bilgi Kaynakları, <em>Tek Bir Arayüzde.</em>",
-    "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. @IslamicSources bağlantısını Gemini, Claude, Cursor veya Antigravity'ye bir kez bağlayın; Kur'an, Hadis, Tefsir ve klasik İslami eserlere yüksek hızlı önbellek desteğiyle erişin.",
+    "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. @IslamicSources bağlantısını Gemini, Claude, Cursor veya Antigravity'ye bir kez bağlayın. Tarafsız bir toplayıcı olarak kaynaklardan gelen yanıtları hiçbir değişiklik yapmadan kelimesi kelimesine aktarırız ve hizmet olduğu gibi ('as is') sağlanır.",
     "cta_copy": "Sunucu Ayarını Kopyala ←",
     "cta_explore": "Araçları İncele",
     "note_badge": "EDGE NATIVE",
-    "note_text": "Cloudflare Workers ile yerel kuruluma gerek olmadan çalışır"
+    "note_text": "Cloudflare Workers ile yerel kuruluma gerek olmadan çalışır",
+    "disclaimer_badge": "MÜDAHALESİZ TOPLAYICI",
+    "disclaimer_text": "@IslamicSources yalnızca bir toplayıcı olarak çalışır. Kaynaklardan gelen yanıtları asla eklemez, düzenlemez veya değiştirmeyiz; tüm içerik olduğu gibi ('as is') aktarılır."
   },
   "ledger": {
     "title": "Etki Kaydı",
     "status_active": "Ağ Geçidi Aktif",
     "flow1_title": "Dağınık Kaynaklar",
     "flow1_desc": "Farklı sunucular ve veri şemaları",
-    "flow2_title": "Birleşik Vakıf Ağ Geçidi",
-    "flow2_desc": "Şema standartlaştırma ve yüksek hızlı uç önbellek",
+    "flow2_title": "Birleşik Toplayıcı Ağ Geçidi",
+    "flow2_desc": "Müdahalesiz doğrudan aktarım ve yüksek hızlı önbellekleme",
     "flow3_title": "Güvenilir Yapay Zeka",
     "flow3_desc": "Günlük geliştirme araçlarınızda sahih alıntılar",
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
@@ -129,10 +131,13 @@
     "q2": "Bu hizmet ücretsiz mi?",
     "a2": "Evet, bu ağ geçidi kamu yararı için dijital bir vakıf olarak vakfedilmiştir.",
     "q3": "Gizlilik nasıl sağlanıyor?",
-    "a3": "Özel API anahtarlarınızı veya istemlerinizi saklamıyoruz. Yalnızca sistem sağlığını izlemek için anonimleştirilmiş ölçümler tutulur."
+    "a3": "Özel API anahtarlarınızı veya istemlerinizi saklamıyoruz. Yalnızca sistem sağlığını izlemek için anonimleştirilmiş ölçümler tutulur.",
+    "q4": "İslami kaynaklardan gelen yanıtlara ekleme, düzenleme veya değişiklik yapıyor musunuz?",
+    "a4": "Kesinlikle hayır. @IslamicSources yalnızca bir toplayıcı ve tarafsız ağ geçididir. Bağlı İslami sağlayıcılardan gelen hiçbir metni veya cevabı değiştirmez, ekleme yapmaz ve düzenlemeyiz; tüm veriler kelimesi kelimesine aktarılır ve hizmet olduğu gibi ('as is') sağlanır."
   },
   "footer": {
     "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",
+    "disclaimer": "Sorumluluk Reddi: @IslamicSources bağımsız bir toplayıcıdır. Kaynaklardan gelen yanıtları düzenlemez veya değiştirmeyiz; tüm içerik kelimesi kelimesine ve herhangi bir garanti olmaksızın olduğu gibi ('as is') sağlanır.",
     "rights": "© 2026 WAQFTECH.ORG — <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Vakıf Dijital Kamu Lisansı - Sürüm 1.0 (Waqf-DPL 1.0)</a> kapsamında lisanslanmıştır",
     "made_for": "Kalıcı etki niyetiyle tasarlandı"
   }

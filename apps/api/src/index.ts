@@ -269,6 +269,12 @@ export default {
             version: "1.0.0",
             protocolVersion: "2024-11-05",
             endpoint: "/mcp",
+            role: "aggregator",
+            disclaimer: {
+              type: "as-is-aggregator",
+              statement:
+                "Islamic Sources (@IslamicSources) is strictly an aggregator and federation gateway. We do not author, add, edit, or alter responses from upstream Islamic sources. All content is transmitted verbatim and the service is provided strictly on an 'as-is' basis without warranties.",
+            },
             organization: {
               name: "WaqfTech();",
               tagline: "Open-source Waqf Technology Foundation",

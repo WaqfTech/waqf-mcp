@@ -12,6 +12,12 @@ Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into
 - [License (Waqf-DPL 1.0)](https://github.com/WaqfTech/waqf-license-draft): Digital Waqf Public License.
 - [WaqfTech Foundation](https://waqftech.org/): Open-source Islamic technology foundation.
 
+## Aggregator & As-Is Transmission Notice
+
+> **IMPORTANT**: Islamic Sources (@IslamicSources) is strictly an aggregator and neutral edge gateway.
+> - **Zero Alteration**: We do not author, add, edit, or alter responses or texts from the underlying Islamic sources. All Quranic verses, Hadith narrations, Tafsir commentaries, and scholarly search results are relayed verbatim from their original upstream providers.
+> - **Provided "As Is"**: This service is provided on an "as is" and "as available" basis without warranties of any kind. For authoritative scholarly verification, consult the respective source institutions directly.
+
 ## Connection Endpoints
 
 - **Streamable HTTP (JSON-RPC 2.0)**: `POST https://mcp.waqf.dev/mcp`

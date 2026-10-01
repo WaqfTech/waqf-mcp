@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Islamic Sources (@IslamicSources) — Waqf MCP Gateway",
-    "description": "Unified edge gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath) into a single, high-speed interface for AI assistants."
+    "description": "Unified edge gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath) verbatim without modification, providing the service as is for AI assistants."
   },
   "nav": {
     "brand": "Islamic Sources",
@@ -17,19 +17,21 @@
   "hero": {
     "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "All Islamic Knowledge Sources, in <em>One Interface.</em>",
-    "lede": "Stop juggling dozens of independent MCP servers. Connect @IslamicSources once to Gemini, Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books with edge-caching and schema validation.",
+    "lede": "Stop juggling dozens of independent MCP servers. Connect @IslamicSources once to Gemini, Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books. As a neutral aggregator, we relay upstream responses verbatim without alteration, provided 'as is'.",
     "cta_copy": "Copy Server Config ←",
     "cta_explore": "Explore Tools",
     "note_badge": "EDGE NATIVE",
-    "note_text": "Powered by Cloudflare Workers with zero local installation"
+    "note_text": "Powered by Cloudflare Workers with zero local installation",
+    "disclaimer_badge": "UNALTERED AGGREGATOR",
+    "disclaimer_text": "@IslamicSources operates strictly as an aggregator. We do not add, edit, or alter responses from upstream Islamic sources; all data is transmitted verbatim and provided 'as is'."
   },
   "ledger": {
     "title": "Impact Ledger",
     "status_active": "Gateway Live",
     "flow1_title": "Fragmented Sources",
     "flow1_desc": "Multiple servers with divergent data schemas",
-    "flow2_title": "Unified Waqf Gateway",
-    "flow2_desc": "Schema normalization & high-speed edge caching",
+    "flow2_title": "Unified Aggregator Gateway",
+    "flow2_desc": "Unaltered relay: direct as-is transmission with edge caching",
     "flow3_title": "Reliable AI Output",
     "flow3_desc": "Authentic citations in your everyday developer tools",
     "footer_left": "PROTOCOL: MCP STREAMABLE HTTP",
@@ -129,10 +131,13 @@
     "q2": "Is this service free?",
     "a2": "Yes, this gateway is 100% open-source and endowed as a digital waqf for public benefit.",
     "q3": "How is privacy handled?",
-    "a3": "We do not store private API keys or personal prompts. Anonymized operational telemetry (country, tool called, response latency) is recorded strictly for health and capacity monitoring."
+    "a3": "We do not store private API keys or personal prompts. Anonymized operational telemetry (country, tool called, response latency) is recorded strictly for health and capacity monitoring.",
+    "q4": "Does @IslamicSources add, edit, or alter responses from the sources?",
+    "a4": "No. @IslamicSources operates strictly as an aggregator and neutral edge gateway. We do not author, add to, edit, or alter any response or text received from connected Islamic providers. All content is relayed verbatim and the service is provided strictly on an 'as is' basis without warranties."
   },
   "footer": {
     "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",
+    "disclaimer": "Disclaimer: @IslamicSources is an independent aggregator and gateway. We do not author, edit, or alter responses from upstream Islamic sources; all content is delivered verbatim and provided 'as is' without warranty.",
     "rights": "© 2026 WAQFTECH.ORG — Licensed under <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Waqf Digital Public License - Version 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Built with the intention of lasting impact"
   }

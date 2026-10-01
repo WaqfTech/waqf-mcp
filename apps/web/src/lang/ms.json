@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Sumber Islam (@IslamicSources) — Gerbang Waqf MCP",
-    "description": "Gerbang bersepadu yang menghimpunkan sumber ilmu Islam autentik (Al-Quran, Hadis, Tafsir, Turath) dalam satu antara muka berkelajuan tinggi untuk pembantu AI."
+    "description": "Gerbang edge bersepadu yang mengagregatkan sumber ilmu Islam autentik (Al-Quran, Hadis, Tafsir, Turath) seadanya tanpa ubah suai untuk pembantu AI."
   },
   "nav": {
     "brand": "Islamic Sources",
@@ -17,19 +17,21 @@
   "hero": {
     "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Semua Sumber Ilmu Islam, dalam <em>Satu Antara Muka.</em>",
-    "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Sambungkan @IslamicSources sekali sahaja ke Gemini, Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Quran, Hadis, Tafsir, dan kitab turath dengan cache pantas dan piawaian skema.",
+    "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Sambungkan @IslamicSources sekali sahaja ke Gemini, Claude Desktop, Cursor, atau Antigravity. Sebagai agregator neutral, kami menyampaikan maklum balas secara verbatim tanpa ubah suai, disediakan 'seadanya' (as is).",
     "cta_copy": "Salin Konfigurasi Pelayan ←",
     "cta_explore": "Terokai Alatan",
     "note_badge": "EDGE NATIVE",
-    "note_text": "Dikuasakan oleh Cloudflare Workers tanpa pemasangan tempatan"
+    "note_text": "Dikuasakan oleh Cloudflare Workers tanpa pemasangan tempatan",
+    "disclaimer_badge": "AGREGATOR TULIN",
+    "disclaimer_text": "@IslamicSources beroperasi semata-mata sebagai agregator. Kami tidak menambah, menyunting, atau mengubah maklum balas daripada sumber Islam asal; perkhidmatan ini disediakan seadanya ('as is')."
   },
   "ledger": {
     "title": "Buku Catatan Impak",
     "status_active": "Gerbang Beroperasi",
     "flow1_title": "Sumber Berselerak",
     "flow1_desc": "Pelbagai pelayan dengan skema data berbeza",
-    "flow2_title": "Gerbang Wakaf Bersepadu",
-    "flow2_desc": "Penyeragaman skema & cache pinggir berkelajuan tinggi",
+    "flow2_title": "Gerbang Agregator Bersepadu",
+    "flow2_desc": "Penghantaran seadanya tanpa ubah suai & caching tepi berkelajuan tinggi",
     "flow3_title": "AI Yang Diyakini",
     "flow3_desc": "Petikan sahih dalam alatan pembangunan harian anda",
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
@@ -129,10 +131,13 @@
     "q2": "Adakah perkhidmatan ini percuma?",
     "a2": "Ya, gerbang ini diwakafkan sepenuhnya secara terbuka untuk faedah umum.",
     "q3": "Bagaimanakah privasi data diuruskan?",
-    "a3": "Kami tidak menyimpan kunci API peribadi atau perbualan anda. Hanya data telemetri operasi tanpa nama direkodkan untuk pemantauan sistem."
+    "a3": "Kami tidak menyimpan kunci API peribadi atau perbualan anda. Hanya data telemetri operasi tanpa nama direkodkan untuk pemantauan sistem.",
+    "q4": "Adakah @IslamicSources menambah, menyunting, atau mengubah maklum balas daripada sumber Islam?",
+    "a4": "Sama sekali tidak. @IslamicSources berfungsi semata-mata sebagai agregator dan gerbang neutral. Kami tidak menambah, menyunting, menapis, atau mengubah maklum balas yang diterima daripada penyedia sumber Islam; semua teks disampaikan secara verbatim dan perkhidmatan ini disediakan 'seadanya' (as is) tanpa jaminan."
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membina aset teknikal terbuka dan menyelenggarakannya untuk manfaat berterusan.",
+    "disclaimer": "Penafian: @IslamicSources ialah agregator bebas. Kami tidak menyunting atau mengubah maklum balas daripada sumber Islam asal; semua kandungan disampaikan secara verbatim dan disediakan 'seadanya' (as is).",
     "rights": "© 2026 WAQFTECH.ORG — Dilesenkan di bawah <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Lesen Awam Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Direka dengan niat impak yang berpanjangan"
   }

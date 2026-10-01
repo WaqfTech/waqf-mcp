@@ -6,8 +6,15 @@ export const MCP_SERVER_CARD_JSON = JSON.stringify(
       title: "Islamic Sources (@IslamicSources)",
       version: "1.0.0",
       description:
-        "Edge-native Islamic knowledge gateway for AI assistants (@IslamicSources) connecting to Quran, Tafsir, Hadith, and Islamic scholarship sources.",
+        "Edge-native Islamic knowledge aggregator for AI assistants (@IslamicSources). Relays responses from authentic Quran, Tafsir, Hadith, and Turath sources verbatim without modification or alteration. Provided 'as is'.",
       websiteUrl: "https://mcp.waqf.dev",
+    },
+    disclaimer: {
+      role: "Aggregator",
+      unaltered: true,
+      warranty: "as-is",
+      statement:
+        "Islamic Sources is strictly an aggregator. We do not author, add, edit, or alter responses from upstream Islamic sources, and the service is provided as is without warranty.",
     },
     transport: {
       type: "streamable-http",

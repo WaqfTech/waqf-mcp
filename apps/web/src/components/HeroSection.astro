@@ -24,6 +24,14 @@ const { t } = Astro.props;
         <span class="badge-accent">{t.hero.note_badge}</span>
         <span>{t.hero.note_text}</span>
       </div>
+
+      <div class="hero-disclaimer-box" role="note">
+        <div class="disclaimer-header">
+          <span class="badge-disclaimer">{t.hero.disclaimer_badge}</span>
+          <span class="disclaimer-tag">AS-IS VERBATIM RELAY</span>
+        </div>
+        <p class="disclaimer-text">{t.hero.disclaimer_text}</p>
+      </div>
     </div>
 
     <aside class="ledger-box" aria-label={t.ledger.title}>
@@ -222,6 +230,43 @@ const { t } = Astro.props;
     margin-top: 10px;
     border-top: 1px solid var(--line);
     font: 700 11px var(--mono);
+    color: var(--soft);
+  }
+
+  .hero-disclaimer-box {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .disclaimer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .badge-disclaimer {
+    background: var(--lime);
+    color: var(--ink);
+    padding: 2px 7px;
+    font: 700 11px var(--mono);
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+  }
+
+  .disclaimer-tag {
+    font: 700 10px var(--mono);
+    color: var(--tide);
+    letter-spacing: 0.05em;
+  }
+
+  .disclaimer-text {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.6;
     color: var(--soft);
   }
 

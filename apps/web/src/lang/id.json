@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Sumber Islam (@IslamicSources) — Waqf MCP Gateway",
-    "description": "Gateway terpadu yang menggabungkan sumber pengetahuan Islam autentik (Al-Qur'an, Hadis, Tafsir, Turath) dalam satu antarmuka berkecepatan tinggi untuk asisten AI."
+    "description": "Gateway edge terpadu yang mengagregasikan sumber pengetahuan Islam autentik (Al-Qur'an, Hadis, Tafsir, Turats) apa adanya tanpa modifikasi untuk asisten AI."
   },
   "nav": {
     "brand": "Islamic Sources",
@@ -17,19 +17,21 @@
   "hero": {
     "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Semua Sumber Pengetahuan Islam, dalam <em>Satu Antarmuka.</em>",
-    "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup hubungkan @IslamicSources sekali ke Gemini, Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Qur'an, Hadits, Tafsir, dan kitab warisan Islam dengan caching cepat dan validasi skema.",
+    "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup hubungkan @IslamicSources sekali ke Gemini, Claude Desktop, Cursor, atau Antigravity. Sebagai agregator netral, kami meneruskan respons apa adanya tanpa perubahan, disediakan 'apa adanya' (as is).",
     "cta_copy": "Salin Konfigurasi Server ←",
     "cta_explore": "Jelajahi Alat",
     "note_badge": "EDGE NATIVE",
-    "note_text": "Didukung oleh Cloudflare Workers tanpa instalasi lokal"
+    "note_text": "Didukung oleh Cloudflare Workers tanpa instalasi lokal",
+    "disclaimer_badge": "AGREGATOR NETRAL",
+    "disclaimer_text": "@IslamicSources beroperasi murni sebagai agregator. Kami tidak menambah, mengedit, atau mengubah respons dari sumber Islam asli; layanan disediakan apa adanya ('as is')."
   },
   "ledger": {
     "title": "Buku Catatan Dampak",
     "status_active": "Gateway Aktif",
     "flow1_title": "Sumber Tersebar",
     "flow1_desc": "Banyak server dengan skema data berbeda",
-    "flow2_title": "Gateway Wakaf Terpadu",
-    "flow2_desc": "Standardisasi skema & cache edge berkecepatan tinggi",
+    "flow2_title": "Gateway Agregator Terpadu",
+    "flow2_desc": "Transmisi apa adanya tanpa modifikasi & cache tepi berkecepatan tinggi",
     "flow3_title": "AI Terpercaya",
     "flow3_desc": "Kutipan shahih dalam alat pengembangan sehari-hari Anda",
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
@@ -129,10 +131,13 @@
     "q2": "Apakah layanan ini gratis?",
     "a2": "Ya, gateway ini sepenuhnya diwakafkan secara terbuka untuk kemaslahatan umum.",
     "q3": "Bagaimana privasi dikelola?",
-    "a3": "Kami tidak menyimpan kunci API pribadi atau percakapan Anda. Hanya telemetri operasional anonim yang dicatat untuk pemantauan sistem."
+    "a3": "Kami tidak menyimpan kunci API pribadi atau percakapan Anda. Hanya telemetri operasional anonim yang dicatat untuk pemantauan sistem.",
+    "q4": "Apakah @IslamicSources menambah, mengedit, atau mengubah respons dari sumber Islam?",
+    "a4": "Sama sekali tidak. @IslamicSources beroperasi murni sebagai agregator dan gerbang transmisi netral. Kami tidak menambah, menyunting, memfilter, atau mengubah respons dari penyedia sumber Islam; semua konten diteruskan secara verbatim dan layanan disediakan 'apa adanya' (as is) tanpa jaminan."
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membangun aset teknologi terbuka dan merawatnya agar manfaatnya terus berlanjut.",
+    "disclaimer": "Pemberitahuan: @IslamicSources adalah agregator independen. Kami tidak menyunting atau mengubah respons dari sumber Islam hulu; semua konten disampaikan secara verbatim dan disediakan 'apa adanya' (as is).",
     "rights": "© 2026 WAQFTECH.ORG — Dilisensikan di bawah <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Lisensi Publik Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Dirancang untuk dampak yang berkelanjutan"
   }

@@ -49,13 +49,41 @@
   "config": {
     "eyebrow": "Kurulum / 03",
     "title": "Yapay Zeka Asistanınızı Bir Dakikada Yapılandırın.",
-    "subtitle": "Kullandığınız aracı seçin ve yapılandırma kodunu doğrudan kopyalayın.",
+    "subtitle": "Kullandığınız aracı veya web asistanını seçin ve kolay kurulum adımlarını izleyin.",
+    "group_web": "Web Asistanları",
+    "group_ide": "Geliştirici IDE'leri",
+    "tab_claude_web": "Claude.ai (Web)",
+    "tab_chatgpt_web": "ChatGPT (Web)",
+    "tab_gemini_web": "Gemini (Web / CLI)",
     "tab_claude": "Claude Desktop",
     "tab_cursor": "Cursor IDE",
     "tab_antigravity": "Antigravity",
     "tab_cline": "VS Code (Cline / Roo)",
     "copy_button": "Yapılandırmayı Kopyala",
+    "copy_url_button": "URL'yi Kopyala",
     "copied_button": "Kopyalandı!",
+    "server_url_label": "Uzak Sunucu URL'si",
+    "web_guide_title": "Kurulum Adımları",
+    "claude_web_steps": [
+      "claude.ai üzerinde sol alttaki profil simgenize tıklayarak Ayarlar'ı (Settings) açın.",
+      "Yan menüden 'Connectors' seçeneğini seçin ve 'Add custom connector' butonuna tıklayın.",
+      "İsim olarak 'WaqfTech Islamic Suite', URL olarak 'https://mcp.waqf.dev/mcp' girin.",
+      "'Add' butonuna tıklayarak kaydedin (OAuth kimlik doğrulaması gerekmez).",
+      "Sohbette '+' butonuna tıklayıp 'Connectors' altından WaqfTech bağlantısını etkinleştirin."
+    ],
+    "chatgpt_web_steps": [
+      "chatgpt.com üzerinde Ayarlar'ı açın ve 'Security and login' sekmesine gidin.",
+      "'Developer mode' seçeneğini açın.",
+      "Apps / Connectors bölümünde 'Create / Add Connection (+)' simgesine tıklayın.",
+      "İsim: 'WaqfTech Islamic Suite', Yöntem: 'HTTPS', Uç Nokta URL: 'https://mcp.waqf.dev/mcp', Kimlik Doğrulama: 'None' ayarlayın.",
+      "Sohbette '+' simgesine tıklayıp 'Developer mode' üzerinden İslami kaynaklara doğrudan erişin."
+    ],
+    "gemini_web_steps": [
+      "Gemini Web Notu: gemini.google.com şu an komut tabanlı Özel Gem'leri desteklemektedir; doğrudan MCP arayüzü Gemini Agent Platform ile kademeli olarak sunulmaktadır.",
+      "Seçenek A (Resmi Gemini CLI): 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' komutunu çalıştırarak araçları anında kullanın.",
+      "Seçenek B (Gemini Web Gem): gemini.google.com/gems adresinde özel bir Gem oluşturup sistem talimatlarını ekleyin.",
+      "Seçenek C (Gemini Enterprise): 'https://mcp.waqf.dev/mcp' adresine işaret eden bir StreamableHTTP MCP veri kaynağı yapılandırın."
+    ],
     "config_note": "İpucu: Yalnızca temel birleşik araçları görmek ve token tasarrufu sağlamak için '?suite=core' kullanabilirsiniz."
   },
   "submit": {

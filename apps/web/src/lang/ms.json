@@ -49,13 +49,41 @@
   "config": {
     "eyebrow": "Panduan Pantas / 03",
     "title": "Sediakan Pembantu AI Anda dalam Satu Minit.",
-    "subtitle": "Pilih aplikasi AI pilihan anda dan salin kod konfigurasi JSON secara terus.",
+    "subtitle": "Pilih aplikasi AI atau pembantu web pilihan anda dan ikuti langkah mudah berikut.",
+    "group_web": "Pembantu Web",
+    "group_ide": "Desktop & IDE",
+    "tab_claude_web": "Claude.ai (Web)",
+    "tab_chatgpt_web": "ChatGPT (Web)",
+    "tab_gemini_web": "Gemini (Web / CLI)",
     "tab_claude": "Claude Desktop",
     "tab_cursor": "Cursor IDE",
     "tab_antigravity": "Antigravity",
     "tab_cline": "VS Code (Cline / Roo)",
     "copy_button": "Salin Konfigurasi",
+    "copy_url_button": "Salin URL",
     "copied_button": "Disalin!",
+    "server_url_label": "URL Pelayan Remote",
+    "web_guide_title": "Langkah Penyediaan",
+    "claude_web_steps": [
+      "Buka Tetapan (Settings) di claude.ai melalui ikon profil di bahagian bawah sebelah kiri.",
+      "Pilih 'Connectors' dalam menu sisi, kemudian klik 'Add custom connector'.",
+      "Masukkan Nama: 'WaqfTech Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Klik 'Add' untuk menyimpan (tiada pengesahan OAuth diperlukan).",
+      "Dalam ruangan sembang, klik butang '+' berhampiran kotak mesej, pilih 'Connectors', dan aktifkan WaqfTech."
+    ],
+    "chatgpt_web_steps": [
+      "Buka Tetapan di chatgpt.com dan pergi ke bahagian 'Security and login'.",
+      "Aktifkan 'Developer mode'.",
+      "Pada bahagian Apps / Connectors, klik 'Create / Add Connection (+)'.",
+      "Tetapkan Nama: 'WaqfTech Islamic Suite', Kaedah: 'HTTPS', Endpoint URL: 'https://mcp.waqf.dev/mcp', dan Auth: 'None'.",
+      "Dalam sembang, klik ikon '+' dan pilih Developer mode untuk membuat carian sumber Islam."
+    ],
+    "gemini_web_steps": [
+      "Nota Gemini Web: gemini.google.com kini menyokong Custom Gems berasaskan arahan teks; penyambung MCP GUI langsung sedang dilancarkan melalui Gemini Agent Platform.",
+      "Pilihan A (Gemini CLI Rasmi): Jalankan 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' untuk menggunakan alatan secara langsung.",
+      "Pilihan B (Gemini Web Gem): Cipta Custom Gem di gemini.google.com/gems bersama arahan khusus yang merujuk kepada Waqf MCP.",
+      "Pilihan C (Gemini Enterprise): Sediakan stor data MCP tersuai StreamableHTTP yang merujuk kepada 'https://mcp.waqf.dev/mcp'."
+    ],
     "config_note": "Petua: Gunakan '?suite=core' untuk memaparkan alatan asas sahaja dan menjimatkan token konteks."
   },
   "submit": {

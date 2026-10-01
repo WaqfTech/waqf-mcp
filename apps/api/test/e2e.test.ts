@@ -258,6 +258,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/plain");
     const text = await res.text();
+    expect(text).toContain("Content-Signal: ai-train=no, search=yes, ai-input=yes");
     expect(text).toContain("User-agent: *");
     expect(text).toContain("Allow: /");
     expect(text).toContain("User-agent: OAI-SearchBot");

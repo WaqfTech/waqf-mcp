@@ -1,5 +1,8 @@
 export const ROBOTS_TXT = `# robots.txt for mcp.waqf.dev (RFC 9309)
 
+# Content Signals (https://contentsignals.org/)
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
 # Default crawler rules
 User-agent: *
 Allow: /

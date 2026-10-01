@@ -42,6 +42,12 @@
     "filter_all": "Semua Pelayan",
     "filter_quran": "Al-Quran & Tafsir",
     "filter_turath": "Hadis & Kitab Turath",
+    "tools_count_zero": "0 Alatan Aktif",
+    "tools_count_one": "1 Alatan Aktif",
+    "tools_count_two": "{count} Alatan Aktif",
+    "tools_count_few": "{count} Alatan Aktif",
+    "tools_count_many": "{count} Alatan Aktif",
+    "tools_count_other": "{count} Alatan Aktif",
     "tools_count_suffix": "Alatan Aktif",
     "active_badge": "Aktif & Disahkan",
     "view_source": "Pautan Sumber"

@@ -42,6 +42,12 @@
     "filter_all": "Tüm Sunucular",
     "filter_quran": "Kur'an ve Tefsir",
     "filter_turath": "Hadis ve Miras Kitapları",
+    "tools_count_zero": "0 Araç Etkin",
+    "tools_count_one": "1 Araç Etkin",
+    "tools_count_two": "{count} Araç Etkin",
+    "tools_count_few": "{count} Araç Etkin",
+    "tools_count_many": "{count} Araç Etkin",
+    "tools_count_other": "{count} Araç Etkin",
     "tools_count_suffix": "Araç Etkin",
     "active_badge": "Aktif ve Doğrulanmış",
     "view_source": "Kaynak Bağlantısı"

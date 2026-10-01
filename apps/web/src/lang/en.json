@@ -42,6 +42,12 @@
     "filter_all": "All Servers",
     "filter_quran": "Quran & Tafsir",
     "filter_turath": "Hadith & Heritage Books",
+    "tools_count_zero": "0 Tools Enabled",
+    "tools_count_one": "1 Tool Enabled",
+    "tools_count_two": "{count} Tools Enabled",
+    "tools_count_few": "{count} Tools Enabled",
+    "tools_count_many": "{count} Tools Enabled",
+    "tools_count_other": "{count} Tools Enabled",
     "tools_count_suffix": "Tools Enabled",
     "active_badge": "Live & Verified",
     "view_source": "Source URL"

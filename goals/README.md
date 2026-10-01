@@ -29,10 +29,19 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 ## Summary
 - **Total Goals**: 27
 - 🟢 **Implemented & Verified**: 12
-- 🟡 **Ready to Execute (Pending)**: 1 (1 independent ⚡, 0 unblocked 🔗)
+- 🔵 **In Progress (Claimed)**: 1
+- 🟡 **Ready to Execute (Pending)**: 0 (0 independent ⚡, 0 unblocked 🔗)
 - ⛔ **Blocked on Prerequisites**: 14
 - 🎯 **By Tier**: 26 immediate (Tier 1), 1 roadmap (Tier 2), 0 nice-to-have (Tier 3), 0 wont-fix (Tier 4)
 - 📋 **Execution Tasks Progress**: 53/100 completed (53%)
+
+---
+
+## 🔵 In Progress (Claimed Goals)
+
+| Goal Package | Tier | Mode | Agent | Status & Note | Started |
+| :--- | :---: | :---: | :--- | :--- | :--- |
+| [`publish-robots-txt-crawl-rules`](publish-robots-txt-crawl-rules/goal.md) | `🎯 Immediate` | `⚡ Indep` | `@antigravity` | in progress | 0s ago |
 
 ---
 
@@ -40,7 +49,6 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 
 | Goal Package | Tier | Mode & Sequence | Dependencies | Focus & Description | Launch Command |
 | :--- | :---: | :---: | :--- | :--- | :--- |
-| [`publish-robots-txt-crawl-rules`](publish-robots-txt-crawl-rules/goal.md) | `🎯 Immediate` | `🚢 SHIP ⚡ Independent` | - | Publish /robots.txt with Clear Crawl Rules — Create /robots.txt at site root with explicit User-agent directives and allow/di... | `/goal goals/publish-robots-txt-crawl-rules/goal.md` |
 | [`ai-crawler-robots-rules`](ai-crawler-robots-rules/goal.md) | `🎯 Immediate` | `🚢 SHIP ⛔ Blocked` | Prereqs: publish-robots-txt-crawl-rules | Add User-Agent Rules for AI Crawlers in robots.txt — Add explicit User-agent entries for AI crawlers (OAI-SearchBot, Claude-SearchBot... | `/goal goals/ai-crawler-robots-rules/goal.md` |
 | [`content-signals-declaration`](content-signals-declaration/goal.md) | `🎯 Immediate` | `🚢 SHIP ⛔ Blocked` | Prereqs: ai-crawler-robots-rules | Declare AI Content Usage Preferences with Content Signals in robots.txt — Add Content-Signal directives to robots.txt declaring preferences for ai-train, ... | `/goal goals/content-signals-declaration/goal.md` |
 | [`publish-sitemap-xml`](publish-sitemap-xml/goal.md) | `🎯 Immediate` | `🚢 SHIP ⛔ Blocked` | Prereqs: content-signals-declaration | Publish Sitemap and Reference from robots.txt — Generate /sitemap.xml listing canonical URLs, keep it updated on publish, and re... | `/goal goals/publish-sitemap-xml/goal.md` |

@@ -4,6 +4,7 @@ import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
 import { createDb, mcpSubmissions } from "@waqf/db";
 import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
+import { ROBOTS_TXT } from "./robots";
 
 export interface Env {
   DB: D1Database;
@@ -59,6 +60,16 @@ export default {
 
     if (request.method === "GET" && pathname === "/llms-full.txt") {
       return new Response(LLMS_FULL_TXT, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...CORS_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/robots.txt") {
+      return new Response(ROBOTS_TXT, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
           "Cache-Control": "public, max-age=3600",

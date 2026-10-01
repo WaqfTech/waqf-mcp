@@ -9,3 +9,4 @@ dist/
 
 # Ephemeral goal claim locks (managed by sila)
 goals/*/claim.json
+.sila/

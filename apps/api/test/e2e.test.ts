@@ -250,5 +250,16 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("tafsir_net__fetch_ayah");
     expect(text).toContain("fihris__search_islamic_sources");
   });
+
+  it("GET /robots.txt returns crawl rules with 200 and text/plain", async () => {
+    const req = new Request("http://localhost:8787/robots.txt");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/plain");
+    const text = await res.text();
+    expect(text).toContain("User-agent: *");
+    expect(text).toContain("Allow: /");
+  });
 });
 

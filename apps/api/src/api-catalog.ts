@@ -1,0 +1,48 @@
+export const API_CATALOG_JSON = JSON.stringify(
+  {
+    linkset: [
+      {
+        anchor: "https://mcp.waqf.dev/mcp",
+        "service-desc": [
+          {
+            href: "https://mcp.waqf.dev/.well-known/mcp/server-card.json",
+            type: "application/json",
+          },
+        ],
+        "service-doc": [
+          {
+            href: "https://mcp.waqf.dev/llms-full.txt",
+            type: "text/markdown",
+          },
+          {
+            href: "https://mcp.waqf.dev/#setup",
+            type: "text/html",
+          },
+        ],
+        status: [
+          {
+            href: "https://mcp.waqf.dev/health",
+            type: "application/json",
+          },
+        ],
+      },
+      {
+        anchor: "https://mcp.waqf.dev/",
+        "service-doc": [
+          {
+            href: "https://mcp.waqf.dev/llms.txt",
+            type: "text/markdown",
+          },
+        ],
+        status: [
+          {
+            href: "https://mcp.waqf.dev/health",
+            type: "application/json",
+          },
+        ],
+      },
+    ],
+  },
+  null,
+  2
+);

@@ -315,5 +315,17 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.headers.get("Content-Type")).toContain("text/markdown");
     expect(res.headers.get("x-markdown-tokens")).toBeTruthy();
   });
+
+  it("GET /.well-known/api-catalog returns RFC 9727 linkset with application/linkset+json", async () => {
+    const req = new Request("http://localhost:8787/.well-known/api-catalog");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/linkset+json");
+    const data = (await res.json()) as { linkset: Array<{ anchor: string; "service-desc"?: unknown[]; "service-doc"?: unknown[]; status?: unknown[] }> };
+    expect(Array.isArray(data.linkset)).toBe(true);
+    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/mcp")).toBe(true);
+    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/")).toBe(true);
+  });
 });
 

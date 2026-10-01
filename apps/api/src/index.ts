@@ -6,6 +6,7 @@ import { createDb, mcpSubmissions } from "@waqf/db";
 import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
 import { ROBOTS_TXT } from "./robots";
 import { SITEMAP_XML } from "./sitemap";
+import { API_CATALOG_JSON } from "./api-catalog";
 
 export interface Env {
   DB: D1Database;
@@ -97,6 +98,16 @@ export default {
           "Content-Type": "application/xml; charset=utf-8",
           "Cache-Control": "public, max-age=3600",
           ...CORS_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/.well-known/api-catalog") {
+      return new Response(API_CATALOG_JSON, {
+        headers: {
+          "Content-Type": "application/linkset+json; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
         },
       });
     }

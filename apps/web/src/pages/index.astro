@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HeroSection from "../components/HeroSection.astro";
+import ServersSection from "../components/ServersSection.astro";
+import ConfigSection from "../components/ConfigSection.astro";
+import SubmitForm from "../components/SubmitForm.astro";
+import FaqSection from "../components/FaqSection.astro";
+import { getTranslations } from "../lib/i18n";
+
+export const prerender = true;
+
+const t = getTranslations("ar");
+---
+
+<BaseLayout lang="ar">
+  <HeroSection t={t} />
+  <ServersSection t={t} />
+  <ConfigSection t={t} />
+  <SubmitForm t={t} />
+  <FaqSection t={t} />
+</BaseLayout>

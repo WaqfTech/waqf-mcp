@@ -1,0 +1,233 @@
+---
+import type { getTranslations } from "../lib/i18n";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="hero-section">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">{t.hero.eyebrow}</div>
+      <h1 set:html={t.hero.title_html} />
+      <p class="hero-lede">{t.hero.lede}</p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#setup">{t.hero.cta_copy}</a>
+        <a class="btn btn-secondary" href="#servers">{t.hero.cta_explore}</a>
+      </div>
+
+      <div class="hero-badge-note">
+        <span class="badge-accent">{t.hero.note_badge}</span>
+        <span>{t.hero.note_text}</span>
+      </div>
+    </div>
+
+    <aside class="ledger-box" aria-label={t.ledger.title}>
+      <div class="ledger-head">
+        <strong>{t.ledger.title}</strong>
+        <span class="live-pill">{t.ledger.status_active}</span>
+      </div>
+
+      <div class="ledger-flow">
+        <div class="flow-step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <b>{t.ledger.flow1_title}</b>
+            <span>{t.ledger.flow1_desc}</span>
+          </div>
+        </div>
+
+        <div class="flow-line"></div>
+
+        <div class="flow-step highlight">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <b>{t.ledger.flow2_title}</b>
+            <span>{t.ledger.flow2_desc}</span>
+          </div>
+        </div>
+
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <b>{t.ledger.flow3_title}</b>
+            <span>{t.ledger.flow3_desc}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ledger-foot">
+        <span>{t.ledger.footer_left}</span>
+        <span>{t.ledger.footer_right}</span>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .hero-section {
+    padding: 70px 0 60px;
+    border-bottom: 1px solid var(--line);
+    background: radial-gradient(circle at 80% 20%, rgba(198, 238, 103, 0.15), transparent 40%);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: clamp(34px, 4.8vw, 56px);
+    line-height: 1.18;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 20px;
+    color: var(--ink);
+  }
+
+  h1 :global(em) {
+    font-style: normal;
+    color: var(--tide);
+    position: relative;
+  }
+
+  h1 :global(em)::after {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    inset-inline: -4px;
+    height: 10px;
+    background: var(--lime);
+    z-index: -1;
+    transform: skewX(-8deg);
+  }
+
+  .hero-lede {
+    font-size: 19px;
+    line-height: 1.8;
+    color: var(--soft);
+    margin: 0 0 28px;
+    max-width: 600px;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .hero-badge-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--soft);
+  }
+
+  .badge-accent {
+    background: var(--ink);
+    color: var(--lime);
+    padding: 3px 8px;
+    font: 700 11px var(--mono);
+    border-radius: 2px;
+  }
+
+  /* Ledger Box */
+  .ledger-box {
+    background: var(--white);
+    border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    padding: 24px;
+  }
+
+  .ledger-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+
+  .live-pill {
+    font: 700 11px var(--mono);
+    color: var(--tide);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .live-pill::before {
+    content: "●";
+    color: #22c55e;
+  }
+
+  .ledger-flow {
+    padding: 20px 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--paper);
+    border-inline-start: 4px solid var(--line);
+  }
+
+  .flow-step.highlight {
+    border-inline-start-color: var(--tide);
+    background: #e4efe9;
+  }
+
+  .step-num {
+    font: 700 13px var(--mono);
+    color: var(--tide);
+  }
+
+  .step-content b {
+    display: block;
+    font-size: 15px;
+    color: var(--ink);
+  }
+
+  .step-content span {
+    font-size: 13px;
+    color: var(--soft);
+  }
+
+  .flow-line {
+    width: 2px;
+    height: 12px;
+    background: var(--line);
+    margin-inline-start: 22px;
+  }
+
+  .ledger-foot {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 14px;
+    margin-top: 10px;
+    border-top: 1px solid var(--line);
+    font: 700 11px var(--mono);
+    color: var(--soft);
+  }
+
+  @media (max-width: 860px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

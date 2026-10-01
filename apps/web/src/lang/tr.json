@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "Vakıf Tech — İslami Model Context Protocol Birleştiricisi (Waqf MCP)",
+    "description": "İslami yapay zeka araçlarını tek bir yüksek hızlı arayüzde toplayan birleşik ağ geçidi."
+  },
+  "nav": {
+    "brand": "Waqf MCP",
+    "servers": "Bağlı Sunucular",
+    "setup": "Kurulum",
+    "submit": "Sunucu Ekle",
+    "docs": "Belgeler",
+    "lang_label": "Dil"
+  },
+  "announcement": {
+    "text": "Birleşik İslami Model Context Protocol (MCP) Ağ Geçidi — Kalıcı Dijital Vakıf"
+  },
+  "hero": {
+    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "title_html": "Tüm İslami Bilgi Kaynakları, <em>Tek Bir Arayüzde.</em>",
+    "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. mcp.waqf.dev adresini Claude, Cursor veya Antigravity'ye bir kez ekleyin; Kur'an, Hadis, Tefsir ve klasik İslami eserlere yüksek hızlı önbellek desteğiyle erişin.",
+    "cta_copy": "Sunucu Ayarını Kopyala ←",
+    "cta_explore": "Araçları İncele",
+    "note_badge": "EDGE NATIVE",
+    "note_text": "Cloudflare Workers ile yerel kuruluma gerek olmadan çalışır"
+  },
+  "ledger": {
+    "title": "Etki Kaydı",
+    "status_active": "Ağ Geçidi Aktif",
+    "flow1_title": "Dağınık Kaynaklar",
+    "flow1_desc": "Farklı sunucular ve veri şemaları",
+    "flow2_title": "Birleşik Vakıf Ağ Geçidi",
+    "flow2_desc": "Şema standartlaştırma ve yüksek hızlı uç önbellek",
+    "flow3_title": "Güvenilir Yapay Zeka",
+    "flow3_desc": "Günlük geliştirme araçlarınızda sahih alıntılar",
+    "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
+    "footer_right": "Kalıcı Dijital Vakıf"
+  },
+  "servers": {
+    "eyebrow": "Bağlı Sunucular / 02",
+    "title": "Tek Bir Portföyde Güvenilir Kaynaklar.",
+    "subtitle": "Önde gelen İslami yazılım girişimlerini tek bir ad alanında birleştiriyoruz.",
+    "filter_all": "Tüm Sunucular",
+    "filter_quran": "Kur'an ve Tefsir",
+    "filter_turath": "Hadis ve Miras Kitapları",
+    "tools_count_suffix": "Araç Etkin",
+    "active_badge": "Aktif ve Doğrulanmış",
+    "view_source": "Kaynak Bağlantısı"
+  },
+  "config": {
+    "eyebrow": "Kurulum / 03",
+    "title": "Yapay Zeka Asistanınızı Bir Dakikada Yapılandırın.",
+    "subtitle": "Kullandığınız aracı seçin ve yapılandırma kodunu doğrudan kopyalayın.",
+    "tab_claude": "Claude Desktop",
+    "tab_cursor": "Cursor IDE",
+    "tab_antigravity": "Antigravity",
+    "tab_cline": "VS Code (Cline / Roo)",
+    "copy_button": "Yapılandırmayı Kopyala",
+    "copied_button": "Kopyalandı!",
+    "config_note": "İpucu: Yalnızca temel birleşik araçları görmek ve token tasarrufu sağlamak için '?suite=core' kullanabilirsiniz."
+  },
+  "submit": {
+    "eyebrow": "Topluluk Girişimi / 04",
+    "title": "İslami bir MCP Sunucusu mu Geliştirdiniz?",
+    "subtitle": "Sunucunuzu ekleyin; dünya çapındaki geliştiricilerin ve yapay zeka modellerinin kullanımına açılsın.",
+    "form_name": "Adınız veya Kuruluşunuz",
+    "form_email": "İletişim E-postası",
+    "form_server_name": "Sunucu Adı",
+    "form_server_url": "Sunucu Uç Nokta URL'si (MCP Endpoint)",
+    "form_category": "Kategori",
+    "cat_quran": "Kur'an ve İlimleri",
+    "cat_hadith": "Hadis Literatürü",
+    "cat_tafsir": "Tefsir ve Araştırmalar",
+    "cat_fiqh": "Fıkıh ve Ansiklopediler",
+    "cat_tools": "İslami Araçlar ve Vakitler",
+    "form_desc": "Sunucu Açıklaması ve Mevcut Araçlar",
+    "form_desc_placeholder": "Sunucunuz, geliştirici geçmişi ve sunduğu araçlar hakkında kısa bilgi verin...",
+    "form_submit": "İnceleme İçin Gönder",
+    "form_submitting": "Gönderiliyor...",
+    "form_success": "Teşekkürler! Sunucu başvurunuz alındı ve en kısa sürede incelenecektir.",
+    "form_error": "Gönderim sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin."
+  },
+  "faq": {
+    "eyebrow": "SSS / 05",
+    "title": "Sıkça Sorulan Sorular",
+    "q1": "Neden her sunucuyu ayrı eklemek yerine mcp.waqf.dev kullanmalıyım?",
+    "a1": "Tek bir yapılandırma ile 10'dan fazla sunucuyu yönetme zahmetinden kurtulur, araç adı çakışmalarını önler ve hızlı uç önbellekten yararlanırsınız.",
+    "q2": "Bu hizmet ücretsiz mi?",
+    "a2": "Evet, bu ağ geçidi kamu yararı için dijital bir vakıf olarak vakfedilmiştir.",
+    "q3": "Gizlilik nasıl sağlanıyor?",
+    "a3": "Özel API anahtarlarınızı veya istemlerinizi saklamıyoruz. Yalnızca sistem sağlığını izlemek için anonimleştirilmiş ölçümler tutulur."
+  },
+  "footer": {
+    "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",
+    "rights": "© 2026 WAQFTECH.ORG — Allah rızası için vakfedilmiştir",
+    "made_for": "Kalıcı etki niyetiyle tasarlandı"
+  }
+}

@@ -1,0 +1,248 @@
+---
+import type { getTranslations } from "../lib/i18n";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+
+const CLAUDE_CONFIG = JSON.stringify(
+  {
+    mcpServers: {
+      "waqf-islamic-suite": {
+        url: "https://mcp.waqf.dev/mcp",
+      },
+    },
+  },
+  null,
+  2
+);
+
+const CURSOR_CONFIG = JSON.stringify(
+  {
+    mcpServers: {
+      "waqf-islamic-suite": {
+        url: "https://mcp.waqf.dev/mcp",
+      },
+    },
+  },
+  null,
+  2
+);
+
+const ANTIGRAVITY_CONFIG = JSON.stringify(
+  {
+    mcpServers: {
+      "waqf-islamic-suite": {
+        url: "https://mcp.waqf.dev/mcp",
+      },
+    },
+  },
+  null,
+  2
+);
+
+const CLINE_CONFIG = JSON.stringify(
+  {
+    mcpServers: {
+      "waqf-islamic-suite": {
+        url: "https://mcp.waqf.dev/mcp",
+      },
+    },
+  },
+  null,
+  2
+);
+---
+
+<section id="setup" class="config-section">
+  <div class="shell">
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">{t.config.eyebrow}</div>
+        <h2>{t.config.title}</h2>
+      </div>
+      <p class="section-desc">{t.config.subtitle}</p>
+    </div>
+
+    <div class="config-box">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="claude">{t.config.tab_claude}</button>
+        <button class="tab-btn" data-tab="cursor">{t.config.tab_cursor}</button>
+        <button class="tab-btn" data-tab="antigravity">{t.config.tab_antigravity}</button>
+        <button class="tab-btn" data-tab="cline">{t.config.tab_cline}</button>
+      </div>
+
+      <div class="code-container">
+        <pre><code id="config-code">{CLAUDE_CONFIG}</code></pre>
+        <button id="copy-btn" class="copy-action-btn" data-copied-text={t.config.copied_button}>
+          <span id="copy-text">{t.config.copy_button}</span>
+        </button>
+      </div>
+
+      <div class="config-footer">
+        <span class="tip-icon">💡</span>
+        <span>{t.config.config_note}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ CLAUDE_CONFIG, CURSOR_CONFIG, ANTIGRAVITY_CONFIG, CLINE_CONFIG }}>
+  const configs = {
+    claude: CLAUDE_CONFIG,
+    cursor: CURSOR_CONFIG,
+    antigravity: ANTIGRAVITY_CONFIG,
+    cline: CLINE_CONFIG,
+  };
+
+  const codeEl = document.getElementById("config-code");
+  const copyBtn = document.getElementById("copy-btn");
+  const copyText = document.getElementById("copy-text");
+  const originalText = copyText ? copyText.textContent : "Copy";
+  const copiedText = copyBtn ? copyBtn.getAttribute("data-copied-text") : "Copied!";
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.getAttribute("data-tab");
+      if (codeEl && configs[tab]) {
+        codeEl.textContent = configs[tab];
+      }
+    });
+  });
+
+  if (copyBtn && codeEl) {
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(codeEl.textContent);
+        if (copyText) copyText.textContent = copiedText;
+        copyBtn.classList.add("copied");
+        setTimeout(() => {
+          if (copyText) copyText.textContent = originalText;
+          copyBtn.classList.remove("copied");
+        }, 2000);
+      } catch (err) {
+        console.error("Clipboard write error:", err);
+      }
+    });
+  }
+</script>
+
+<style>
+  .config-section {
+    padding: 70px 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    max-width: 440px;
+    color: var(--soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .config-box {
+    background: #081d28;
+    border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    background: #0e2735;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a9bfbb;
+    font: 700 14px "Tajawal", sans-serif;
+    padding: 14px 20px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .tab-btn:hover {
+    color: var(--white);
+  }
+
+  .tab-btn.active {
+    background: #081d28;
+    color: var(--lime);
+    border-block-end: 2px solid var(--lime);
+  }
+
+  .code-container {
+    position: relative;
+    padding: 24px;
+    overflow-x: auto;
+  }
+
+  pre {
+    margin: 0;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.6;
+    color: #dbe9e4;
+  }
+
+  .copy-action-btn {
+    position: absolute;
+    top: 20px;
+    inset-inline-end: 20px;
+    background: var(--lime);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 8px 16px;
+    font: 700 13px "Tajawal", sans-serif;
+    box-shadow: 3px 3px 0 var(--tide);
+    transition: transform 0.15s;
+  }
+
+  .copy-action-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .copy-action-btn.copied {
+    background: var(--tide);
+    color: var(--white);
+  }
+
+  .config-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    background: #06161f;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 13px;
+    color: #cbd9d5;
+  }
+</style>

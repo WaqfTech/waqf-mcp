@@ -1,0 +1,237 @@
+---
+import type { getTranslations } from "../lib/i18n";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+
+const SERVERS = [
+  {
+    id: "tafsir_net",
+    name: "Tafsir.net Specialized Suite",
+    provider: "مركز تفسير للدراسات القرآنية",
+    url: "https://mcp.tafsir.net/mcp",
+    toolsCount: 17,
+    category: "quran",
+    tools: ["fetch_ayah", "fetch_tafsir", "list_tafsir_sources", "get_qeraat_variants", "analyze_word"],
+    desc: "أدوات متخصصة في التفسير القرآني الموثق، أسباب النزول، القراءات، وغريب القرآن الكريم.",
+  },
+  {
+    id: "bahouth",
+    name: "Bahouth Quran & Tafsir",
+    provider: "مشروع باحث القرآني",
+    url: "https://bahouth.tafsir.net/mcp",
+    toolsCount: 9,
+    category: "quran",
+    tools: ["get_verse", "list_surah_verses", "find_root", "list_verse_words", "list_verse_topics"],
+    desc: "محرك تحليلي لجذور كلمات القرآن، التراكيب الصرفية، ورسم المصحف الشريف.",
+  },
+  {
+    id: "turath",
+    name: "Turath Islamic Heritage Library",
+    provider: "مكتبة تراث الإسلامية",
+    url: "https://mcp.turath.io/mcp/",
+    toolsCount: 5,
+    category: "turath",
+    tools: ["discover_turath", "search_turath", "get_book", "get_page", "get_author"],
+    desc: "فهرسة وبحث شامل في آلاف أمهات الكتب والمصنفات التراثية وكتب الحديث الشريف.",
+  },
+  {
+    id: "maheralfahel",
+    name: "Sheikh Maher Al-Fahel Library",
+    provider: "الموقع العلمي للشيخ ماهر الفحل",
+    url: "https://maheralfahel.net/mcp/",
+    toolsCount: 5,
+    category: "turath",
+    tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
+    desc: "كتب وتحقيقات في علم الحديث ومصطلح الحديث والمصنفات الفقهية المحققة.",
+  },
+];
+---
+
+<section id="servers" class="servers-section">
+  <div class="shell">
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">{t.servers.eyebrow}</div>
+        <h2>{t.servers.title}</h2>
+      </div>
+      <p class="section-desc">{t.servers.subtitle}</p>
+    </div>
+
+    <div class="servers-grid">
+      {SERVERS.map((server) => (
+        <article class="server-card">
+          <div class="card-top">
+            <div>
+              <h3>{server.name}</h3>
+              <span class="provider-pill">{server.provider}</span>
+            </div>
+            <span class="status-badge">{t.servers.active_badge}</span>
+          </div>
+
+          <p class="server-desc">{server.desc}</p>
+
+          <div class="tools-preview">
+            <span class="tools-count">{server.toolsCount} {t.servers.tools_count_suffix}</span>
+            <div class="tools-chips">
+              {server.tools.map((tool) => (
+                <code>{tool}</code>
+              ))}
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <span class="category-tag">{server.category === "quran" ? t.servers.filter_quran : t.servers.filter_turath}</span>
+            <a href={server.url} target="_blank" rel="noopener noreferrer" class="source-link">
+              {t.servers.view_source} ↗
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .servers-section {
+    padding: 70px 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    max-width: 440px;
+    color: var(--soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .servers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .server-card {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s;
+  }
+
+  .server-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
+  .provider-pill {
+    font-size: 13px;
+    color: var(--tide);
+    font-weight: 700;
+  }
+
+  .status-badge {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    font: 700 11px var(--mono);
+    padding: 3px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .server-desc {
+    font-size: 15px;
+    color: var(--soft);
+    line-height: 1.6;
+    margin: 0 0 16px;
+  }
+
+  .tools-preview {
+    margin: 12px 0 18px;
+    padding: 12px;
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+
+  .tools-count {
+    display: block;
+    font: 700 11px var(--mono);
+    color: var(--tide);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .tools-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tools-chips code {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+
+  .category-tag {
+    font: 700 11px var(--mono);
+    color: var(--soft);
+  }
+
+  .source-link {
+    font-weight: 800;
+    color: var(--tide);
+  }
+</style>

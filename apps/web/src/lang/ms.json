@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "Waqf Tech — Pengagregat Model Context Protocol Islam (Waqf MCP)",
+    "description": "Gerbang bersepadu yang menghimpunkan alatan kecerdasan buatan Islam dan pelayan MCP dalam satu titik sambungan berkelajuan tinggi."
+  },
+  "nav": {
+    "brand": "Waqf MCP",
+    "servers": "Pelayan Tersambung",
+    "setup": "Panduan Konfigurasi",
+    "submit": "Hantar Pelayan",
+    "docs": "Dokumentasi",
+    "lang_label": "Bahasa"
+  },
+  "announcement": {
+    "text": "Gerbang Model Context Protocol (MCP) Islam Bersepadu — Aset Wakaf Digital"
+  },
+  "hero": {
+    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "title_html": "Semua Sumber Ilmu Islam, dalam <em>Satu Antara Muka.</em>",
+    "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Tambahkan mcp.waqf.dev sekali sahaja ke Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Quran, Hadis, Tafsir, dan kitab turath dengan cache pantas dan piawaian skema.",
+    "cta_copy": "Salin Konfigurasi Pelayan ←",
+    "cta_explore": "Terokai Alatan",
+    "note_badge": "EDGE NATIVE",
+    "note_text": "Dikuasakan oleh Cloudflare Workers tanpa pemasangan tempatan"
+  },
+  "ledger": {
+    "title": "Buku Catatan Impak",
+    "status_active": "Gerbang Beroperasi",
+    "flow1_title": "Sumber Berselerak",
+    "flow1_desc": "Pelbagai pelayan dengan skema data berbeza",
+    "flow2_title": "Gerbang Wakaf Bersepadu",
+    "flow2_desc": "Penyeragaman skema & cache pinggir berkelajuan tinggi",
+    "flow3_title": "AI Yang Diyakini",
+    "flow3_desc": "Petikan sahih dalam alatan pembangunan harian anda",
+    "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
+    "footer_right": "Wakaf Digital Berkekalan"
+  },
+  "servers": {
+    "eyebrow": "Pelayan Tersambung / 02",
+    "title": "Sumber Sahih dalam Satu Portfolio.",
+    "subtitle": "Menghubungkan inisiatif perisian Islam terkemuka di bawah satu ruang nama yang serasi.",
+    "filter_all": "Semua Pelayan",
+    "filter_quran": "Al-Quran & Tafsir",
+    "filter_turath": "Hadis & Kitab Turath",
+    "tools_count_suffix": "Alatan Aktif",
+    "active_badge": "Aktif & Disahkan",
+    "view_source": "Pautan Sumber"
+  },
+  "config": {
+    "eyebrow": "Panduan Pantas / 03",
+    "title": "Sediakan Pembantu AI Anda dalam Satu Minit.",
+    "subtitle": "Pilih aplikasi AI pilihan anda dan salin kod konfigurasi JSON secara terus.",
+    "tab_claude": "Claude Desktop",
+    "tab_cursor": "Cursor IDE",
+    "tab_antigravity": "Antigravity",
+    "tab_cline": "VS Code (Cline / Roo)",
+    "copy_button": "Salin Konfigurasi",
+    "copied_button": "Disalin!",
+    "config_note": "Petua: Gunakan '?suite=core' untuk memaparkan alatan asas sahaja dan menjimatkan token konteks."
+  },
+  "submit": {
+    "eyebrow": "Inisiatif Komuniti / 04",
+    "title": "Membangunkan Pelayan MCP Islam?",
+    "subtitle": "Hantarkan pelayan anda agar dapat dimanfaatkan oleh pembangun dan model AI seluruh dunia sebagai wakaf digital.",
+    "form_name": "Nama Anda atau Organisasi",
+    "form_email": "E-mel Hubungan",
+    "form_server_name": "Nama Pelayan",
+    "form_server_url": "URL Titik Sambungan Pelayan (MCP Endpoint)",
+    "form_category": "Kategori Kandungan",
+    "cat_quran": "Al-Quran & Ulum Quran",
+    "cat_hadith": "Hadis & Riwayat",
+    "cat_tafsir": "Tafsir & Kajian",
+    "cat_fiqh": "Fikah & Ensiklopedia",
+    "cat_tools": "Alatan & Waktu Solat",
+    "form_desc": "Penerangan Pelayan & Alatan Utama",
+    "form_desc_placeholder": "Terangkan secara ringkas pelayan anda, latar belakang pembangun, dan fungsi yang disediakan...",
+    "form_submit": "Hantar untuk Semakan",
+    "form_submitting": "Menghantar...",
+    "form_success": "Terima kasih! Permohonan anda telah diterima dan akan disemak dalam masa terdekat.",
+    "form_error": "Ralat berlaku semasa menghantar. Sila semak maklumat anda dan cuba lagi."
+  },
+  "faq": {
+    "eyebrow": "Soalan Lazim / 05",
+    "title": "Soalan Kerap Ditanya",
+    "q1": "Mengapa menggunakan mcp.waqf.dev berbanding menambah setiap pelayan secara individu?",
+    "a1": "Satu konfigurasi mengelakkan pengurusan lebih 10 pelayan, mencegah pertembungan nama alatan, menyimpan teks sahih dalam cache pinggir, dan menjimatkan token prompt AI anda.",
+    "q2": "Adakah perkhidmatan ini percuma?",
+    "a2": "Ya, gerbang ini diwakafkan sepenuhnya secara terbuka untuk faedah umum.",
+    "q3": "Bagaimanakah privasi data diuruskan?",
+    "a3": "Kami tidak menyimpan kunci API peribadi atau perbualan anda. Hanya data telemetri operasi tanpa nama direkodkan untuk pemantauan sistem."
+  },
+  "footer": {
+    "brand_desc": "Wakaf digital yang membina aset teknikal terbuka dan menyelenggarakannya untuk manfaat berterusan.",
+    "rights": "© 2026 WAQFTECH.ORG — Diwakafkan kerana Allah SWT",
+    "made_for": "Direka dengan niat impak yang berpanjangan"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "Waqf Tech — Islamic Model Context Protocol Aggregator (Waqf MCP)",
+    "description": "A unified edge gateway aggregating Islamic AI tools and MCP servers into a single, high-speed endpoint."
+  },
+  "nav": {
+    "brand": "Waqf MCP",
+    "servers": "Connected Servers",
+    "setup": "Configuration",
+    "submit": "Submit Server",
+    "docs": "Documentation",
+    "lang_label": "Language"
+  },
+  "announcement": {
+    "text": "Unified Islamic Model Context Protocol (MCP) Gateway — A Digital Waqf Asset"
+  },
+  "hero": {
+    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "title_html": "All Islamic Knowledge Sources, in <em>One Interface.</em>",
+    "lede": "Stop juggling dozens of independent MCP servers. Add mcp.waqf.dev once to Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books with edge-caching and schema validation.",
+    "cta_copy": "Copy Server Config ←",
+    "cta_explore": "Explore Tools",
+    "note_badge": "EDGE NATIVE",
+    "note_text": "Powered by Cloudflare Workers with zero local installation"
+  },
+  "ledger": {
+    "title": "Impact Ledger",
+    "status_active": "Gateway Live",
+    "flow1_title": "Fragmented Sources",
+    "flow1_desc": "Multiple servers with divergent data schemas",
+    "flow2_title": "Unified Waqf Gateway",
+    "flow2_desc": "Schema normalization & high-speed edge caching",
+    "flow3_title": "Reliable AI Output",
+    "flow3_desc": "Authentic citations in your everyday developer tools",
+    "footer_left": "PROTOCOL: MCP STREAMABLE HTTP",
+    "footer_right": "Enduring Digital Waqf"
+  },
+  "servers": {
+    "eyebrow": "Federated Servers / 02",
+    "title": "Authentic Sources in a Single Portfolio.",
+    "subtitle": "Connecting leading Islamic software initiatives under one interoperable namespace.",
+    "filter_all": "All Servers",
+    "filter_quran": "Quran & Tafsir",
+    "filter_turath": "Hadith & Heritage Books",
+    "tools_count_suffix": "Tools Enabled",
+    "active_badge": "Live & Verified",
+    "view_source": "Source URL"
+  },
+  "config": {
+    "eyebrow": "Quickstart / 03",
+    "title": "Configure Your AI Assistant in One Minute.",
+    "subtitle": "Select your AI client and copy the drop-in JSON configuration snippet.",
+    "tab_claude": "Claude Desktop",
+    "tab_cursor": "Cursor IDE",
+    "tab_antigravity": "Antigravity",
+    "tab_cline": "VS Code (Cline / Roo)",
+    "copy_button": "Copy Config",
+    "copied_button": "Copied!",
+    "config_note": "Tip: Use '?suite=core' to expose only canonical tools and conserve token budget."
+  },
+  "submit": {
+    "eyebrow": "Community Initiative / 04",
+    "title": "Built an Islamic MCP Server?",
+    "subtitle": "Submit your server to make it accessible to developers and AI models worldwide.",
+    "form_name": "Your Name / Organization",
+    "form_email": "Contact Email",
+    "form_server_name": "Server Name",
+    "form_server_url": "Server Endpoint URL",
+    "form_category": "Content Category",
+    "cat_quran": "Quran & Sciences",
+    "cat_hadith": "Hadith Literature",
+    "cat_tafsir": "Tafsir & Studies",
+    "cat_fiqh": "Fiqh & Encyclopedias",
+    "cat_tools": "Islamic Tools & Calculations",
+    "form_desc": "Server Description & Available Tools",
+    "form_desc_placeholder": "Briefly describe your server, developer background, and key functions...",
+    "form_submit": "Submit for Review & Federation",
+    "form_submitting": "Submitting...",
+    "form_success": "Thank you! Your server submission has been received and will be reviewed shortly.",
+    "form_error": "An error occurred while submitting. Please check your inputs and try again."
+  },
+  "faq": {
+    "eyebrow": "FAQ / 05",
+    "title": "Frequently Asked Questions",
+    "q1": "Why use mcp.waqf.dev instead of individual MCP servers?",
+    "a1": "A single configuration eliminates managing 10+ server endpoints, prevents tool name collisions, caches authentic texts at the edge, and provides canonical tools that save context window tokens.",
+    "q2": "Is this service free?",
+    "a2": "Yes, this gateway is 100% open-source and endowed as a digital waqf for public benefit.",
+    "q3": "How is privacy handled?",
+    "a3": "We do not store private API keys or personal prompts. Anonymized operational telemetry (country, tool called, response latency) is recorded strictly for health and capacity monitoring."
+  },
+  "footer": {
+    "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",
+    "rights": "© 2026 WAQFTECH.ORG — Endowed for the sake of Allah",
+    "made_for": "Built with the intention of lasting impact"
+  }
+}

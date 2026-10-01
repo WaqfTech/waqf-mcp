@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "Waqf Tech — Agregator Model Context Protocol Islam (Waqf MCP)",
+    "description": "Gateway terpadu yang menggabungkan alat kecerdasan buatan Islam dan server MCP dalam satu endpoint berkecepatan tinggi."
+  },
+  "nav": {
+    "brand": "Waqf MCP",
+    "servers": "Server Terhubung",
+    "setup": "Panduan Konfigurasi",
+    "submit": "Daftarkan Server",
+    "docs": "Dokumentasi",
+    "lang_label": "Bahasa"
+  },
+  "announcement": {
+    "text": "Gateway Model Context Protocol (MCP) Islam Terpadu — Aset Wakaf Digital"
+  },
+  "hero": {
+    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "title_html": "Semua Sumber Pengetahuan Islam, dalam <em>Satu Antarmuka.</em>",
+    "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup tambahkan mcp.waqf.dev sekali ke Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Qur'an, Hadits, Tafsir, dan kitab warisan Islam dengan caching cepat dan validasi skema.",
+    "cta_copy": "Salin Konfigurasi Server ←",
+    "cta_explore": "Jelajahi Alat",
+    "note_badge": "EDGE NATIVE",
+    "note_text": "Didukung oleh Cloudflare Workers tanpa instalasi lokal"
+  },
+  "ledger": {
+    "title": "Buku Catatan Dampak",
+    "status_active": "Gateway Aktif",
+    "flow1_title": "Sumber Tersebar",
+    "flow1_desc": "Banyak server dengan skema data berbeda",
+    "flow2_title": "Gateway Wakaf Terpadu",
+    "flow2_desc": "Standardisasi skema & cache edge berkecepatan tinggi",
+    "flow3_title": "AI Terpercaya",
+    "flow3_desc": "Kutipan shahih dalam alat pengembangan sehari-hari Anda",
+    "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
+    "footer_right": "Wakaf Digital Abadi"
+  },
+  "servers": {
+    "eyebrow": "Server Terhubung / 02",
+    "title": "Sumber Otentik dalam Satu Portofolio.",
+    "subtitle": "Menghubungkan inisiatif perangkat lunak Islam terkemuka di bawah satu namespace terpadu.",
+    "filter_all": "Semua Server",
+    "filter_quran": "Al-Qur'an & Tafsir",
+    "filter_turath": "Hadits & Kitab Warisan",
+    "tools_count_suffix": "Alat Aktif",
+    "active_badge": "Aktif & Terverifikasi",
+    "view_source": "Tautan Sumber"
+  },
+  "config": {
+    "eyebrow": "Panduan Cepat / 03",
+    "title": "Konfigurasikan Asisten AI Anda dalam Satu Menit.",
+    "subtitle": "Pilih aplikasi AI Anda dan salin potongan konfigurasi JSON yang tersedia.",
+    "tab_claude": "Claude Desktop",
+    "tab_cursor": "Cursor IDE",
+    "tab_antigravity": "Antigravity",
+    "tab_cline": "VS Code (Cline / Roo)",
+    "copy_button": "Salin Konfigurasi",
+    "copied_button": "Tersalin!",
+    "config_note": "Tips: Gunakan '?suite=core' untuk hanya menampilkan alat penting dan menghemat token konteks."
+  },
+  "submit": {
+    "eyebrow": "Inisiatif Komunitas / 04",
+    "title": "Pernah Membangun Server MCP Islam?",
+    "subtitle": "Daftarkan server Anda agar dapat diakses oleh pengembang dan model AI di seluruh dunia sebagai wakaf digital.",
+    "form_name": "Nama Anda atau Lembaga",
+    "form_email": "Email Kontak",
+    "form_server_name": "Nama Server",
+    "form_server_url": "URL Endpoint Server (MCP Endpoint)",
+    "form_category": "Kategori Konten",
+    "cat_quran": "Al-Qur'an & Ilmu Al-Qur'an",
+    "cat_hadith": "Literatur Hadits",
+    "cat_tafsir": "Tafsir & Kajian",
+    "cat_fiqh": "Fikih & Ensiklopedia",
+    "cat_tools": "Alat & Waktu Sholat",
+    "form_desc": "Deskripsi Server & Daftar Alat Utama",
+    "form_desc_placeholder": "Jelaskan secara singkat server Anda, latar belakang pengembang, dan fungsionalitas yang ditawarkan...",
+    "form_submit": "Kirim untuk Peninjauan",
+    "form_submitting": "Mengirim...",
+    "form_success": "Terima kasih! Pengajuan server Anda telah diterima dan akan segera ditinjau.",
+    "form_error": "Terjadi kesalahan saat mengirim. Silakan periksa kembali data Anda dan coba lagi."
+  },
+  "faq": {
+    "eyebrow": "Pertanyaan Umum / 05",
+    "title": "Pertanyaan yang Sering Diajukan",
+    "q1": "Mengapa menggunakan mcp.waqf.dev daripada menambahkan setiap server secara terpisah?",
+    "a1": "Satu konfigurasi menghemat pengelolaan lebih dari 10 server, mencegah tabrakan nama alat, menyimpan teks terverifikasi di edge cache, dan menghemat token prompt AI Anda.",
+    "q2": "Apakah layanan ini gratis?",
+    "a2": "Ya, gateway ini sepenuhnya diwakafkan secara terbuka untuk kemaslahatan umum.",
+    "q3": "Bagaimana privasi dikelola?",
+    "a3": "Kami tidak menyimpan kunci API pribadi atau percakapan Anda. Hanya telemetri operasional anonim yang dicatat untuk pemantauan sistem."
+  },
+  "footer": {
+    "brand_desc": "Wakaf digital yang membangun aset teknologi terbuka dan merawatnya agar manfaatnya terus berlanjut.",
+    "rights": "© 2026 WAQFTECH.ORG — Diwakafkan karena Allah semata",
+    "made_for": "Dirancang untuk dampak yang berkelanjutan"
+  }
+}

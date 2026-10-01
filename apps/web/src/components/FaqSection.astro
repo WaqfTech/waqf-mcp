@@ -1,0 +1,115 @@
+---
+import type { getTranslations } from "../lib/i18n";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+---
+
+<section id="faq" class="faq-section">
+  <div class="shell">
+    <div class="section-header">
+      <div class="eyebrow">{t.faq.eyebrow}</div>
+      <h2>{t.faq.title}</h2>
+    </div>
+
+    <div class="faq-list">
+      <details open class="faq-item">
+        <summary>
+          <span>{t.faq.q1}</span>
+          <i aria-hidden="true"></i>
+        </summary>
+        <p>{t.faq.a1}</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          <span>{t.faq.q2}</span>
+          <i aria-hidden="true"></i>
+        </summary>
+        <p>{t.faq.a2}</p>
+      </details>
+
+      <details class="faq-item">
+        <summary>
+          <span>{t.faq.q3}</span>
+          <i aria-hidden="true"></i>
+        </summary>
+        <p>{t.faq.a3}</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    padding: 70px 0;
+    background: var(--paper);
+  }
+
+  .section-header {
+    margin-bottom: 36px;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 900px;
+  }
+
+  .faq-item {
+    background: var(--white);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 18px 24px;
+  }
+
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ink);
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary i {
+    width: 10px;
+    height: 10px;
+    border-inline-end: 2px solid var(--tide);
+    border-block-end: 2px solid var(--tide);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  details[open] summary i {
+    transform: rotate(-135deg);
+  }
+
+  p {
+    margin: 14px 0 0;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--soft);
+  }
+</style>

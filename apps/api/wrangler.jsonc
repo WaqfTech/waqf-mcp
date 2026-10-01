@@ -19,8 +19,5 @@
       "binding": "WEB",
       "service": "waqf-mcp-web"
     }
-  ],
-  "observability": {
-    "enabled": true
-  }
+  ]
 }

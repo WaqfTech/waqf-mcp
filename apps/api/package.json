@@ -1,0 +1,24 @@
+{
+  "name": "@waqf/api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@waqf/db": "workspace:*",
+    "@waqf/types": "workspace:*",
+    "drizzle-orm": "^0.39.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.7",
+    "wrangler": "^3.111.0"
+  }
+}

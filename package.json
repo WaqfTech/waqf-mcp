@@ -1,0 +1,16 @@
+{
+  "name": "@waqf/mcp-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "aube run --recursive dev",
+    "build": "aube run --recursive build",
+    "typecheck": "aube run --recursive typecheck",
+    "test": "aube run --recursive test"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "packageManager": "aube@latest"
+}

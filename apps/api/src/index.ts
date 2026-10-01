@@ -101,6 +101,21 @@ export default {
       });
     }
 
+    // Markdown for Agents content negotiation (https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/)
+    const accept = request.headers.get("accept") || "";
+    if (request.method === "GET" && accept.includes("text/markdown")) {
+      const approxTokens = Math.ceil(LLMS_TXT.length / 4);
+      return new Response(LLMS_TXT, {
+        headers: {
+          "Content-Type": "text/markdown; charset=utf-8",
+          "x-markdown-tokens": approxTokens.toString(),
+          Vary: "Accept",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
+        },
+      });
+    }
+
     // Health, Info, and MCP GET Discovery / SSE Endpoint
     if (
       request.method === "GET" &&

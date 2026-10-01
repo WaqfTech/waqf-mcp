@@ -288,5 +288,32 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("hreflang=\"ar\"");
     expect(text).toContain("hreflang=\"en\"");
   });
+
+  it("GET / with Accept: text/markdown returns markdown and x-markdown-tokens", async () => {
+    const req = new Request("http://localhost:8787/", {
+      headers: { Accept: "text/markdown" },
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/markdown");
+    expect(res.headers.get("x-markdown-tokens")).toBeTruthy();
+    expect(res.headers.get("Vary")).toBe("Accept");
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
+    const text = await res.text();
+    expect(text).toContain("# Waqf Islamic MCP Federation Gateway");
+    expect(text).toContain("waqf_quran_get_ayah");
+  });
+
+  it("GET /en with Accept: text/markdown negotiates markdown content for agents", async () => {
+    const req = new Request("http://localhost:8787/en", {
+      headers: { Accept: "text/markdown" },
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/markdown");
+    expect(res.headers.get("x-markdown-tokens")).toBeTruthy();
+  });
 });
 

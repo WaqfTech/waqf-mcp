@@ -7,6 +7,7 @@ import { createDb, mcpSubmissions } from "@waqf/db";
 export interface Env {
   DB: D1Database;
   TELEMETRY_SALT?: string;
+  WEB?: Fetcher;
 }
 
 // Module-level hoisting per cf-cpu-audit: compile once per isolate
@@ -49,6 +50,12 @@ export default {
       (pathname === "/" || pathname === "/health" || pathname === "/mcp" || pathname === "/sse")
     ) {
       const accept = request.headers.get("accept") || "";
+
+      // If browser accesses root "/" preferring HTML, delegate to Astro web worker via service binding
+      const isHtmlPreferred = accept.includes("text/html") && !accept.includes("application/json");
+      if (pathname === "/" && isHtmlPreferred && env.WEB) {
+        return env.WEB.fetch(request);
+      }
 
       // Support SSE (Server-Sent Events) clients
       if (accept.includes("text/event-stream")) {
@@ -404,6 +411,11 @@ export default {
           { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       }
+    }
+
+    // Delegate non-API web routes (e.g. /en, /tr, /id, /ms, /_astro/*) to Astro web worker
+    if (env.WEB) {
+      return env.WEB.fetch(request);
     }
 
     return new Response(JSON.stringify({ error: "Not Found" }), {

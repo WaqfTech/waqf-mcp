@@ -182,4 +182,47 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const body = (await res.json()) as { error: { message: string } };
     expect(body.error.message).toContain("Payload exceeds 1MB limit");
   });
+
+  it("GET / with Accept: text/html delegates to env.WEB service binding", async () => {
+    const mockWebFetch = vi.fn().mockResolvedValue(new Response("<html>Astro Web Landing</html>", {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    }));
+
+    const envWithWeb: typeof mockEnv & { WEB: Fetcher } = {
+      ...mockEnv,
+      WEB: { fetch: mockWebFetch } as unknown as Fetcher,
+    };
+
+    const req = new Request("http://localhost:8787/", {
+      headers: { Accept: "text/html,application/xhtml+xml" },
+    });
+
+    const res = await worker.fetch(req, envWithWeb, mockCtx);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("text/html");
+    const html = await res.text();
+    expect(html).toContain("Astro Web Landing");
+    expect(mockWebFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("GET /en delegates non-API web routes to env.WEB service binding", async () => {
+    const mockWebFetch = vi.fn().mockResolvedValue(new Response("<html>English Landing</html>", {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    }));
+
+    const envWithWeb: typeof mockEnv & { WEB: Fetcher } = {
+      ...mockEnv,
+      WEB: { fetch: mockWebFetch } as unknown as Fetcher,
+    };
+
+    const req = new Request("http://localhost:8787/en", {
+      headers: { Accept: "text/html" },
+    });
+
+    const res = await worker.fetch(req, envWithWeb, mockCtx);
+    expect(res.status).toBe(200);
+    expect(mockWebFetch).toHaveBeenCalledTimes(1);
+  });
 });

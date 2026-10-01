@@ -41,8 +41,17 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS "$API_URL/mcp" \
   -H "Access-Control-Request-Method: POST")
 assert_status "OPTIONS /mcp CORS Preflight" "$STATUS" "204"
 
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Accept: text/html" "$API_URL/")
+assert_status "GET / with Accept: text/html (Service Binding to Web)" "$STATUS" "200"
+
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/en/")
+assert_status "GET /en/ on API Worker (Service Binding delegation)" "$STATUS" "200"
+
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/waqftech-logo.svg")
+assert_status "GET /waqftech-logo.svg on API Worker (Service Binding asset)" "$STATUS" "200"
+
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/invalid-random-path")
-assert_status "GET /invalid-random-path (Unknown route)" "$STATUS" "404"
+assert_status "GET /invalid-random-path (Unknown route -> 404)" "$STATUS" "404"
 
 echo ""
 echo "=== 2. JSON-RPC Protocol & Schema Edge Cases ==="

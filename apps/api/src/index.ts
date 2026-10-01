@@ -117,13 +117,14 @@ export default {
             usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
             suites: {
               all: "All available upstream tools across federated Islamic servers",
-              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books)",
+              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship)",
               quran: "Quran & Tafsir specialized suite",
               turath: "Hadith & Islamic Heritage library suite",
+              search: "Scholarly web search across 38+ verified Islamic portals (Fihris)",
             },
             stats: {
               federatedProvidersCount: registry.getAll().length,
-              availableSuites: ["core", "quran", "turath", "all"],
+              availableSuites: ["core", "quran", "turath", "search", "all"],
             },
             federatedProviders: registry.getAll().map((p) => ({
               id: p.id,

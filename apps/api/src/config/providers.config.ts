@@ -37,4 +37,13 @@ export const UPSTREAM_PROVIDERS: ProviderConfig[] = [
     timeoutMs: 8000,
     enabled: true,
   },
+  {
+    id: "fihris",
+    name: "Fihris Islamic Web Search",
+    baseUrl: "https://search.waqf.app/api/mcp",
+    transport: "json-rpc",
+    description: "Curated Google Custom Search across 38+ authentic Islamic scholarship portals.",
+    timeoutMs: 10000,
+    enabled: true,
+  },
 ];

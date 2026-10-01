@@ -76,6 +76,35 @@ export class SchemaNormalizer {
           required: ["query"],
         },
       },
+      {
+        name: "waqf_search_scholarship",
+        description:
+          "Search across 38+ authentic Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Search keywords or question in Arabic or English (e.g. 'شروط الصلاة', 'صيام يوم عاشوراء')",
+            },
+            fileType: {
+              type: "string",
+              enum: ["pdf", "doc", "docx", "txt"],
+              description: "Optional file type filter",
+            },
+            dateRestrict: {
+              type: "string",
+              enum: ["d1", "w1", "m1", "y1"],
+              description: "Optional date restriction (d1 = past 24h, w1 = past week, m1 = past month, y1 = past year)",
+            },
+            page: {
+              type: "number",
+              description: "Page number for pagination (default: 1)",
+            },
+          },
+          required: ["query"],
+        },
+      },
     ];
   }
 

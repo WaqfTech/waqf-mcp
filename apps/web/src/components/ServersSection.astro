@@ -50,6 +50,16 @@ const SERVERS = [
     tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
     desc: "كتب وتحقيقات في علم الحديث ومصطلح الحديث والمصنفات الفقهية المحققة.",
   },
+  {
+    id: "fihris",
+    name: "Fihris Islamic Web Search",
+    provider: "محرك فهرس للبحث العلمي",
+    url: "https://search.waqf.app/",
+    toolsCount: 2,
+    category: "tools",
+    tools: ["search_islamic_sources", "list_indexed_sources"],
+    desc: "محرك بحث مخصص ومفهرس لأكثر من 38 بوابة وموقعاً علمياً معتمداً لكبار العلماء والمؤسسات الشرعية.",
+  },
 ];
 ---
 
@@ -89,7 +99,7 @@ const SERVERS = [
           </div>
 
           <div class="card-footer">
-            <span class="category-tag">{server.category === "quran" ? t.servers.filter_quran : t.servers.filter_turath}</span>
+            <span class="category-tag">{server.category === "quran" ? t.servers.filter_quran : (server.category === "turath" ? t.servers.filter_turath : t.submit.cat_tools)}</span>
             <a href={server.url} target="_blank" rel="noopener noreferrer" class="source-link">
               {t.servers.view_source} ↗
             </a>

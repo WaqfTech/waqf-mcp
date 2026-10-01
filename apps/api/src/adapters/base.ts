@@ -26,6 +26,7 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
     this.defaultHeaders = {
       "Content-Type": "application/json",
       "User-Agent": "WaqfMCP-Gateway/1.0 (+https://mcp.waqf.dev)",
+      "X-Waqf-Federated-By": "mcp.waqf.dev",
       ...(config.headers ?? {}),
     };
   }

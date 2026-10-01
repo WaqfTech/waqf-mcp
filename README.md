@@ -30,6 +30,7 @@ Instead of forcing users to configure 10+ independent Islamic MCP servers in the
 | **Bahouth Quran & Tafsir** | `https://bahouth.tafsir.net/mcp` | JSON-RPC 2.0 | Quranic root analysis, verse words, morphology, and verse topics (`get_verse`, `find_root`) |
 | **Turath Islamic Heritage Library** | `https://mcp.turath.io/mcp/` | JSON-RPC 2.0 | Search across thousands of classical Islamic books, authors, and page texts (`discover_turath`, `search_turath`) |
 | **Sheikh Maher Al-Fahel Library** | `https://maheralfahel.net/mcp/` | SSE (`text/event-stream`) | Hadith sciences, scholarly critique, and verified publications (`list-books`, `get-book`, `search-content`) |
+| **Fihris Islamic Web Search** | `https://search.waqf.app/api/mcp` | JSON-RPC 2.0 | Curated search across 38+ authentic Islamic scholarship portals and fatwas (`search_islamic_sources`, `list_indexed_sources`) |
 
 ---
 
@@ -85,6 +86,7 @@ Add the following configuration block to your AI tool of choice:
 * **`https://mcp.waqf.dev/mcp?suite=core`**: **(Recommended)** Exposes only unified canonical tools (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`). Preserves context window!
 * **`https://mcp.waqf.dev/mcp?suite=quran`**: Exposes only Quran and Tafsir tools.
 * **`https://mcp.waqf.dev/mcp?suite=turath`**: Exposes only Hadith and classical heritage library tools.
+* **`https://mcp.waqf.dev/mcp?suite=search`**: Exposes only contemporary scholarly web search tools (`fihris`).
 * **`https://mcp.waqf.dev/mcp`**: Full federation suite (all canonical + all namespaced tools).
 
 ---

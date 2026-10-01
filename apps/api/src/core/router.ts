@@ -69,6 +69,13 @@ export class FederationRouter {
       ];
     }
 
+    if (suite === "search") {
+      return [
+        ...canonicalTools.filter((t) => t.name.startsWith("waqf_search")),
+        ...namespaced.filter((t) => t.name.startsWith("fihris__")),
+      ];
+    }
+
     // Default 'all': Canonical tools on top, followed by namespaced tools
     return [...canonicalTools, ...namespaced];
   }
@@ -237,6 +244,17 @@ export class FederationRouter {
           q: query,
         });
         result = this.normalizer.normalizeToolResult(raw, "Hadith Sources (Turath)");
+        break;
+      }
+
+      case "waqf_search_scholarship": {
+        const fihrisProvider = this.registry.get("fihris");
+        if (!fihrisProvider) {
+          throw new Error("Fihris search provider not configured");
+        }
+        targetProvider = "fihris";
+        const raw = await fihrisProvider.callTool("search_islamic_sources", args);
+        result = this.normalizer.normalizeToolResult(raw, "Fihris Islamic Search");
         break;
       }
 

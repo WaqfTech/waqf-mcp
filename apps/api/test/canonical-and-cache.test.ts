@@ -191,6 +191,29 @@ describe("Canonical Tools & Schema Normalization", () => {
       await router.callTool("bahouth__get_verse", { verse_key: "112:1" });
       expect(bahouthSpy).toHaveBeenCalledWith("get_verse", { verse_key: "112-1" });
     });
+
+    it("routes waqf_search_scholarship through Fihris search provider", async () => {
+      const registry = new ProviderRegistry([]);
+
+      const mockFihris = new JsonRpcMcpAdapter({
+        id: "fihris",
+        name: "Fihris Islamic Web Search",
+        baseUrl: "https://search.waqf.app/api/mcp",
+        transport: "json-rpc",
+        description: "Fihris Search",
+      });
+      const fihrisSpy = vi.spyOn(mockFihris, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "Found 10 results for الصلاة" }],
+      });
+
+      registry.register(mockFihris);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_search_scholarship", { query: "الصلاة" });
+      expect(res.providerId).toBe("fihris");
+      expect(fihrisSpy).toHaveBeenCalledWith("search_islamic_sources", { query: "الصلاة" });
+      expect((res.result.content[0] as { text: string }).text).toContain("Found 10 results");
+    });
   });
 });
 

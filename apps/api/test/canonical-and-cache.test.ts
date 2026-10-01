@@ -214,6 +214,39 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect(fihrisSpy).toHaveBeenCalledWith("search_islamic_sources", { query: "الصلاة" });
       expect((res.result.content[0] as { text: string }).text).toContain("Found 10 results");
     });
+
+    it("falls back to Turath when Fihris fails in waqf_search_scholarship", async () => {
+      const registry = new ProviderRegistry([]);
+
+      const mockFihris = new JsonRpcMcpAdapter({
+        id: "fihris",
+        name: "Fihris Islamic Web Search",
+        baseUrl: "https://search.waqf.app/api/mcp",
+        transport: "json-rpc",
+        description: "Fihris Search",
+      });
+      vi.spyOn(mockFihris, "callTool").mockRejectedValue(new Error("Quota Exceeded (429)"));
+
+      const mockTurath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io",
+        transport: "json-rpc",
+        description: "Turath Library",
+      });
+      const turathSpy = vi.spyOn(mockTurath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: JSON.stringify({ count: 1, results: [{ text: "كتاب الصلاة" }] }) }],
+      });
+
+      registry.register(mockFihris);
+      registry.register(mockTurath);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_search_scholarship", { query: "الصلاة" });
+      expect(res.providerId).toBe("turath");
+      expect(turathSpy).toHaveBeenCalledWith("search_turath", { q: "الصلاة" });
+      expect((res.result.content[0] as { text: string }).text).toContain("كتاب الصلاة");
+    });
   });
 });
 

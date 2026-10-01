@@ -249,12 +249,39 @@ export class FederationRouter {
 
       case "waqf_search_scholarship": {
         const fihrisProvider = this.registry.get("fihris");
-        if (!fihrisProvider) {
-          throw new Error("Fihris search provider not configured");
+        const turathProvider = this.registry.get("turath");
+        let fetched = false;
+
+        // Primary: Fihris web search across Islamic directories
+        if (fihrisProvider) {
+          try {
+            targetProvider = "fihris";
+            const raw = await fihrisProvider.callTool("search_islamic_sources", args);
+            if (!raw.isError) {
+              result = this.normalizer.normalizeToolResult(raw, "Fihris Islamic Search");
+              fetched = true;
+            }
+          } catch {
+            // Fall through to Turath fallback
+          }
         }
-        targetProvider = "fihris";
-        const raw = await fihrisProvider.callTool("search_islamic_sources", args);
-        result = this.normalizer.normalizeToolResult(raw, "Fihris Islamic Search");
+
+        // Resilient Fallback: Turath heritage library search if Fihris failed or had isError
+        if (!fetched && turathProvider) {
+          try {
+            targetProvider = "turath";
+            const query = String(args.query || args.q || "");
+            const raw = await turathProvider.callTool("search_turath", { q: query });
+            result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Scholarship Fallback)");
+            fetched = true;
+          } catch {
+            // Fall through
+          }
+        }
+
+        if (!fetched) {
+          throw new Error("No scholarship search provider available or all upstreams failed");
+        }
         break;
       }
 

@@ -29,9 +29,18 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 ## Summary
 - **Total Goals**: 12
 - 🟢 **Implemented & Verified**: 8
-- 🟡 **Ready to Execute (Pending)**: 4 (1 independent ⚡, 3 unblocked 🔗)
+- 🔵 **In Progress (Claimed)**: 1
+- 🟡 **Ready to Execute (Pending)**: 2 (0 independent ⚡, 2 unblocked 🔗)
 - 🎯 **By Tier**: 11 immediate (Tier 1), 1 roadmap (Tier 2), 0 nice-to-have (Tier 3), 0 wont-fix (Tier 4)
 - 📋 **Execution Tasks Progress**: 36/53 completed (67%)
+
+---
+
+## 🔵 In Progress (Claimed Goals)
+
+| Goal Package | Tier | Mode | Agent | Status & Note | Started |
+| :--- | :---: | :---: | :--- | :--- | :--- |
+| [`mcp-protocol-strict-compliance`](mcp-protocol-strict-compliance/goal.md) | `🎯 Immediate` | `⚡ Indep` | `@antigravity` | Standardizing JSON-RPC HTTP response envelopes to HTTP 200 for MCP client compatibility | 0s ago |
 
 ---
 
@@ -39,7 +48,6 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 
 | Goal Package | Tier | Mode & Sequence | Dependencies | Focus & Description | Launch Command |
 | :--- | :---: | :---: | :--- | :--- | :--- |
-| [`mcp-protocol-strict-compliance`](mcp-protocol-strict-compliance/goal.md) | `🎯 Immediate` | `🚢 SHIP ⚡ Independent` | - | Align JSON-RPC HTTP Response Envelopes with MCP Streamable HTTP Spec — Standardize HTTP response envelopes on `/mcp` so that JSON-RPC level errors (`-3... | `/goal goals/mcp-protocol-strict-compliance/goal.md` |
 | [`developer-quickstart-and-client-snippets`](developer-quickstart-and-client-snippets/goal.md) | `🎯 Immediate` | `🚢 SHIP 🔗 Ready` | Deps met: multilingual-landing-page | Multilingual Developer Quickstart & Client Integration Snippets — Expand landing page and documentation with tested client integration snippets in... | `/goal goals/developer-quickstart-and-client-snippets/goal.md` |
 | [`canonical-adapters-and-fallbacks`](canonical-adapters-and-fallbacks/goal.md) | `🎯 Immediate` | `🚢 SHIP 🔗 Ready` | Deps met: canonical-schemas-and-caching | Robust Provider Fallbacks and Schema Translation for Quran & Heritage Tools — Implement bidirectional parameter translation and fallback logic for canonical t... | `/goal goals/canonical-adapters-and-fallbacks/goal.md` |
 | [`gateway-telemetry-dashboard-endpoint`](gateway-telemetry-dashboard-endpoint/goal.md) | `🗺️ Roadmap` | `🚢 SHIP 🔗 Ready` | Deps met: telemetry-and-logging | Secure Gateway Telemetry & Health Analytics API Endpoint — Implement an authenticated read-only endpoint (`GET /api/stats` or `GET /api/tel... | `/goal goals/gateway-telemetry-dashboard-endpoint/goal.md` |

@@ -356,7 +356,7 @@ export default {
                   id: reqId,
                   error: { code: -32602, message: "Missing required tool 'name' parameter" },
                 }),
-                { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+                { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
               );
             }
 
@@ -395,7 +395,7 @@ export default {
                 id: reqId,
                 error: { code: -32601, message: `Method '${rpc.method}' not found` },
               }),
-              { status: 404, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
             );
           }
         }
@@ -408,7 +408,7 @@ export default {
             id: reqId,
             error: { code: -32603, message: `Internal error: ${errorMsg}` },
           }),
-          { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       }
     }

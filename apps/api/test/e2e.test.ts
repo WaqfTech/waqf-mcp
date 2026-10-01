@@ -123,7 +123,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     });
 
     const res = await worker.fetch(req, mockEnv, mockCtx);
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
     const body = (await res.json()) as { error: { code: number } };
     expect(body.error.code).toBe(-32601);
   });

@@ -61,13 +61,21 @@ STATUS=$(curl -s -o /tmp/resp_invalid_json.json -w "%{http_code}" -X POST "$API_
   -d "not-valid-json-string")
 assert_status "POST /mcp with malformed JSON" "$STATUS" "400"
 
-# Unknown JSON-RPC method (returns 404 with code -32601)
+# Unknown JSON-RPC method (returns HTTP 200 with code -32601)
 STATUS=$(curl -s -o /tmp/resp_unknown_method.json -w "%{http_code}" -X POST "$API_URL/mcp" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":100,"method":"non_existent_method","params":{}}')
-assert_status "POST /mcp with unknown RPC method" "$STATUS" "404"
+assert_status "POST /mcp with unknown RPC method" "$STATUS" "200"
 ERR_CODE=$(node -pe "JSON.parse(require('fs').readFileSync('/tmp/resp_unknown_method.json','utf8')).error?.code || 'none'")
 echo "    -> JSON-RPC Error code: $ERR_CODE"
+
+# Missing tool name parameter (returns HTTP 200 with code -32602)
+STATUS=$(curl -s -o /tmp/resp_missing_tool_name.json -w "%{http_code}" -X POST "$API_URL/mcp" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":101,"method":"tools/call","params":{}}')
+assert_status "POST /mcp tools/call missing name parameter" "$STATUS" "200"
+ERR_CODE_2=$(node -pe "JSON.parse(require('fs').readFileSync('/tmp/resp_missing_tool_name.json','utf8')).error?.code || 'none'")
+echo "    -> JSON-RPC Error code: $ERR_CODE_2"
 
 # Ping method
 STATUS=$(curl -s -o /tmp/resp_ping.json -w "%{http_code}" -X POST "$API_URL/mcp" \

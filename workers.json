@@ -1,0 +1,18 @@
+{
+  "workers": [
+    {
+      "name": "api",
+      "app": "apps/api",
+      "prod": "waqf-mcp-api",
+      "dev": "waqf-mcp-api-dev",
+      "route": "mcp.waqf.dev"
+    },
+    {
+      "name": "web",
+      "app": "apps/web",
+      "prod": "waqf-mcp-web",
+      "dev": "waqf-mcp-web-dev",
+      "route": "waqf.dev"
+    }
+  ]
+}

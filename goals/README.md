@@ -28,19 +28,10 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 
 ## Summary
 - **Total Goals**: 12
-- 🟢 **Implemented & Verified**: 8
-- 🔵 **In Progress (Claimed)**: 1
-- 🟡 **Ready to Execute (Pending)**: 2 (0 independent ⚡, 2 unblocked 🔗)
+- 🟢 **Implemented & Verified**: 9
+- 🟡 **Ready to Execute (Pending)**: 3 (0 independent ⚡, 3 unblocked 🔗)
 - 🎯 **By Tier**: 11 immediate (Tier 1), 1 roadmap (Tier 2), 0 nice-to-have (Tier 3), 0 wont-fix (Tier 4)
-- 📋 **Execution Tasks Progress**: 36/53 completed (67%)
-
----
-
-## 🔵 In Progress (Claimed Goals)
-
-| Goal Package | Tier | Mode | Agent | Status & Note | Started |
-| :--- | :---: | :---: | :--- | :--- | :--- |
-| [`mcp-protocol-strict-compliance`](mcp-protocol-strict-compliance/goal.md) | `🎯 Immediate` | `⚡ Indep` | `@antigravity` | Standardizing JSON-RPC HTTP response envelopes to HTTP 200 for MCP client compatibility | 0s ago |
+- 📋 **Execution Tasks Progress**: 40/53 completed (75%)
 
 ---
 
@@ -59,6 +50,7 @@ This index tracks all goal packages under `goals/`, their execution mode (Indepe
 | Goal Package | Mode | Shape | Task / Ref | Commit |
 | :--- | :---: | :--- | :--- | :--- |
 | [`monorepo-scaffold`](monorepo-scaffold/goal.md) | `⚡ Indep` | 🚢 SHIP | Git Commit | `eda6b93` |
+| [`mcp-protocol-strict-compliance`](mcp-protocol-strict-compliance/goal.md) | `⚡ Indep` | 🚢 SHIP | Git Commit | `c8e189d` |
 | [`service-binding-gateway-unification`](service-binding-gateway-unification/goal.md) | `⚡ Indep` | 🚢 SHIP | Git Commit | `90f9d83` |
 | [`d1-database-schema`](d1-database-schema/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `397a013` |
 | [`multilingual-landing-page`](multilingual-landing-page/goal.md) | `🔗 Dep` | 🚢 SHIP | Git Commit | `59179e0` |

@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "aube run --recursive dev",
+    "dev": "bash scripts/dev.sh",
+    "dev:api": "bash scripts/dev.sh api",
+    "dev:web": "bash scripts/dev.sh web",
     "build": "aube run --recursive build",
     "typecheck": "aube run --recursive typecheck",
     "test": "aube -F @waqf/api run test",

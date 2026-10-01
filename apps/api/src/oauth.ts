@@ -1,0 +1,26 @@
+export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
+  {
+    issuer: "https://mcp.waqf.dev",
+    authorization_endpoint: "https://mcp.waqf.dev/oauth/authorize",
+    token_endpoint: "https://mcp.waqf.dev/oauth/token",
+    jwks_uri: "https://mcp.waqf.dev/.well-known/jwks.json",
+    response_types_supported: ["token", "code"],
+    grant_types_supported: ["client_credentials", "authorization_code"],
+    token_endpoint_auth_methods_supported: [
+      "client_secret_basic",
+      "client_secret_post",
+      "none",
+    ],
+    scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
+    service_documentation: "https://mcp.waqf.dev/auth.md",
+    ui_locales_supported: ["ar", "en", "tr", "id", "ms"],
+    agent_auth: {
+      registration_uri: "https://mcp.waqf.dev/auth.md",
+      public_access: true,
+      description:
+        "All Islamic MCP tool discovery and execution endpoints are open without authentication. Bearer token required only for /api/stats.",
+    },
+  },
+  null,
+  2
+);

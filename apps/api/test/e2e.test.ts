@@ -366,5 +366,18 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.skills.some((s) => s.name === "quran-tafsir")).toBe(true);
     expect(data.skills.every((s) => s.sha256.length === 64)).toBe(true);
   });
+
+  it("GET /.well-known/oauth-authorization-server returns RFC 8414 metadata", async () => {
+    const req = new Request("http://localhost:8787/.well-known/oauth-authorization-server");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { issuer: string; token_endpoint: string; scopes_supported: string[]; agent_auth?: { public_access: boolean } };
+    expect(data.issuer).toBe("https://mcp.waqf.dev");
+    expect(data.token_endpoint).toBe("https://mcp.waqf.dev/oauth/token");
+    expect(data.scopes_supported).toContain("mcp:read");
+    expect(data.agent_auth?.public_access).toBe(true);
+  });
 });
 

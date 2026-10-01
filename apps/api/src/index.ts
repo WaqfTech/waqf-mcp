@@ -29,22 +29,58 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const startTime = performance.now();
     const url = new URL(request.url);
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
 
     // Handle CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
-    // Health and info endpoint
-    if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/health")) {
+    // Health, Info, and MCP GET Discovery / SSE Endpoint
+    if (
+      request.method === "GET" &&
+      (pathname === "/" || pathname === "/health" || pathname === "/mcp" || pathname === "/sse")
+    ) {
+      const accept = request.headers.get("accept") || "";
+
+      // Support SSE (Server-Sent Events) clients
+      if (accept.includes("text/event-stream")) {
+        const { readable, writable } = new TransformStream();
+        const writer = writable.getWriter();
+        const encoder = new TextEncoder();
+
+        // Send endpoint event per MCP SSE spec
+        const postEndpoint = `${url.origin}/mcp`;
+        writer.write(encoder.encode(`event: endpoint\ndata: ${postEndpoint}\n\n`));
+
+        return new Response(readable, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            ...CORS_HEADERS,
+          },
+        });
+      }
+
+      // JSON discovery for browser inspection & curl
       return new Response(
         JSON.stringify(
           {
             status: "healthy",
             name: "Waqf Islamic MCP Federation Gateway",
             version: "1.0.0",
+            protocolVersion: "2024-11-05",
             endpoint: "/mcp",
-            providers: registry.getAll().map((p) => ({
+            transports: ["streamable-http (POST /mcp)", "sse (GET /mcp with Accept: text/event-stream)"],
+            usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
+            suites: {
+              all: "All available upstream tools",
+              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books)",
+              quran: "Quran & Tafsir specialized suite",
+              turath: "Hadith & Islamic Heritage library suite",
+            },
+            federatedProviders: registry.getAll().map((p) => ({
               id: p.id,
               name: p.name,
               transport: p.transport,
@@ -64,7 +100,7 @@ export default {
     }
 
     // Community MCP Submission API Endpoint
-    if (request.method === "POST" && url.pathname === "/api/submissions") {
+    if (request.method === "POST" && pathname === "/api/submissions") {
       try {
         const body = (await request.json()) as {
           submitterName: string;
@@ -111,7 +147,7 @@ export default {
     }
 
     // MCP Streamable HTTP / POST Endpoint
-    if (request.method === "POST" && (url.pathname === "/mcp" || url.pathname === "/")) {
+    if (request.method === "POST" && (pathname === "/mcp" || pathname === "/")) {
       let rpc: JsonRpcRequest;
       try {
         rpc = (await request.json()) as JsonRpcRequest;

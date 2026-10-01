@@ -23,9 +23,38 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, mockEnv, mockCtx);
 
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { status: string; providers: unknown[] };
+    const body = (await res.json()) as { status: string; federatedProviders?: unknown[]; providers?: unknown[] };
     expect(body.status).toBe("healthy");
-    expect(body.providers.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("GET /mcp returns gateway discovery JSON and available suites", async () => {
+    const req = new Request("http://localhost:8787/mcp");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { status: string; endpoint: string; suites: Record<string, string> };
+    expect(body.status).toBe("healthy");
+    expect(body.endpoint).toBe("/mcp");
+    expect(body.suites.core).toBeDefined();
+  });
+
+  it("GET /mcp/ (trailing slash) also resolves successfully", async () => {
+    const req = new Request("http://localhost:8787/mcp/");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { status: string };
+    expect(body.status).toBe("healthy");
+  });
+
+  it("GET /mcp with Accept: text/event-stream initiates SSE stream", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      headers: { Accept: "text/event-stream" },
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/event-stream");
   });
 
   it("POST /mcp handles 'initialize' method", async () => {

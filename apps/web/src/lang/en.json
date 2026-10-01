@@ -54,7 +54,7 @@
     "group_ide": "Desktop & IDEs",
     "tab_claude_web": "Claude.ai (Web)",
     "tab_chatgpt_web": "ChatGPT (Web)",
-    "tab_gemini_web": "Gemini (Web / CLI)",
+    "tab_gemini_web": "Gemini (Web)",
     "tab_claude": "Claude Desktop",
     "tab_cursor": "Cursor IDE",
     "tab_antigravity": "Antigravity",
@@ -64,25 +64,27 @@
     "copied_button": "Copied!",
     "server_url_label": "Remote Server URL",
     "web_guide_title": "Setup Instructions",
+    "open_setup_page": "Open Setup Page ↗",
     "claude_web_steps": [
-      "Open Settings on claude.ai (click your profile avatar in the lower-left).",
-      "Select 'Connectors' in the settings menu, then click 'Add custom connector'.",
-      "Set Name to 'WaqfTech Islamic Suite' and URL to 'https://mcp.waqf.dev/mcp'.",
-      "Click 'Add' (no authentication required).",
-      "In any chat, click the '+' button next to the prompt composer, select 'Connectors', and toggle WaqfTech ON."
+      "Open https://claude.ai/new#customize/connectors (or go to Settings → Connectors).",
+      "Click 'Add custom connector'.",
+      "Set Name to 'WaqfTech(); Islamic Suite' and Server URL to 'https://mcp.waqf.dev/mcp'.",
+      "Click 'Add' to save (public open waqf endpoint, no OAuth required).",
+      "In any chat, click the '+' icon next to the message composer, choose 'Connectors', and toggle WaqfTech ON."
     ],
     "chatgpt_web_steps": [
-      "Open Settings on chatgpt.com and navigate to 'Security and login'.",
-      "Turn on 'Developer mode'.",
-      "In the Apps / Connectors section, click 'Create / Add Connection (+)'.",
-      "Set Name: 'WaqfTech Islamic Suite', Method: 'HTTPS', Endpoint URL: 'https://mcp.waqf.dev/mcp', and Auth: 'None'.",
-      "In chat, click the '+' icon in the prompt composer, choose 'Developer mode', and select WaqfTech to query Islamic sources."
+      "Enable Developer Mode: Open chatgpt.com, click your profile in the bottom-left corner, select Settings → Security and login, and switch 'Developer mode' On.",
+      "Navigate to Plugins: Open chatgpt.com/plugins (or Settings → Plugins in the left sidebar), click Browse plugins, then click the '+' (plus) icon near the top-right search box.",
+      "Enter MCP Details: Set Name: 'WaqfTech(); Islamic Suite', Description: 'Federated Islamic MCP Gateway', Connection: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', and Authentication: 'None'.",
+      "Authorize: Check the box 'I understand and want to continue' to bypass the unverified connector warning, then click 'Create'.",
+      "Use in Chat: Start a fresh new conversation (existing chats will not recognize newly added plugins), select WaqfTech as source or prompt 'What tools do you have available?' to query Quran, Hadith, and Turath."
     ],
     "gemini_web_steps": [
-      "Gemini Web Note: gemini.google.com currently supports prompt-based Custom Gems; direct third-party MCP GUI connectors are rolling out via Gemini Agent Platform.",
-      "Option A (Official Gemini CLI): Run 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' to enable full tool execution.",
-      "Option B (Gemini Web Gem): Create a Custom Gem at gemini.google.com/gems and instruct it with your queries referencing Waqf MCP.",
-      "Option C (Gemini Enterprise): Add a StreamableHTTP custom MCP data store pointing to 'https://mcp.waqf.dev/mcp'."
+      "Open https://gemini.google.com/apps in your browser.",
+      "Under 'Connected Apps', click 'Add a custom app'.",
+      "Set Name to 'WaqfTech(); Islamic Suite' and Endpoint URL to 'https://mcp.waqf.dev/mcp'.",
+      "Save and authorize the connected custom app.",
+      "In Gemini chat, ask questions or invoke Islamic tools to query verified Quran, Hadith, and classical texts directly."
     ],
     "config_note": "Tip: Use '?suite=core' to expose only canonical tools and conserve token budget."
   },

@@ -109,9 +109,20 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
             <span class="url-label">{t.config.server_url_label}:</span>
             <code id="mcp-remote-url" class="url-code" dir="ltr">{MCP_URL}</code>
           </div>
-          <button id="copy-url-btn" class="copy-url-btn" data-copied-text={t.config.copied_button}>
-            <span id="copy-url-text">{t.config.copy_url_button}</span>
-          </button>
+          <div class="url-actions">
+            <a
+              id="open-setup-link"
+              href="https://claude.ai/new#customize/connectors"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="open-setup-btn"
+            >
+              {t.config.open_setup_page}
+            </a>
+            <button id="copy-url-btn" class="copy-url-btn" data-copied-text={t.config.copied_button}>
+              <span id="copy-url-text">{t.config.copy_url_button}</span>
+            </button>
+          </div>
         </div>
 
         <div class="steps-wrapper">
@@ -148,6 +159,12 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
     claude_web: CLAUDE_WEB_STEPS,
     chatgpt_web: CHATGPT_WEB_STEPS,
     gemini_web: GEMINI_WEB_STEPS,
+  };
+
+  const webSetupUrls = {
+    claude_web: "https://claude.ai/new#customize/connectors",
+    chatgpt_web: "https://chatgpt.com/plugins",
+    gemini_web: "https://gemini.google.com/apps",
   };
 
   const ideConfigs = {
@@ -193,6 +210,11 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
         btn.classList.add("active");
         const tab = btn.getAttribute("data-tab");
         const steps = webSteps[tab];
+
+        const openSetupLink = document.getElementById("open-setup-link");
+        if (openSetupLink && webSetupUrls[tab]) {
+          openSetupLink.href = webSetupUrls[tab];
+        }
 
         if (stepsList && steps && Array.isArray(steps)) {
           stepsList.innerHTML = "";
@@ -413,6 +435,32 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
     border: 1px solid rgba(255, 255, 255, 0.1);
     direction: ltr !important;
     unicode-bidi: isolate;
+  }
+
+  .url-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .open-setup-btn {
+    background: transparent;
+    color: var(--lime);
+    border: 1px solid var(--lime);
+    padding: 8px 16px;
+    font: 700 13px "Tajawal", sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+  }
+
+  .open-setup-btn:hover {
+    background: rgba(198, 238, 103, 0.15);
+    transform: translateY(-2px);
+    color: var(--white);
   }
 
   .copy-url-btn {

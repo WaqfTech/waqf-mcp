@@ -54,7 +54,7 @@
     "group_ide": "Geliştirici IDE'leri",
     "tab_claude_web": "Claude.ai (Web)",
     "tab_chatgpt_web": "ChatGPT (Web)",
-    "tab_gemini_web": "Gemini (Web / CLI)",
+    "tab_gemini_web": "Gemini (Web)",
     "tab_claude": "Claude Desktop",
     "tab_cursor": "Cursor IDE",
     "tab_antigravity": "Antigravity",
@@ -64,25 +64,27 @@
     "copied_button": "Kopyalandı!",
     "server_url_label": "Uzak Sunucu URL'si",
     "web_guide_title": "Kurulum Adımları",
+    "open_setup_page": "Doğrudan Kurulum Sayfasını Aç ↗",
     "claude_web_steps": [
-      "claude.ai üzerinde sol alttaki profil simgenize tıklayarak Ayarlar'ı (Settings) açın.",
-      "Yan menüden 'Connectors' seçeneğini seçin ve 'Add custom connector' butonuna tıklayın.",
-      "İsim olarak 'WaqfTech Islamic Suite', URL olarak 'https://mcp.waqf.dev/mcp' girin.",
-      "'Add' butonuna tıklayarak kaydedin (OAuth kimlik doğrulaması gerekmez).",
-      "Sohbette '+' butonuna tıklayıp 'Connectors' altından WaqfTech bağlantısını etkinleştirin."
+      "https://claude.ai/new#customize/connectors bağlantısını açın (veya Ayarlar → Connectors bölümüne gidin).",
+      "'Add custom connector' butonuna tıklayın.",
+      "İsim: 'WaqfTech(); Islamic Suite', Sunucu URL: 'https://mcp.waqf.dev/mcp' girin.",
+      "'Add' butonuna tıklayarak kaydedin (genel açık vakıf uç noktasıdır, OAuth gerektirmez).",
+      "Herhangi bir sohbette '+' butonuna tıklayıp 'Connectors' altından WaqfTech'i etkinleştirin."
     ],
     "chatgpt_web_steps": [
-      "chatgpt.com üzerinde Ayarlar'ı açın ve 'Security and login' sekmesine gidin.",
-      "'Developer mode' seçeneğini açın.",
-      "Apps / Connectors bölümünde 'Create / Add Connection (+)' simgesine tıklayın.",
-      "İsim: 'WaqfTech Islamic Suite', Yöntem: 'HTTPS', Uç Nokta URL: 'https://mcp.waqf.dev/mcp', Kimlik Doğrulama: 'None' ayarlayın.",
-      "Sohbette '+' simgesine tıklayıp 'Developer mode' üzerinden İslami kaynaklara doğrudan erişin."
+      "Geliştirici Modunu Açın: chatgpt.com adresini açın, sol alttaki profilinize tıklayın, Settings → Security and login bölümünden 'Developer mode' seçeneğini etkinleştirin.",
+      "Eklentilere Gidin: chatgpt.com/plugins adresini açın (veya Ayarlar → Plugins), eklentilere göz atıp sağ üstteki '+' (artı) simgesine tıklayın.",
+      "Sunucu Bilgilerini Girin: İsim: 'WaqfTech(); Islamic Suite', Yöntem: 'Server URL', Sunucu URL: 'https://mcp.waqf.dev/mcp', Kimlik Doğrulama: 'None' seçin.",
+      "Onaylayın: 'I understand and want to continue' kutusunu işaretleyin ve 'Create' butonuna tıklayın.",
+      "Sohbette Kullanın: Yeni bir sohbet başlatın, WaqfTech kaynağını seçin veya 'What tools do you have available?' yazarak Kuran, Hadis ve Miras kaynaklarını sorgulamaya başlayın."
     ],
     "gemini_web_steps": [
-      "Gemini Web Notu: gemini.google.com şu an komut tabanlı Özel Gem'leri desteklemektedir; doğrudan MCP arayüzü Gemini Agent Platform ile kademeli olarak sunulmaktadır.",
-      "Seçenek A (Resmi Gemini CLI): 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' komutunu çalıştırarak araçları anında kullanın.",
-      "Seçenek B (Gemini Web Gem): gemini.google.com/gems adresinde özel bir Gem oluşturup sistem talimatlarını ekleyin.",
-      "Seçenek C (Gemini Enterprise): 'https://mcp.waqf.dev/mcp' adresine işaret eden bir StreamableHTTP MCP veri kaynağı yapılandırın."
+      "Tarayıcınızda https://gemini.google.com/apps adresini açın.",
+      "'Connected Apps' altında 'Add a custom app' seçeneğine tıklayın.",
+      "İsim: 'WaqfTech(); Islamic Suite', URL: 'https://mcp.waqf.dev/mcp' olarak ayarlayın.",
+      "Kaydedin ve özel bağlantılı uygulamayı onaylayın.",
+      "Gemini sohbetinde Kuran, Hadis ve klasik kaynakları doğrudan sorgulayarak araçları kullanın."
     ],
     "config_note": "İpucu: Yalnızca temel birleşik araçları görmek ve token tasarrufu sağlamak için '?suite=core' kullanabilirsiniz."
   },

@@ -54,7 +54,7 @@
     "group_ide": "بيئات التطوير (IDEs)",
     "tab_claude_web": "Claude.ai (Web)",
     "tab_chatgpt_web": "ChatGPT (Web)",
-    "tab_gemini_web": "Gemini (Web / CLI)",
+    "tab_gemini_web": "Gemini (Web)",
     "tab_claude": "Claude Desktop",
     "tab_cursor": "Cursor IDE",
     "tab_antigravity": "Antigravity",
@@ -64,25 +64,27 @@
     "copied_button": "تم النسخ!",
     "server_url_label": "رابط الخادم الموحد (Remote URL)",
     "web_guide_title": "خطوات الربط",
+    "open_setup_page": "فتح صفحة الربط المباشرة ↗",
     "claude_web_steps": [
-      "افتح الإعدادات (Settings) في موقع claude.ai عبر النقر على صورتك الشخصية في أسفل اليسار.",
-      "اختر من القائمة الجانبية قسم 'الموصلات' (Connectors) ثم انقر 'Add custom connector'.",
-      "أدخل الاسم: 'WaqfTech Islamic Suite' والرابط: 'https://mcp.waqf.dev/mcp'.",
-      "انقر على 'Add' للحفظ (لا يتطلب مصادقة OAuth).",
-      "في أي محادثة جديدة، انقر على زر '+' بجوار حقل الرسائل، واختر 'Connectors' ثم فعّل WaqfTech."
+      "افتح الرابط المباشر: https://claude.ai/new#customize/connectors (أو الإعدادات Settings ← Connectors).",
+      "انقر على زر 'Add custom connector'.",
+      "أدخل الاسم: 'WaqfTech(); Islamic Suite' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
+      "انقر على 'Add' للحفظ (خادم وقفي عام ومتاح بدون الحاجة لمصادقة OAuth).",
+      "في أي محادثة، انقر على زر '+' بجوار حقل الرسائل، واختر 'Connectors' ثم فعّل WaqfTech."
     ],
     "chatgpt_web_steps": [
-      "افتح الإعدادات (Settings) في موقع chatgpt.com وانتقل إلى قسم 'Security and login'.",
-      "قم بتفعيل 'وضع المطورين' (Developer mode).",
-      "في قسم التطبيقات والموصلات (Apps / Connectors)، انقر على إضافة اتصال جديد (+).",
-      "أدخل الاسم: 'WaqfTech Islamic Suite'، ونوع الاتصال: 'HTTPS'، ورابط الخادم: 'https://mcp.waqf.dev/mcp'، والمصادقة: 'None'.",
-      "في المحادثة، انقر على زر '+' واختر Developer mode للبحث المباشر في القرآن والسنة وكتب التراث."
+      "تفعيل وضع المطورين: افتح chatgpt.com، انقر على ملفك الشخصي أسفل اليسار، واختر الإعدادات (Settings) ← الأمان وتسجيل الدخول (Security and login)، ثم فعّل 'Developer mode'.",
+      "الانتقال إلى الإضافات: افتح chatgpt.com/plugins (أو من القائمة الجانبية Plugins)، ثم انقر على تصفح الإضافات (Browse plugins)، ثم انقر على أيقونة الزائد (+) بأعلى اليمين.",
+      "بيانات الخادم: أدخل الاسم: 'WaqfTech(); Islamic Suite'، والوصف: 'Federated Islamic MCP Gateway'، ونوع الاتصال: 'Server URL'، ورابط الخادم: 'https://mcp.waqf.dev/mcp'، ونوع المصادقة: 'None'.",
+      "التأكيد: حدد مربع 'I understand and want to continue' لتجاوز تحذير الإضافات الخارجية، ثم اضغط 'Create'.",
+      "الاستخدام في المحادثة: افتح محادثة جديدة تماماً (المحادثات السابقة لا تقرأ الإضافات الجديدة تلقائياً)، واختر الإضافة أو اسأل 'What tools do you have available?' للبحث في القرآن والسنة وكتب التراث."
     ],
     "gemini_web_steps": [
-      "ملاحظة Gemini Web: واجهة gemini.google.com الحالية تدعم الـ Gems المخصصة برمجياً، بينما يجري إطلاق موصلات MCP تدريجياً عبر منصة Gemini Agent.",
-      "الخيار الأول (أداة Gemini CLI الرسمية للمطورين): نفّذ الأمر 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' للربط الفوري واستدعاء الأدوات.",
-      "الخيار الثاني (مساعد مخصص Gem): أنشئ جوهرة مخصصة (Custom Gem) في gemini.google.com/gems مع توجيهها للاستفادة من واجهة الوقف.",
-      "الخيار الثالث (Gemini Enterprise للمؤسسات): أضف موصل بيانات StreamableHTTP موجهاً إلى 'https://mcp.waqf.dev/mcp'."
+      "افتح الرابط المباشر: https://gemini.google.com/apps في متصفحك.",
+      "تحت قسم 'التطبيقات المرتبطة' (Connected Apps)، انقر على 'Add a custom app'.",
+      "أدخل الاسم: 'WaqfTech(); Islamic Suite' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
+      "احفظ التطبيق المخصص واعتمد الربط.",
+      "في محادثة Gemini، اطرح أسئلتك للاستفادة مباشرة من أدوات البحث والتحليل في القرآن الكريم والسنة المطهرة والمكتبة التراثية."
     ],
     "config_note": "ملاحظة: يمكنك استخدام '?suite=core' للحصول على الأدوات الأساسية الموحدة فقط وتوفير مساحة السياق."
   },

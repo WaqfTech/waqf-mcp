@@ -64,25 +64,27 @@
     "copied_button": "Disalin!",
     "server_url_label": "URL Pelayan Remote",
     "web_guide_title": "Langkah Penyediaan",
+    "open_setup_page": "Buka Halaman Penyediaan ↗",
     "claude_web_steps": [
-      "Buka Tetapan (Settings) di claude.ai melalui ikon profil di bahagian bawah sebelah kiri.",
-      "Pilih 'Connectors' dalam menu sisi, kemudian klik 'Add custom connector'.",
-      "Masukkan Nama: 'WaqfTech Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
-      "Klik 'Add' untuk menyimpan (tiada pengesahan OAuth diperlukan).",
-      "Dalam ruangan sembang, klik butang '+' berhampiran kotak mesej, pilih 'Connectors', dan aktifkan WaqfTech."
+      "Buka https://claude.ai/new#customize/connectors (atau navigasi ke Settings → Connectors).",
+      "Klik butang 'Add custom connector'.",
+      "Tetapkan Nama: 'WaqfTech(); Islamic Suite' dan URL Pelayan: 'https://mcp.waqf.dev/mcp'.",
+      "Klik 'Add' untuk menyimpan (titik akhir wakaf terbuka awam, tanpa memerlukan OAuth).",
+      "Dalam mana-mana perbualan, klik ikon '+' bersebelahan ruang mesej, pilih 'Connectors', dan aktifkan WaqfTech."
     ],
     "chatgpt_web_steps": [
-      "Buka Tetapan di chatgpt.com dan pergi ke bahagian 'Security and login'.",
-      "Aktifkan 'Developer mode'.",
-      "Pada bahagian Apps / Connectors, klik 'Create / Add Connection (+)'.",
-      "Tetapkan Nama: 'WaqfTech Islamic Suite', Kaedah: 'HTTPS', Endpoint URL: 'https://mcp.waqf.dev/mcp', dan Auth: 'None'.",
-      "Dalam sembang, klik ikon '+' dan pilih Developer mode untuk membuat carian sumber Islam."
+      "Aktifkan Mod Pembangun: Buka chatgpt.com, klik profil anda di sudut kiri bawah, pilih Settings → Security and login, dan aktifkan 'Developer mode'.",
+      "Pergi ke Plugin: Buka chatgpt.com/plugins (atau Settings → Plugins di bar sisi kiri), klik Browse plugins, kemudian klik ikon '+' (tambah) berdekatan kotak carian di sudut kanan atas.",
+      "Masukkan Maklumat MCP: Tetapkan Nama: 'WaqfTech(); Islamic Suite', Penerangan: 'Federated Islamic MCP Gateway', Sambungan: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Pengesahan: 'None'.",
+      "Sahkan: Tandakan kotak 'I understand and want to continue' untuk melangkau amaran penyambung tidak disahkan, kemudian klik 'Create'.",
+      "Gunakan dalam Sembang: Mulakan perbualan baharu (sembang sedia ada tidak akan mengesan plugin baharu), pilih WaqfTech sebagai sumber atau tanya 'What tools do you have available?' untuk mula meneroka Al-Quran, Hadis, dan kitab turath."
     ],
     "gemini_web_steps": [
-      "Nota Gemini Web: gemini.google.com kini menyokong Custom Gems berasaskan arahan teks; penyambung MCP GUI langsung sedang dilancarkan melalui Gemini Agent Platform.",
-      "Pilihan A (Gemini CLI Rasmi): Jalankan 'gemini mcp add waqf-islamic-suite https://mcp.waqf.dev/mcp' untuk menggunakan alatan secara langsung.",
-      "Pilihan B (Gemini Web Gem): Cipta Custom Gem di gemini.google.com/gems bersama arahan khusus yang merujuk kepada Waqf MCP.",
-      "Pilihan C (Gemini Enterprise): Sediakan stor data MCP tersuai StreamableHTTP yang merujuk kepada 'https://mcp.waqf.dev/mcp'."
+      "Buka https://gemini.google.com/apps dalam penyemak imbas anda.",
+      "Di bawah 'Connected Apps', klik 'Add a custom app'.",
+      "Tetapkan Nama: 'WaqfTech(); Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Simpan dan luluskan aplikasi tersuai yang disambungkan.",
+      "Dalam sembang Gemini, kemukakan soalan untuk menggunakan alatan carian Al-Quran, Hadis, dan teks klasik Islam secara langsung."
     ],
     "config_note": "Petua: Gunakan '?suite=core' untuk memaparkan alatan asas sahaja dan menjimatkan token konteks."
   },

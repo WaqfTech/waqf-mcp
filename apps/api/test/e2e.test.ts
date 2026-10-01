@@ -23,6 +23,9 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, mockEnv, mockCtx);
 
     expect(res.status).toBe(200);
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
+    expect(res.headers.get("Link")).toContain('rel="service-doc"');
+    expect(res.headers.get("Link")).toContain('rel="service-desc"');
     const body = (await res.json()) as { status: string; federatedProviders?: unknown[]; providers?: unknown[] };
     expect(body.status).toBe("healthy");
   });
@@ -32,6 +35,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, mockEnv, mockCtx);
 
     expect(res.status).toBe(200);
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
     const body = (await res.json()) as { status: string; endpoint: string; suites: Record<string, string> };
     expect(body.status).toBe("healthy");
     expect(body.endpoint).toBe("/mcp");
@@ -201,6 +205,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, envWithWeb, mockCtx);
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("text/html");
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
     const html = await res.text();
     expect(html).toContain("Astro Web Landing");
     expect(mockWebFetch).toHaveBeenCalledTimes(1);
@@ -223,6 +228,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
 
     const res = await worker.fetch(req, envWithWeb, mockCtx);
     expect(res.status).toBe(200);
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
     expect(mockWebFetch).toHaveBeenCalledTimes(1);
   });
 

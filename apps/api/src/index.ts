@@ -30,6 +30,18 @@ const CORS_HEADERS = {
   ...SECURITY_HEADERS,
 };
 
+export const AGENT_DISCOVERY_LINK_HEADER = [
+  '</.well-known/api-catalog>; rel="api-catalog"',
+  '</llms.txt>; rel="service-doc"; type="text/markdown"',
+  '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
+  '</.well-known/ai-catalog.json>; rel="item"; type="application/json"',
+].join(", ");
+
+const DISCOVERY_HEADERS = {
+  ...CORS_HEADERS,
+  Link: AGENT_DISCOVERY_LINK_HEADER,
+};
+
 interface JsonRpcRequest {
   jsonrpc?: string;
   id?: string | number | null;
@@ -99,7 +111,10 @@ export default {
       // If browser accesses root "/" preferring HTML, delegate to Astro web worker via service binding
       const isHtmlPreferred = accept.includes("text/html") && !accept.includes("application/json");
       if (pathname === "/" && isHtmlPreferred && env.WEB) {
-        return env.WEB.fetch(request);
+        const res = await env.WEB.fetch(request);
+        const headers = new Headers(res.headers);
+        headers.set("Link", AGENT_DISCOVERY_LINK_HEADER);
+        return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
       }
 
       // Support SSE (Server-Sent Events) clients
@@ -117,7 +132,7 @@ export default {
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            ...CORS_HEADERS,
+            ...DISCOVERY_HEADERS,
           },
         });
       }
@@ -185,7 +200,7 @@ export default {
         {
           headers: {
             "Content-Type": "application/json; charset=utf-8",
-            ...CORS_HEADERS,
+            ...DISCOVERY_HEADERS,
           },
         }
       );
@@ -494,7 +509,20 @@ export default {
 
     // Delegate non-API web routes (e.g. /en, /tr, /id, /ms, /_astro/*) to Astro web worker
     if (env.WEB) {
-      return env.WEB.fetch(request);
+      const res = await env.WEB.fetch(request);
+      if (
+        pathname === "/" ||
+        pathname === "/ar" ||
+        pathname === "/en" ||
+        pathname === "/tr" ||
+        pathname === "/id" ||
+        pathname === "/ms"
+      ) {
+        const headers = new Headers(res.headers);
+        headers.set("Link", AGENT_DISCOVERY_LINK_HEADER);
+        return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+      }
+      return res;
     }
 
     return new Response(JSON.stringify({ error: "Not Found" }), {

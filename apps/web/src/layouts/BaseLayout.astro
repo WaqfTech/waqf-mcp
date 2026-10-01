@@ -20,6 +20,9 @@ const currentPath = Astro.url.pathname;
     <title>{t.meta.title}</title>
     <meta name="description" content={t.meta.description} />
     <link rel="icon" type="image/svg+xml" href="/waqftech-logo.svg" />
+    <link rel="api-catalog" type="application/linkset+json" href="/.well-known/api-catalog" />
+    <link rel="service-doc" type="text/markdown" href="/llms.txt" />
+    <link rel="service-desc" type="application/json" href="/.well-known/mcp/server-card.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

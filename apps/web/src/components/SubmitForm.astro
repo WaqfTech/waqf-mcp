@@ -18,31 +18,66 @@ const { t } = Astro.props;
       <p class="section-desc">{t.submit.subtitle}</p>
     </div>
 
-    <form id="mcp-submission-form" class="submission-card">
+    <form
+      id="mcp-submission-form"
+      class="submission-card"
+      toolname="submit_islamic_mcp_server"
+      tooldescription="Submit an Islamic Model Context Protocol (MCP) server for verification and federated catalog indexing on mcp.waqf.dev"
+    >
       <div class="form-grid">
         <div class="form-group">
           <label for="submitterName">{t.submit.form_name} *</label>
-          <input type="text" id="submitterName" name="submitterName" required />
+          <input
+            type="text"
+            id="submitterName"
+            name="submitterName"
+            toolparamdescription="Name of the person or organization submitting the MCP server"
+            required
+          />
         </div>
 
         <div class="form-group">
           <label for="submitterEmail">{t.submit.form_email} *</label>
-          <input type="email" id="submitterEmail" name="submitterEmail" required />
+          <input
+            type="email"
+            id="submitterEmail"
+            name="submitterEmail"
+            toolparamdescription="Contact email address of the developer or maintainer"
+            required
+          />
         </div>
 
         <div class="form-group">
           <label for="serverName">{t.submit.form_server_name} *</label>
-          <input type="text" id="serverName" name="serverName" placeholder="e.g. Hadith Explorer MCP" required />
+          <input
+            type="text"
+            id="serverName"
+            name="serverName"
+            placeholder="e.g. Hadith Explorer MCP"
+            toolparamdescription="Display title of the Islamic MCP server"
+            required
+          />
         </div>
 
         <div class="form-group">
           <label for="serverUrl">{t.submit.form_server_url} *</label>
-          <input type="url" id="serverUrl" name="serverUrl" placeholder="https://example.com/mcp" required />
+          <input
+            type="url"
+            id="serverUrl"
+            name="serverUrl"
+            placeholder="https://example.com/mcp"
+            toolparamdescription="Publicly reachable HTTPS endpoint URL of the MCP server"
+            required
+          />
         </div>
 
         <div class="form-group full-width">
           <label for="category">{t.submit.form_category}</label>
-          <select id="category" name="category">
+          <select
+            id="category"
+            name="category"
+            toolparamdescription="Islamic knowledge category: quran, hadith, tafsir, fiqh, or tools"
+          >
             <option value="quran">{t.submit.cat_quran}</option>
             <option value="hadith">{t.submit.cat_hadith}</option>
             <option value="tafsir">{t.submit.cat_tafsir}</option>
@@ -58,6 +93,7 @@ const { t } = Astro.props;
             name="description"
             rows="4"
             placeholder={t.submit.form_desc_placeholder}
+            toolparamdescription="Detailed description of tools provided and Islamic sources referenced"
           ></textarea>
         </div>
       </div>

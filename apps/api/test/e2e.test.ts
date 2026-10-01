@@ -147,4 +147,39 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const body = (await res.json()) as { success: boolean };
     expect(body.success).toBe(true);
   });
+
+  it("POST /api/submissions rejects invalid URL protocols", async () => {
+    const req = new Request("http://localhost:8787/api/submissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submitterName: "Zayd",
+        submitterEmail: "zayd@example.com",
+        serverName: "Invalid Server",
+        serverUrl: "javascript:alert(1)",
+        category: "quran",
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toContain("serverUrl must start with https:// or http://");
+  });
+
+  it("POST /mcp rejects oversized payloads exceeding 1MB", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": "2097152", // 2MB
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(413);
+    const body = (await res.json()) as { error: { message: string } };
+    expect(body.error.message).toContain("Payload exceeds 1MB limit");
+  });
 });

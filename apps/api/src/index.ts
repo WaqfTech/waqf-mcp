@@ -6,16 +6,23 @@ import { createDb, mcpSubmissions } from "@waqf/db";
 
 export interface Env {
   DB: D1Database;
+  TELEMETRY_SALT?: string;
 }
 
 // Module-level hoisting per cf-cpu-audit: compile once per isolate
 const registry = new ProviderRegistry();
 const router = new FederationRouter(registry);
 
+const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With",
+  ...SECURITY_HEADERS,
 };
 
 interface JsonRpcRequest {
@@ -148,16 +155,41 @@ export default {
           );
         }
 
+        // Validate field lengths to prevent storage abuse
+        if (
+          body.serverName.length > 100 ||
+          (body.submitterName && body.submitterName.length > 100) ||
+          body.submitterEmail.length > 255 ||
+          body.serverUrl.length > 500 ||
+          (body.description && body.description.length > 2000)
+        ) {
+          return new Response(
+            JSON.stringify({ error: "One or more fields exceed maximum allowed character length" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        // Validate URL format (must be valid HTTP/HTTPS)
+        if (!body.serverUrl.startsWith("https://") && !body.serverUrl.startsWith("http://")) {
+          return new Response(
+            JSON.stringify({ error: "serverUrl must start with https:// or http://" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        const validCategories = ["quran", "hadith", "tafsir", "fiqh", "tools"] as const;
+        const category = validCategories.includes(body.category) ? body.category : "tools";
+
         if (env.DB) {
           const db = createDb(env.DB);
           await db.insert(mcpSubmissions).values({
             id: crypto.randomUUID(),
-            submitterName: body.submitterName,
+            submitterName: body.submitterName || "Anonymous",
             submitterEmail: body.submitterEmail,
             serverName: body.serverName,
             serverUrl: body.serverUrl,
             description: body.description ?? "",
-            category: body.category ?? "tools",
+            category,
             status: "pending",
             createdAt: new Date().toISOString(),
           });
@@ -178,6 +210,19 @@ export default {
 
     // MCP Streamable HTTP / POST Endpoint
     if (request.method === "POST" && (pathname === "/mcp" || pathname === "/")) {
+      // Enforce 1MB request body limit to prevent memory exhaustion
+      const contentLength = Number(request.headers.get("content-length") || 0);
+      if (contentLength > 1024 * 1024) {
+        return new Response(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: null,
+            error: { code: -32600, message: "Invalid Request: Payload exceeds 1MB limit" },
+          }),
+          { status: 413, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      }
+
       let rpc: JsonRpcRequest;
       try {
         rpc = (await request.json()) as JsonRpcRequest;
@@ -195,7 +240,7 @@ export default {
       const reqId = rpc.id ?? null;
       const suite = url.searchParams.get("suite") ?? "all";
       const cacheService = env.DB ? new D1CacheService(env.DB) : undefined;
-      const telemetryService = env.DB ? new D1TelemetryService(env.DB) : undefined;
+      const telemetryService = env.DB ? new D1TelemetryService(env.DB, env.TELEMETRY_SALT) : undefined;
 
       // Extract CF Edge Metadata
       const cf = (request as unknown as { cf?: IncomingRequestCfProperties }).cf;

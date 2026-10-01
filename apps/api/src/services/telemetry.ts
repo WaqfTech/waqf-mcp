@@ -1,10 +1,13 @@
 import { createDb, mcpLogs, type NewMcpLog } from "@waqf/db";
 
 export class D1TelemetryService {
-  constructor(private d1: D1Database) {}
+  constructor(
+    private d1: D1Database,
+    private salt = "waqf-telemetry-salt-2026"
+  ) {}
 
-  public async hashIp(ip: string, salt = "waqf-telemetry-salt-2026"): Promise<string> {
-    const raw = `${salt}:${ip}`;
+  public async hashIp(ip: string): Promise<string> {
+    const raw = `${this.salt}:${ip}`;
     const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
     const hashArray = Array.from(new Uint8Array(buffer));
     return hashArray

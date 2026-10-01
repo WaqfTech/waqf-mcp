@@ -68,7 +68,7 @@ export default {
         JSON.stringify(
           {
             status: "healthy",
-            name: "Waqf Islamic MCP Federation Gateway",
+            name: "WaqfTech() Islamic MCP Federation Gateway",
             version: "1.0.0",
             protocolVersion: "2024-11-05",
             endpoint: "/mcp",

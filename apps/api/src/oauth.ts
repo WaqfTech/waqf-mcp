@@ -24,3 +24,15 @@ export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
   null,
   2
 );
+
+export const OAUTH_PROTECTED_RESOURCE_JSON = JSON.stringify(
+  {
+    resource: "https://mcp.waqf.dev",
+    authorization_servers: ["https://mcp.waqf.dev"],
+    scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
+    bearer_methods_supported: ["header"],
+    resource_documentation: "https://mcp.waqf.dev/auth.md",
+  },
+  null,
+  2
+);

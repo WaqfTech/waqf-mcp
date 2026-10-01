@@ -379,5 +379,17 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.scopes_supported).toContain("mcp:read");
     expect(data.agent_auth?.public_access).toBe(true);
   });
+
+  it("GET /.well-known/oauth-protected-resource returns RFC 9728 metadata", async () => {
+    const req = new Request("http://localhost:8787/.well-known/oauth-protected-resource");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { resource: string; authorization_servers: string[]; scopes_supported: string[] };
+    expect(data.resource).toBe("https://mcp.waqf.dev");
+    expect(data.authorization_servers).toContain("https://mcp.waqf.dev");
+    expect(data.scopes_supported).toContain("mcp:read");
+  });
 });
 

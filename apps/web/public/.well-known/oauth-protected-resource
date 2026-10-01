@@ -1,0 +1,16 @@
+{
+  "resource": "https://mcp.waqf.dev",
+  "authorization_servers": [
+    "https://mcp.waqf.dev"
+  ],
+  "scopes_supported": [
+    "mcp:read",
+    "mcp:tools",
+    "telemetry:read",
+    "admin"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ],
+  "resource_documentation": "https://mcp.waqf.dev/auth.md"
+}

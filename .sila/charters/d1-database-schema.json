@@ -1,0 +1,22 @@
+{
+  "goal_slug": "d1-database-schema",
+  "agent": "antigravity",
+  "allow_paths": [
+    "packages/db/src/schema.ts",
+    "packages/db/src/index.ts",
+    "packages/db/drizzle.config.ts",
+    "packages/db/drizzle",
+    "goals/d1-database-schema/*"
+  ],
+  "deny_paths": [
+    "research/*",
+    ".git/*"
+  ],
+  "required_checks": [
+    "git diff --check",
+    "sila gate"
+  ],
+  "max_duration": 7200000000000,
+  "lock_token": "dbf20b4c-0ec2-4915-ba32-db9c6dd1c43f",
+  "created_at": "2026-10-01T07:18:53.40676923Z"
+}

@@ -3,6 +3,7 @@ import { FederationRouter } from "./core/router";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
 import { createDb, mcpSubmissions } from "@waqf/db";
+import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
 
 export interface Env {
   DB: D1Database;
@@ -43,6 +44,27 @@ export default {
     // Handle CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    // Standard LLM / AI Agent Discovery Endpoints
+    if (request.method === "GET" && pathname === "/llms.txt") {
+      return new Response(LLMS_TXT, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...CORS_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/llms-full.txt") {
+      return new Response(LLMS_FULL_TXT, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...CORS_HEADERS,
+        },
+      });
     }
 
     // Health, Info, and MCP GET Discovery / SSE Endpoint
@@ -100,6 +122,8 @@ export default {
             links: {
               portal: "https://mcp.waqf.dev/",
               documentation: "https://mcp.waqf.dev/#setup",
+              llms: "https://mcp.waqf.dev/llms.txt",
+              llmsFull: "https://mcp.waqf.dev/llms-full.txt",
               submitMcp: "https://mcp.waqf.dev/#submit",
               repository: "https://github.com/waqftech/waqf-mcp",
               license: "https://github.com/WaqfTech/waqf-license-draft",

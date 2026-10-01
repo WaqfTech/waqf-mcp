@@ -1,0 +1,163 @@
+# Waqf Islamic MCP Federation Gateway (`mcp.waqf.dev`)
+
+> An edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath heritage literature, and scholarly search) into a single, unified interface for AI assistants, IDEs, and autonomous agents.
+
+Waqf MCP federates independent Islamic MCP servers into one endpoint (`https://mcp.waqf.dev/mcp`), unifies divergent schemas, caches immutable texts in Cloudflare D1 SQLite, and provides token-optimized query profiles to prevent agent context window bloat.
+
+## Quick Links
+
+- [Full Technical Reference (llms-full.txt)](https://mcp.waqf.dev/llms-full.txt): Complete tool schemas, parameters, and comprehensive integration guide.
+- [Web Portal](https://mcp.waqf.dev/): Multi-lingual landing page with interactive setup guides and documentation.
+- [GitHub Repository](https://github.com/waqftech/waqf-mcp): Open-source monorepo.
+- [License (Waqf-DPL 1.0)](https://github.com/WaqfTech/waqf-license-draft): Digital Waqf Public License.
+- [WaqfTech Foundation](https://waqftech.org/): Open-source Islamic technology foundation.
+
+## Connection Endpoints
+
+- **Streamable HTTP (JSON-RPC 2.0)**: `POST https://mcp.waqf.dev/mcp`
+- **Server-Sent Events (SSE)**: `GET https://mcp.waqf.dev/sse` (or `GET /mcp` with `Accept: text/event-stream`)
+- **Gateway Discovery**: `GET https://mcp.waqf.dev/` (returns health status, federated providers, available suites)
+- **Authentication**: None required for public MCP tools. Completely open and free of charge.
+
+> ⚠️ **Cloudflare WAF Bot Notice**: When calling `https://mcp.waqf.dev/mcp` programmatically, always include a custom `User-Agent` header (e.g. `User-Agent: my-agent/1.0`). Generic default scrapers like `Python-urllib` are blocked by Cloudflare WAF.
+
+## Query Profiles (Agent Context Optimization)
+
+Loading 40+ tools into an LLM's system prompt consumes excessive context tokens. Waqf MCP supports targeted suites via the `?suite=` query parameter:
+
+- `https://mcp.waqf.dev/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,200 tokens total).
+- `https://mcp.waqf.dev/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
+- `https://mcp.waqf.dev/mcp?suite=turath`: Exposes classical Islamic heritage books, Hadith critique, and scholarly libraries.
+- `https://mcp.waqf.dev/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
+- `https://mcp.waqf.dev/mcp` (or `?suite=all`): Full federation suite with all 42 tools across all 5 providers.
+
+## Federated Providers
+
+1. **Tafsir Center for Quranic Studies** (`tafsir_net`):
+   - Host: `https://mcp.tafsir.net/mcp` (SSE)
+   - Scope: Authentic Tafsir compendia (al-Mukhtasar, al-Tabari, Ibn Kathir, al-Sa'di), Asbab al-Nuzul (reasons for revelation), Qira'at variants, word morphology, and Quranic statistics.
+2. **Bahouth Quran & Tafsir Project** (`bahouth`):
+   - Host: `https://bahouth.tafsir.net/mcp` (JSON-RPC)
+   - Scope: Quranic root search, morphological analysis, verse words, thematic topics, and verse lookups.
+3. **Turath Islamic Heritage Library** (`turath`):
+   - Host: `https://mcp.turath.io/mcp/` (JSON-RPC)
+   - Scope: Search across tens of thousands of classical volumes, Hadith compendia, fiqh treatises, author biographies, and page-level text extraction.
+4. **Sheikh Maher Al-Fahel Scholarly Library** (`maheralfahel`):
+   - Host: `https://maheralfahel.net/mcp/` (SSE)
+   - Scope: Hadith sciences (Mustalah al-Hadith), scholarly verification (Tahqiq), verified publications, and audio/video lectures.
+5. **Fihris Islamic Web Search** (`fihris`):
+   - Host: `https://search.waqf.app/api/mcp` (JSON-RPC)
+   - Scope: Curated Google Custom Search across 38+ authentic Islamic scholarship portals, academic research journals, and verified fatwa councils.
+
+## Canonical Tools Reference (`?suite=core`)
+
+Canonical tools unify divergent upstream interfaces into consistent, standardized tool signatures:
+
+### 1. `waqf_quran_get_ayah`
+Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authentic Tafsir.
+- **Parameters**:
+  - `surah` (number, required): Surah number (1–114).
+  - `ayah` (number, required): Ayah number (1–286).
+  - `includeTafsir` (boolean, optional): Include tafsir explanation (default: `true`).
+  - `tafsirSource` (string, optional): Tafsir source key (default: `"almukhtasar"`). Supported: `"almukhtasar"`, `"al-tabari"`, `"ibn-kathir"`, `"al-saadi"`, `"al-qurtubi"`.
+
+### 2. `waqf_hadith_search`
+Search classical Hadith and scholarly Islamic literature using semantic or lexical queries.
+- **Parameters**:
+  - `query` (string, required): Search query in Arabic or English (e.g. `"إنما الأعمال بالنيات"`).
+  - `book` (string, optional): Specific book filter (e.g. `"bukhari"`, `"muslim"`, `"tirmidhi"`).
+  - `limit` (number, optional): Maximum results to return (default: `5`).
+
+### 3. `waqf_turath_search_books`
+Search the vast Turath Islamic library catalog for classical books, treatises, and manuscripts.
+- **Parameters**:
+  - `query` (string, required): Book title, author name, or topic in Arabic.
+  - `category` (string, optional): Optional category filter (e.g. `"تفسير"`, `"حديث"`, `"عقيدة"`, `"فقه"`).
+  - `limit` (number, optional): Maximum results (default: `10`).
+
+### 4. `waqf_search_scholarship`
+Search across 38+ authentic Islamic scholarship portals (fatwas, research journals, classical treatises) using Fihris Islamic Search.
+- **Parameters**:
+  - `query` (string, required): Search keywords or question in Arabic or English.
+  - `fileType` (string, optional): `"pdf" | "doc" | "docx" | "txt"`.
+  - `dateRestrict` (string, optional): `"d1" | "w1" | "m1" | "y1"` (past day, week, month, year).
+  - `page` (number, optional): Page number for pagination (default: `1`).
+
+## Client Configurations
+
+### Claude Desktop (`claude_desktop_config.json`)
+```json
+{
+  "mcpServers": {
+    "waqf-islamic-core": {
+      "url": "https://mcp.waqf.dev/mcp?suite=core"
+    }
+  }
+}
+```
+
+### Cursor (`.cursor/mcp.json`)
+```json
+{
+  "mcpServers": {
+    "waqf-islamic-core": {
+      "url": "https://mcp.waqf.dev/mcp?suite=core"
+    }
+  }
+}
+```
+
+### Antigravity / Gemini CLI (`mcp_config.json`)
+```json
+{
+  "mcpServers": {
+    "waqf-islamic-core": {
+      "url": "https://mcp.waqf.dev/mcp?suite=core"
+    }
+  }
+}
+```
+
+### Direct JSON-RPC 2.0 Example (cURL)
+```bash
+curl -s -X POST https://mcp.waqf.dev/mcp?suite=core \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: WaqfAgent/1.0" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "waqf_quran_get_ayah",
+      "arguments": { "surah": 1, "ayah": 1 }
+    }
+  }'
+```
+
+### Python Integration (`httpx`)
+```python
+import httpx
+
+client = httpx.Client(
+    base_url="https://mcp.waqf.dev",
+    headers={"User-Agent": "MyAgent/1.0", "Content-Type": "application/json"}
+)
+
+response = client.post("/mcp?suite=core", json={
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+        "name": "waqf_search_scholarship",
+        "arguments": {"query": "شروط الصلاة"}
+    }
+})
+print(response.json()["result"]["content"][0]["text"])
+```
+
+## Runtime Architecture & Performance
+
+- **Runtime**: Stateless Cloudflare Workers (V8 Isolate) with Streamable HTTP transport. Zero Durable Objects leased.
+- **Edge Cache**: Cloudflare D1 SQLite (`mcp_cache`). Cached queries return in `< 15ms`.
+- **Non-blocking Telemetry**: Gateway logs (Geo, ASN, IP hash, latency) execute inside `ctx.waitUntil()` and never block response delivery.
+- **Loop Prevention**: Gateway injects `X-Waqf-Federated-By: mcp.waqf.dev` on all upstream requests.

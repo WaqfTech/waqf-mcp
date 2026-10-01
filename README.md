@@ -19,6 +19,7 @@ Instead of forcing users to configure 10+ independent Islamic MCP servers in the
 4. **Collision Defense & Normalization**: Namespaces provider tools (`bahouth__get_verse`, `tafsir_net__fetch_ayah`, `turath__get_book`) and provides unified canonical tools (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`).
 5. **Context Window Protection**: Supports `?suite=core` to expose only curated canonical tools and prevent prompt token bloat.
 6. **Multi-lingual Landing Page**: Built with Astro 7+, Arabic-first (RTL default), English, Turkish, Indonesian, and Malaysian, using `dev.waqftech.org` design tokens with zero embedded strings (`lang/{lang}.json`).
+7. **Agent & LLM Discovery**: Standardized [`llms.txt`](https://mcp.waqf.dev/llms.txt) and comprehensive [`llms-full.txt`](https://mcp.waqf.dev/llms-full.txt) explaining the gateway, tools, and schemas in full detail for autonomous agents.
 
 ---
 

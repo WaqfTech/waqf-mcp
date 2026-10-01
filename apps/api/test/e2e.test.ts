@@ -225,4 +225,30 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(mockWebFetch).toHaveBeenCalledTimes(1);
   });
+
+  it("GET /llms.txt returns agent discovery markdown with 200", async () => {
+    const req = new Request("http://localhost:8787/llms.txt");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/plain");
+    const text = await res.text();
+    expect(text).toContain("# Waqf Islamic MCP Federation Gateway");
+    expect(text).toContain("waqf_quran_get_ayah");
+    expect(text).toContain("https://mcp.waqf.dev/llms-full.txt");
+  });
+
+  it("GET /llms-full.txt returns full technical catalog with 200", async () => {
+    const req = new Request("http://localhost:8787/llms-full.txt");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/plain");
+    const text = await res.text();
+    expect(text).toContain("Waqf Islamic MCP Federation Gateway — Full Technical Reference");
+    expect(text).toContain("waqf_search_scholarship");
+    expect(text).toContain("tafsir_net__fetch_ayah");
+    expect(text).toContain("fihris__search_islamic_sources");
+  });
 });
+

@@ -62,6 +62,85 @@ const CLINE_CONFIG = JSON.stringify(
 const CLAUDE_WEB_STEPS = t.config.claude_web_steps;
 const CHATGPT_WEB_STEPS = t.config.chatgpt_web_steps;
 const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
+
+const PYTHON_SNIPPET = `import httpx
+
+# Cloudflare bot protection requires a custom User-Agent header
+headers = {
+    "User-Agent": "WaqfClient/1.0 (https://waqf.dev)",
+    "Content-Type": "application/json",
+}
+
+# 1. Discover available tools (use ?suite=core for canonical tools)
+tools_resp = httpx.post(
+    "https://mcp.waqf.dev/mcp?suite=core",
+    json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+    headers=headers,
+)
+print("Tools:", [t["name"] for t in tools_resp.json()["result"]["tools"]])
+
+# 2. Call canonical Quran Ayah tool with automatic upstream fallback
+payload = {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+        "name": "waqf_quran_get_ayah",
+        "arguments": {"surah": 112, "ayah": 1}
+    }
+}
+ayah_resp = httpx.post("https://mcp.waqf.dev/mcp", json=payload, headers=headers)
+print("Ayah Result:", ayah_resp.json()["result"]["content"][0]["text"])
+`;
+
+const TYPESCRIPT_SNIPPET = `import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+
+// Cloudflare WAF requires a custom User-Agent for programmatic clients
+const transport = new StreamableHttpClientTransport(
+  new URL("https://mcp.waqf.dev/mcp?suite=core"),
+  {
+    headers: {
+      "User-Agent": "WaqfClient/1.0 (https://waqf.dev)",
+    },
+  }
+);
+
+const client = new Client({ name: "waqf-app", version: "1.0.0" });
+await client.connect(transport);
+
+// List available canonical tools
+const { tools } = await client.listTools();
+console.log("Federated Tools:", tools.map(t => t.name));
+
+// Call canonical Quran lookup with automatic fallback
+const result = await client.callTool({
+  name: "waqf_quran_get_ayah",
+  arguments: { surah: 112, ayah: 1 },
+});
+console.log("Ayah Result:", (result.content[0] as { text: string }).text);
+`;
+
+const CURL_SNIPPET = `# 1. List canonical tools (saving tokens with ?suite=core)
+curl -s -X POST "https://mcp.waqf.dev/mcp?suite=core" \\
+  -H "Content-Type: application/json" \\
+  -H "User-Agent: WaqfClient/1.0" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# 2. Call canonical Quran verse lookup (with automatic fallback)
+curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+  -H "Content-Type: application/json" \\
+  -H "User-Agent: WaqfClient/1.0" \\
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "waqf_quran_get_ayah",
+      "arguments": { "surah": 112, "ayah": 1 }
+    }
+  }'
+`;
 ---
 
 <section id="setup" class="config-section">
@@ -75,7 +154,7 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
     </div>
 
     <div class="config-box">
-      <!-- Category Switcher: Web Assistants vs IDEs -->
+      <!-- Category Switcher: Web Assistants vs IDEs vs Code SDKs -->
       <div class="group-switcher">
         <button class="group-btn active" data-group="web">
           <span class="group-dot"></span>
@@ -84,6 +163,10 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
         <button class="group-btn" data-group="ide">
           <span class="group-dot"></span>
           {t.config.group_ide}
+        </button>
+        <button class="group-btn" data-group="code">
+          <span class="group-dot"></span>
+          {t.config.group_code}
         </button>
       </div>
 
@@ -100,6 +183,13 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
         <button class="tab-btn" data-tab="cursor">{t.config.tab_cursor}</button>
         <button class="tab-btn" data-tab="antigravity">{t.config.tab_antigravity}</button>
         <button class="tab-btn" data-tab="cline">{t.config.tab_cline}</button>
+      </div>
+
+      <!-- Code SDKs Tabs -->
+      <div id="code-tabs" class="tab-bar hidden">
+        <button class="tab-btn active" data-tab="python">{t.config.tab_python}</button>
+        <button class="tab-btn" data-tab="typescript">{t.config.tab_typescript}</button>
+        <button class="tab-btn" data-tab="curl">{t.config.tab_curl}</button>
       </div>
 
       <!-- Web Assistants Step-by-Step Panel -->
@@ -146,6 +236,23 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
         </button>
       </div>
 
+      <!-- Developer Code Snippet Panel -->
+      <div id="code-snippet-panel" class="code-panel-wrapper hidden">
+        <div class="bot-notice-box">
+          <div class="bot-notice-icon">🛡️</div>
+          <div>
+            <strong>{t.config.dev_notice_title}</strong>
+            <p>{t.config.dev_notice_desc}</p>
+          </div>
+        </div>
+        <div class="code-container" dir="ltr">
+          <pre dir="ltr"><code id="dev-code" dir="ltr">{PYTHON_SNIPPET}</code></pre>
+          <button id="dev-copy-btn" class="copy-action-btn" data-copied-text={t.config.copied_button}>
+            <span id="dev-copy-text">{t.config.copy_button}</span>
+          </button>
+        </div>
+      </div>
+
       <div class="config-footer">
         <span class="tip-icon">💡</span>
         <span>{t.config.config_note}</span>
@@ -154,7 +261,7 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
   </div>
 </section>
 
-<script is:inline define:vars={{ CLAUDE_CONFIG, CURSOR_CONFIG, ANTIGRAVITY_CONFIG, CLINE_CONFIG, CLAUDE_WEB_STEPS, CHATGPT_WEB_STEPS, GEMINI_WEB_STEPS, MCP_URL }}>
+<script is:inline define:vars={{ CLAUDE_CONFIG, CURSOR_CONFIG, ANTIGRAVITY_CONFIG, CLINE_CONFIG, CLAUDE_WEB_STEPS, CHATGPT_WEB_STEPS, GEMINI_WEB_STEPS, MCP_URL, PYTHON_SNIPPET, TYPESCRIPT_SNIPPET, CURL_SNIPPET }}>
   const webSteps = {
     claude_web: CLAUDE_WEB_STEPS,
     chatgpt_web: CHATGPT_WEB_STEPS,
@@ -174,12 +281,20 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
     cline: CLINE_CONFIG,
   };
 
-  // Switch between Web and IDE groups
+  const codeSnippets = {
+    python: PYTHON_SNIPPET,
+    typescript: TYPESCRIPT_SNIPPET,
+    curl: CURL_SNIPPET,
+  };
+
+  // Switch between Web, IDE, and Code groups
   const groupBtns = document.querySelectorAll(".group-btn");
   const webTabs = document.getElementById("web-tabs");
   const ideTabs = document.getElementById("ide-tabs");
+  const codeTabs = document.getElementById("code-tabs");
   const webGuidePanel = document.getElementById("web-guide-panel");
   const ideCodePanel = document.getElementById("ide-code-panel");
+  const codeSnippetPanel = document.getElementById("code-snippet-panel");
 
   groupBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -190,13 +305,24 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
       if (group === "web") {
         if (webTabs) webTabs.classList.remove("hidden");
         if (ideTabs) ideTabs.classList.add("hidden");
+        if (codeTabs) codeTabs.classList.add("hidden");
         if (webGuidePanel) webGuidePanel.classList.remove("hidden");
         if (ideCodePanel) ideCodePanel.classList.add("hidden");
-      } else {
+        if (codeSnippetPanel) codeSnippetPanel.classList.add("hidden");
+      } else if (group === "ide") {
         if (webTabs) webTabs.classList.add("hidden");
         if (ideTabs) ideTabs.classList.remove("hidden");
+        if (codeTabs) codeTabs.classList.add("hidden");
         if (webGuidePanel) webGuidePanel.classList.add("hidden");
         if (ideCodePanel) ideCodePanel.classList.remove("hidden");
+        if (codeSnippetPanel) codeSnippetPanel.classList.add("hidden");
+      } else if (group === "code") {
+        if (webTabs) webTabs.classList.add("hidden");
+        if (ideTabs) ideTabs.classList.add("hidden");
+        if (codeTabs) codeTabs.classList.remove("hidden");
+        if (webGuidePanel) webGuidePanel.classList.add("hidden");
+        if (ideCodePanel) ideCodePanel.classList.add("hidden");
+        if (codeSnippetPanel) codeSnippetPanel.classList.remove("hidden");
       }
     });
   });
@@ -243,6 +369,21 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
     });
   }
 
+  // Handle Code Snippets Tab switching
+  const devCodeEl = document.getElementById("dev-code");
+  if (codeTabs) {
+    codeTabs.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        codeTabs.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.getAttribute("data-tab");
+        if (devCodeEl && codeSnippets[tab]) {
+          devCodeEl.textContent = codeSnippets[tab];
+        }
+      });
+    });
+  }
+
   // Copy Remote URL button
   const copyUrlBtn = document.getElementById("copy-url-btn");
   const copyUrlText = document.getElementById("copy-url-text");
@@ -280,6 +421,28 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
         setTimeout(() => {
           if (copyText) copyText.textContent = originalText;
           copyBtn.classList.remove("copied");
+        }, 2000);
+      } catch (err) {
+        console.error("Clipboard write error:", err);
+      }
+    });
+  }
+
+  // Copy Dev Code Snippet button
+  const devCopyBtn = document.getElementById("dev-copy-btn");
+  const devCopyText = document.getElementById("dev-copy-text");
+  const origDevCopyText = devCopyText ? devCopyText.textContent : "Copy";
+  const copiedDevText = devCopyBtn ? devCopyBtn.getAttribute("data-copied-text") : "Copied!";
+
+  if (devCopyBtn && devCodeEl) {
+    devCopyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(devCodeEl.textContent);
+        if (devCopyText) devCopyText.textContent = copiedDevText;
+        devCopyBtn.classList.add("copied");
+        setTimeout(() => {
+          if (devCopyText) devCopyText.textContent = origDevCopyText;
+          devCopyBtn.classList.remove("copied");
         }, 2000);
       } catch (err) {
         console.error("Clipboard write error:", err);
@@ -564,6 +727,42 @@ const GEMINI_WEB_STEPS = t.config.gemini_web_steps;
   .copy-action-btn.copied {
     background: var(--tide);
     color: var(--white);
+  }
+
+  /* Developer Code Snippet & Bot Notice */
+  .code-panel-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bot-notice-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    background: rgba(230, 163, 122, 0.12);
+    border-bottom: 1px solid rgba(230, 163, 122, 0.25);
+    color: #f7d5c0;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .bot-notice-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .bot-notice-box strong {
+    color: var(--clay);
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .bot-notice-box p {
+    margin: 0;
+    color: #d1b8ab;
   }
 
   /* Config Footer */

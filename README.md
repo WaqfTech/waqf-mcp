@@ -89,6 +89,97 @@ Add the following configuration block to your AI tool of choice:
 
 ---
 
+## 💻 Developer Code Integration & SDKs
+
+> 🛡️ **Cloudflare WAF Bot Protection Notice**:
+> Cloudflare's Automated Bot Defense automatically challenges or drops requests bearing default generic scrapers (e.g. `Python-urllib/3.x`). When calling `https://mcp.waqf.dev/mcp` programmatically, **always supply a custom `User-Agent` header** (e.g. `User-Agent: my-app/1.0.0`).
+
+### 1. Python (`httpx` / `requests`)
+```python
+import httpx
+
+headers = {
+    "User-Agent": "WaqfClient/1.0 (https://waqf.dev)",
+    "Content-Type": "application/json",
+}
+
+# Discover canonical tools (preserves token budget)
+tools_resp = httpx.post(
+    "https://mcp.waqf.dev/mcp?suite=core",
+    json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+    headers=headers,
+)
+print("Available Tools:", [t["name"] for t in tools_resp.json()["result"]["tools"]])
+
+# Call canonical Quran verse lookup (with automatic upstream fallback)
+ayah_payload = {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+        "name": "waqf_quran_get_ayah",
+        "arguments": {"surah": 112, "ayah": 1}
+    }
+}
+ayah_resp = httpx.post("https://mcp.waqf.dev/mcp", json=ayah_payload, headers=headers)
+print("Ayah Result:", ayah_resp.json()["result"]["content"][0]["text"])
+```
+
+### 2. TypeScript (`@modelcontextprotocol/sdk`)
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+
+// Cloudflare WAF requires a custom User-Agent for programmatic clients
+const transport = new StreamableHttpClientTransport(
+  new URL("https://mcp.waqf.dev/mcp?suite=core"),
+  {
+    headers: {
+      "User-Agent": "WaqfApp/1.0.0 (contact@example.com)",
+    },
+  }
+);
+
+const client = new Client({ name: "waqf-app", version: "1.0.0" });
+await client.connect(transport);
+
+// List available canonical tools
+const { tools } = await client.listTools();
+console.log("Federated Tools:", tools.map(t => t.name));
+
+// Call canonical Quran lookup with automatic fallback
+const result = await client.callTool({
+  name: "waqf_quran_get_ayah",
+  arguments: { surah: 112, ayah: 1 },
+});
+console.log("Ayah Result:", (result.content[0] as { text: string }).text);
+```
+
+### 3. cURL (Command Line)
+```bash
+# 1. List canonical tools (saving tokens with ?suite=core)
+curl -s -X POST "https://mcp.waqf.dev/mcp?suite=core" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: WaqfClient/1.0" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# 2. Call canonical Quran verse lookup (with automatic fallback)
+curl -s -X POST "https://mcp.waqf.dev/mcp" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: WaqfClient/1.0" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "waqf_quran_get_ayah",
+      "arguments": { "surah": 112, "ayah": 1 }
+    }
+  }'
+```
+
+---
+
 ## 🏗️ Repository Architecture
 
 Following `AGENTS.cloudflare.md` and `cf-monorepo-scaffold`:

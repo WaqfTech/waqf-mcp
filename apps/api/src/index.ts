@@ -68,17 +68,46 @@ export default {
         JSON.stringify(
           {
             status: "healthy",
-            name: "WaqfTech() Islamic MCP Federation Gateway",
+            name: "WaqfTech(); Islamic MCP Federation Gateway",
             version: "1.0.0",
             protocolVersion: "2024-11-05",
             endpoint: "/mcp",
-            transports: ["streamable-http (POST /mcp)", "sse (GET /mcp with Accept: text/event-stream)"],
+            organization: {
+              name: "WaqfTech();",
+              tagline: "Open-source Waqf Technology Foundation",
+              website: "https://waqftech.org/",
+              developerPortal: "https://dev.waqftech.org/",
+              social: {
+                x: "https://x.com/waqftechorg",
+                github: "https://github.com/waqftech",
+              },
+            },
+            links: {
+              portal: "https://mcp.waqf.dev/",
+              documentation: "https://mcp.waqf.dev/#setup",
+              submitMcp: "https://mcp.waqf.dev/#submit",
+              repository: "https://github.com/waqftech/waqf-mcp",
+            },
+            transports: [
+              "streamable-http (POST /mcp)",
+              "sse (GET /mcp with Accept: text/event-stream)",
+            ],
+            runtime: {
+              engine: "Cloudflare Workers (Stateless Edge V8)",
+              database: "Cloudflare D1 SQLite",
+              caching: "Edge D1 Cache (mcp_cache)",
+              telemetry: "Non-blocking Edge Logging (mcp_logs via ctx.waitUntil)",
+            },
             usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
             suites: {
-              all: "All available upstream tools",
+              all: "All available upstream tools across federated Islamic servers",
               core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books)",
               quran: "Quran & Tafsir specialized suite",
               turath: "Hadith & Islamic Heritage library suite",
+            },
+            stats: {
+              federatedProvidersCount: registry.getAll().length,
+              availableSuites: ["core", "quran", "turath", "all"],
             },
             federatedProviders: registry.getAll().map((p) => ({
               id: p.id,

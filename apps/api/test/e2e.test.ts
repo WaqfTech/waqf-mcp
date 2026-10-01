@@ -76,7 +76,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, mockEnv, mockCtx);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { result: { serverInfo: { name: string } } };
-    expect(body.result.serverInfo.name).toBe("waqf-islamic-federation");
+    expect(body.result.serverInfo.name).toBe("IslamicSources");
   });
 
   it("POST /mcp handles 'ping' method", async () => {
@@ -239,7 +239,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/plain");
     const text = await res.text();
-    expect(text).toContain("# Waqf Islamic MCP Federation Gateway");
+    expect(text).toContain("# Islamic Sources (@IslamicSources)");
     expect(text).toContain("waqf_quran_get_ayah");
     expect(text).toContain("https://mcp.waqf.dev/llms-full.txt");
   });
@@ -251,7 +251,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/plain");
     const text = await res.text();
-    expect(text).toContain("Waqf Islamic MCP Federation Gateway — Full Technical Reference");
+    expect(text).toContain("# Islamic Sources (@IslamicSources) — Full Technical Reference");
     expect(text).toContain("waqf_search_scholarship");
     expect(text).toContain("tafsir_net__fetch_ayah");
     expect(text).toContain("fihris__search_islamic_sources");
@@ -301,7 +301,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.headers.get("Vary")).toBe("Accept");
     expect(res.headers.get("Link")).toContain('rel="api-catalog"');
     const text = await res.text();
-    expect(text).toContain("# Waqf Islamic MCP Federation Gateway");
+    expect(text).toContain("# Islamic Sources (@IslamicSources)");
     expect(text).toContain("waqf_quran_get_ayah");
   });
 

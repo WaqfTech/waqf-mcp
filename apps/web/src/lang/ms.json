@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Waqf Tech — Pengagregat Model Context Protocol Islam (Waqf MCP)",
-    "description": "Gerbang bersepadu yang menghimpunkan alatan kecerdasan buatan Islam dan pelayan MCP dalam satu titik sambungan berkelajuan tinggi."
+    "title": "Sumber Islam (@IslamicSources) — Gerbang Waqf MCP",
+    "description": "Gerbang bersepadu yang menghimpunkan sumber ilmu Islam autentik (Al-Quran, Hadis, Tafsir, Turath) dalam satu antara muka berkelajuan tinggi untuk pembantu AI."
   },
   "nav": {
-    "brand": "Waqf MCP",
+    "brand": "Islamic Sources",
     "servers": "Pelayan Tersambung",
     "setup": "Panduan Konfigurasi",
     "submit": "Hantar Pelayan",
@@ -12,12 +12,12 @@
     "lang_label": "Bahasa"
   },
   "announcement": {
-    "text": "Gerbang Model Context Protocol (MCP) Islam Bersepadu"
+    "text": "@IslamicSources — Gerbang Model Context Protocol (MCP) Islam Bersepadu"
   },
   "hero": {
-    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Semua Sumber Ilmu Islam, dalam <em>Satu Antara Muka.</em>",
-    "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Tambahkan mcp.waqf.dev sekali sahaja ke Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Quran, Hadis, Tafsir, dan kitab turath dengan cache pantas dan piawaian skema.",
+    "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Sambungkan @IslamicSources sekali sahaja ke Gemini, Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Quran, Hadis, Tafsir, dan kitab turath dengan cache pantas dan piawaian skema.",
     "cta_copy": "Salin Konfigurasi Pelayan ←",
     "cta_explore": "Terokai Alatan",
     "note_badge": "EDGE NATIVE",
@@ -80,23 +80,23 @@
     "claude_web_steps": [
       "Buka https://claude.ai/new#customize/connectors (atau navigasi ke Settings → Connectors).",
       "Klik butang 'Add custom connector'.",
-      "Tetapkan Nama: 'WaqfTech(); Islamic Suite' dan URL Pelayan: 'https://mcp.waqf.dev/mcp'.",
+      "Tetapkan Nama: 'Islamic Sources (@IslamicSources)' dan URL Pelayan: 'https://mcp.waqf.dev/mcp'.",
       "Klik 'Add' untuk menyimpan (titik akhir wakaf terbuka awam, tanpa memerlukan OAuth).",
-      "Dalam mana-mana perbualan, klik ikon '+' bersebelahan ruang mesej, pilih 'Connectors', dan aktifkan WaqfTech."
+      "Dalam mana-mana perbualan, klik ikon '+' bersebelahan ruang mesej, pilih 'Connectors', dan aktifkan Islamic Sources."
     ],
     "chatgpt_web_steps": [
       "Aktifkan Mod Pembangun: Buka chatgpt.com, klik profil anda di sudut kiri bawah, pilih Settings → Security and login, dan aktifkan 'Developer mode'.",
       "Pergi ke Plugin: Buka chatgpt.com/plugins (atau Settings → Plugins di bar sisi kiri), klik Browse plugins, kemudian klik ikon '+' (tambah) berdekatan kotak carian di sudut kanan atas.",
-      "Masukkan Maklumat MCP: Tetapkan Nama: 'WaqfTech(); Islamic Suite', Penerangan: 'Federated Islamic MCP Gateway', Sambungan: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Pengesahan: 'None'.",
+      "Masukkan Maklumat MCP: Tetapkan Nama: 'Islamic Sources (@IslamicSources)', Penerangan: 'Federated Islamic Knowledge & MCP Gateway', Sambungan: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Pengesahan: 'None'.",
       "Sahkan: Tandakan kotak 'I understand and want to continue' untuk melangkau amaran penyambung tidak disahkan, kemudian klik 'Create'.",
-      "Gunakan dalam Sembang: Mulakan perbualan baharu (sembang sedia ada tidak akan mengesan plugin baharu), pilih WaqfTech sebagai sumber atau tanya 'What tools do you have available?' untuk mula meneroka Al-Quran, Hadis, dan kitab turath."
+      "Gunakan dalam Sembang: Mulakan perbualan baharu, pilih Islamic Sources sebagai sumber atau tanya 'What tools do you have available?' untuk mula meneroka Al-Quran, Hadis, dan kitab turath."
     ],
     "gemini_web_steps": [
       "Buka https://gemini.google.com/apps dalam penyemak imbas anda.",
       "Di bawah 'Connected Apps', klik 'Add a custom app'.",
-      "Tetapkan Nama: 'WaqfTech(); Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Tetapkan Nama: 'IslamicSources' dan URL: 'https://mcp.waqf.dev/mcp'.",
       "Simpan dan luluskan aplikasi tersuai yang disambungkan.",
-      "Dalam sembang Gemini, kemukakan soalan untuk menggunakan alatan carian Al-Quran, Hadis, dan teks klasik Islam secara langsung."
+      "Dalam sembang Gemini, seru alat secara langsung menggunakan @IslamicSources (contoh: '@IslamicSources cari tafsir Ayat Kursi')."
     ],
     "config_note": "Petua: Gunakan '?suite=core' untuk memaparkan alatan asas sahaja dan menjimatkan token konteks."
   },

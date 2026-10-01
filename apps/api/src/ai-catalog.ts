@@ -8,7 +8,7 @@ export const AI_CATALOG_JSON = JSON.stringify(
     entries: [
       {
         id: "urn:air:mcp.waqf.dev:mcp:core",
-        displayName: "Waqf Islamic Core MCP Tools",
+        displayName: "Islamic Sources (@IslamicSources) — Core Tools",
         description:
           "Normalized high-level canonical tools for Quran recitation/tafsir, Hadith verification, Turath book searches, and scholarly inquiries.",
         type: "application/json",

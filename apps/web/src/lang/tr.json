@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Vakıf Tech — İslami Model Context Protocol Birleştiricisi (Waqf MCP)",
-    "description": "İslami yapay zeka araçlarını tek bir yüksek hızlı arayüzde toplayan birleşik ağ geçidi."
+    "title": "İslami Kaynaklar (@IslamicSources) — Vakıf MCP Ağ Geçidi",
+    "description": "Özgün İslami bilgi kaynaklarını (Kur'an, Hadis, Tefsir, Miras) yapay zeka asistanları için tek bir yüksek hızlı arayüzde toplayan birleşik ağ geçidi."
   },
   "nav": {
-    "brand": "Waqf MCP",
+    "brand": "Islamic Sources",
     "servers": "Bağlı Sunucular",
     "setup": "Kurulum",
     "submit": "Sunucu Ekle",
@@ -12,12 +12,12 @@
     "lang_label": "Dil"
   },
   "announcement": {
-    "text": "Birleşik İslami Model Context Protocol (MCP) Ağ Geçidi"
+    "text": "@IslamicSources — Birleşik İslami Model Context Protocol (MCP) Ağ Geçidi"
   },
   "hero": {
-    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Tüm İslami Bilgi Kaynakları, <em>Tek Bir Arayüzde.</em>",
-    "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. mcp.waqf.dev adresini Claude, Cursor veya Antigravity'ye bir kez ekleyin; Kur'an, Hadis, Tefsir ve klasik İslami eserlere yüksek hızlı önbellek desteğiyle erişin.",
+    "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. @IslamicSources bağlantısını Gemini, Claude, Cursor veya Antigravity'ye bir kez bağlayın; Kur'an, Hadis, Tefsir ve klasik İslami eserlere yüksek hızlı önbellek desteğiyle erişin.",
     "cta_copy": "Sunucu Ayarını Kopyala ←",
     "cta_explore": "Araçları İncele",
     "note_badge": "EDGE NATIVE",
@@ -80,23 +80,23 @@
     "claude_web_steps": [
       "https://claude.ai/new#customize/connectors bağlantısını açın (veya Ayarlar → Connectors bölümüne gidin).",
       "'Add custom connector' butonuna tıklayın.",
-      "İsim: 'WaqfTech(); Islamic Suite', Sunucu URL: 'https://mcp.waqf.dev/mcp' girin.",
+      "İsim: 'Islamic Sources (@IslamicSources)', Sunucu URL: 'https://mcp.waqf.dev/mcp' girin.",
       "'Add' butonuna tıklayarak kaydedin (genel açık vakıf uç noktasıdır, OAuth gerektirmez).",
-      "Herhangi bir sohbette '+' butonuna tıklayıp 'Connectors' altından WaqfTech'i etkinleştirin."
+      "Herhangi bir sohbette '+' butonuna tıklayıp 'Connectors' altından Islamic Sources'ı etkinleştirin."
     ],
     "chatgpt_web_steps": [
       "Geliştirici Modunu Açın: chatgpt.com adresini açın, sol alttaki profilinize tıklayın, Settings → Security and login bölümünden 'Developer mode' seçeneğini etkinleştirin.",
       "Eklentilere Gidin: chatgpt.com/plugins adresini açın (veya Ayarlar → Plugins), eklentilere göz atıp sağ üstteki '+' (artı) simgesine tıklayın.",
-      "Sunucu Bilgilerini Girin: İsim: 'WaqfTech(); Islamic Suite', Yöntem: 'Server URL', Sunucu URL: 'https://mcp.waqf.dev/mcp', Kimlik Doğrulama: 'None' seçin.",
+      "Sunucu Bilgilerini Girin: İsim: 'Islamic Sources (@IslamicSources)', Yöntem: 'Server URL', Sunucu URL: 'https://mcp.waqf.dev/mcp', Kimlik Doğrulama: 'None' seçin.",
       "Onaylayın: 'I understand and want to continue' kutusunu işaretleyin ve 'Create' butonuna tıklayın.",
-      "Sohbette Kullanın: Yeni bir sohbet başlatın, WaqfTech kaynağını seçin veya 'What tools do you have available?' yazarak Kuran, Hadis ve Miras kaynaklarını sorgulamaya başlayın."
+      "Sohbette Kullanın: Yeni bir sohbet başlatın, Islamic Sources kaynağını seçin veya 'What tools do you have available?' yazarak Kuran, Hadis ve Miras kaynaklarını sorgulamaya başlayın."
     ],
     "gemini_web_steps": [
       "Tarayıcınızda https://gemini.google.com/apps adresini açın.",
       "'Connected Apps' altında 'Add a custom app' seçeneğine tıklayın.",
-      "İsim: 'WaqfTech(); Islamic Suite', URL: 'https://mcp.waqf.dev/mcp' olarak ayarlayın.",
+      "İsim: 'IslamicSources', URL: 'https://mcp.waqf.dev/mcp' olarak ayarlayın.",
       "Kaydedin ve özel bağlantılı uygulamayı onaylayın.",
-      "Gemini sohbetinde Kuran, Hadis ve klasik kaynakları doğrudan sorgulayarak araçları kullanın."
+      "Gemini sohbetinde @IslamicSources yazarak doğrudan araçları ve kaynakları sorgulayın (örn: '@IslamicSources Ayetü'l-Kürsi tefsiri')."
     ],
     "config_note": "İpucu: Yalnızca temel birleşik araçları görmek ve token tasarrufu sağlamak için '?suite=core' kullanabilirsiniz."
   },

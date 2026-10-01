@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Waqf Tech — Agregator Model Context Protocol Islam (Waqf MCP)",
-    "description": "Gateway terpadu yang menggabungkan alat kecerdasan buatan Islam dan server MCP dalam satu endpoint berkecepatan tinggi."
+    "title": "Sumber Islam (@IslamicSources) — Waqf MCP Gateway",
+    "description": "Gateway terpadu yang menggabungkan sumber pengetahuan Islam autentik (Al-Qur'an, Hadis, Tafsir, Turath) dalam satu antarmuka berkecepatan tinggi untuk asisten AI."
   },
   "nav": {
-    "brand": "Waqf MCP",
+    "brand": "Islamic Sources",
     "servers": "Server Terhubung",
     "setup": "Panduan Konfigurasi",
     "submit": "Daftarkan Server",
@@ -12,12 +12,12 @@
     "lang_label": "Bahasa"
   },
   "announcement": {
-    "text": "Gateway Model Context Protocol (MCP) Islam Terpadu"
+    "text": "@IslamicSources — Gateway Model Context Protocol (MCP) Islam Terpadu"
   },
   "hero": {
-    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "Semua Sumber Pengetahuan Islam, dalam <em>Satu Antarmuka.</em>",
-    "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup tambahkan mcp.waqf.dev sekali ke Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Qur'an, Hadits, Tafsir, dan kitab warisan Islam dengan caching cepat dan validasi skema.",
+    "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup hubungkan @IslamicSources sekali ke Gemini, Claude Desktop, Cursor, atau Antigravity untuk mengakses Al-Qur'an, Hadits, Tafsir, dan kitab warisan Islam dengan caching cepat dan validasi skema.",
     "cta_copy": "Salin Konfigurasi Server ←",
     "cta_explore": "Jelajahi Alat",
     "note_badge": "EDGE NATIVE",
@@ -80,23 +80,23 @@
     "claude_web_steps": [
       "Buka https://claude.ai/new#customize/connectors (atau buka Settings → Connectors).",
       "Klik 'Add custom connector'.",
-      "Isi Nama: 'WaqfTech(); Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Isi Nama: 'Islamic Sources (@IslamicSources)' dan URL: 'https://mcp.waqf.dev/mcp'.",
       "Klik 'Add' untuk menyimpan (titik akhir wakaf terbuka publik, tanpa perlu OAuth).",
-      "Dalam percakapan apa pun, klik tombol '+' di samping kolom pesan, pilih 'Connectors', dan aktifkan WaqfTech."
+      "Dalam percakapan apa pun, klik tombol '+' di samping kolom pesan, pilih 'Connectors', dan aktifkan Islamic Sources."
     ],
     "chatgpt_web_steps": [
       "Aktifkan Mode Pengembang: Buka chatgpt.com, klik profil Anda di kiri bawah, pilih Settings → Security and login, dan aktifkan 'Developer mode'.",
       "Buka Plugin: Kunjungi chatgpt.com/plugins (atau Settings → Plugins), klik Browse plugins, lalu klik ikon '+' (tambah) di kanan atas.",
-      "Masukkan Detail Server: Nama: 'WaqfTech(); Islamic Suite', Metode: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Autentikasi: 'None'.",
+      "Masukkan Detail Server: Nama: 'Islamic Sources (@IslamicSources)', Metode: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Autentikasi: 'None'.",
       "Otorisasi: Centang kotak 'I understand and want to continue' lalu klik 'Create'.",
-      "Gunakan di Obrolan: Mulai obrolan baru, pilih sumber WaqfTech atau ketik 'What tools do you have available?' untuk mulai mengakses Al-Qur'an, Hadis, dan kitab klasik."
+      "Gunakan di Obrolan: Mulai obrolan baru, pilih sumber Islamic Sources atau ketik 'What tools do you have available?' untuk mulai mengakses Al-Qur'an, Hadis, dan kitab klasik."
     ],
     "gemini_web_steps": [
       "Buka https://gemini.google.com/apps di peramban Anda.",
       "Di bagian 'Connected Apps', klik 'Add a custom app'.",
-      "Atur Nama: 'WaqfTech(); Islamic Suite' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Atur Nama: 'IslamicSources' dan URL: 'https://mcp.waqf.dev/mcp'.",
       "Simpan dan otorisasi aplikasi kustom yang terhubung.",
-      "Di obrolan Gemini, ajukan pertanyaan untuk mengakses alat pencarian Al-Qur'an, Hadis, dan kitab warisan Islam langsung."
+      "Di obrolan Gemini, panggil alat langsung dengan mengetik @IslamicSources (contoh: '@IslamicSources tafsir Ayat Kursi')."
     ],
     "config_note": "Tips: Gunakan '?suite=core' untuk hanya menampilkan alat penting dan menghemat token konteks."
   },

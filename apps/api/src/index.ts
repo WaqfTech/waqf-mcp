@@ -265,7 +265,7 @@ export default {
         JSON.stringify(
           {
             status: "healthy",
-            name: "WaqfTech(); Islamic MCP Federation Gateway",
+            name: "Islamic Sources (@IslamicSources) — Waqf MCP Gateway",
             version: "1.0.0",
             protocolVersion: "2024-11-05",
             endpoint: "/mcp",
@@ -528,7 +528,7 @@ export default {
                     },
                   },
                   serverInfo: {
-                    name: "waqf-islamic-federation",
+                    name: "IslamicSources",
                     version: "1.0.0",
                   },
                 },

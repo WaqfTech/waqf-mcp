@@ -122,7 +122,7 @@ export function handleOAuthAuthorize(request: Request, corsHeaders: Record<strin
 <body>
   <div class="card">
     <div class="badge">Open Access</div>
-    <h1>Waqf Islamic MCP Gateway</h1>
+    <h1>Islamic Sources (@IslamicSources)</h1>
     <p>This MCP server provides unrestricted public read access to authentic Islamic knowledge sources (Quran, Tafsir, Hadith, Scholarly Search).</p>
     <p>Authorization is granted automatically.</p>
   </div>

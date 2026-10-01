@@ -1,12 +1,12 @@
-# Waqf Islamic MCP Federation Gateway — Full Technical Reference (`llms-full.txt`)
+# Islamic Sources (@IslamicSources) — Full Technical Reference (`llms-full.txt`)
 
-> Comprehensive, unabridged technical documentation and tool schema catalog for the Waqf Islamic MCP Federation Gateway (`mcp.waqf.dev`).
+> Comprehensive, unabridged technical documentation and tool schema catalog for Islamic Sources (@IslamicSources) on the Waqf MCP Gateway (`mcp.waqf.dev`).
 
 ---
 
 ## 1. Overview & Architecture
 
-Waqf MCP is an edge-native federation gateway connecting Muslim developers, researchers, and AI agents to authentic Islamic sources. It runs on Cloudflare Workers (stateless V8 isolates) and Cloudflare D1 SQLite.
+Islamic Sources (@IslamicSources) is an edge-native federation gateway connecting Muslim developers, researchers, and AI agents to authentic Islamic sources. It runs on Cloudflare Workers (stateless V8 isolates) and Cloudflare D1 SQLite.
 
 ### Key Architectural Tenets
 1. **Stateless Edge Runtime**: Employs Streamable HTTP / JSON-RPC 2.0 without Durable Objects. No stateful connection leases.

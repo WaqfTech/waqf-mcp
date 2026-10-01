@@ -1,8 +1,8 @@
-# Waqf Islamic MCP Federation Gateway (`mcp.waqf.dev`)
+# Islamic Sources (@IslamicSources) — Waqf MCP Gateway (`mcp.waqf.dev`)
 
-> An edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath heritage literature, and scholarly search) into a single, unified interface for AI assistants, IDEs, and autonomous agents.
+> An edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath heritage literature, and scholarly search) into a single, unified interface for AI assistants (invoked with `@IslamicSources`), IDEs, and autonomous agents.
 
-Waqf MCP federates independent Islamic MCP servers into one endpoint (`https://mcp.waqf.dev/mcp`), unifies divergent schemas, caches immutable texts in Cloudflare D1 SQLite, and provides token-optimized query profiles to prevent agent context window bloat.
+Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into one endpoint (`https://mcp.waqf.dev/mcp`), unifies divergent schemas, caches immutable texts in Cloudflare D1 SQLite, and provides token-optimized query profiles to prevent agent context window bloat.
 
 ## Quick Links
 

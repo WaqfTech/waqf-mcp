@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "وقف تك — مجمّع بروتوكول سياق النماذج الإسلامي (Waqf MCP)",
-    "description": "بوابة سحابية موحدة تجمع وتدمج خوادم الذكاء الاصطناعي الإسلامية في واجهة واحدة فائقة السرعة."
+    "title": "المصادر الإسلامية (@IslamicSources) — بوابة سياق النماذج الموحدة (Waqf MCP)",
+    "description": "بوابة سحابية موحدة تجمع وتدمج مصادر المعرفة الإسلامية المعتمدة (القرآن، الحديث، التفسير، التراث) في واجهة واحدة فائقة السرعة لمساعدات الذكاء الاصطناعي."
   },
   "nav": {
-    "brand": "وقف تك MCP",
+    "brand": "المصادر الإسلامية",
     "servers": "الخوادم المتصلة",
     "setup": "طريقة الإعداد",
     "submit": "أضف خادمك",
@@ -12,12 +12,12 @@
     "lang_label": "اللغة"
   },
   "announcement": {
-    "text": "بوابة إسلامية موحدة لبروتوكول سياق النماذج (MCP)"
+    "text": "@IslamicSources — البوابة الإسلامية الموحدة لبروتوكول سياق النماذج (MCP)"
   },
   "hero": {
-    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "كل مصادر المعرفة الإسلامية، في <em>واجهة واحدة.</em>",
-    "lede": "تخلص من عناء إعداد عشرات الخوادم المنفصلة. أضف mcp.waqf.dev مرة واحدة في Claude وCursor وAntigravity، واستفد من القرآن، الحديث، التفسير، وكتب التراث مع تدقيق وحفظ مؤقت فائق السرعة.",
+    "lede": "تخلص من عناء إعداد عشرات الخوادم المنفصلة. اربط @IslamicSources مرة واحدة في Gemini وClaude وCursor وAntigravity، واستفد من القرآن، الحديث، التفسير، وكتب التراث مع تدقيق وحفظ مؤقت فائق السرعة.",
     "cta_copy": "انسخ إعداد الخادم ←",
     "cta_explore": "استكشف الأدوات المتصلة",
     "note_badge": "EDGE NATIVE",
@@ -80,23 +80,23 @@
     "claude_web_steps": [
       "افتح الرابط المباشر: https://claude.ai/new#customize/connectors (أو الإعدادات Settings ← Connectors).",
       "انقر على زر 'Add custom connector'.",
-      "أدخل الاسم: 'WaqfTech(); Islamic Suite' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
+      "أدخل الاسم: 'Islamic Sources (@IslamicSources)' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
       "انقر على 'Add' للحفظ (خادم وقفي عام ومتاح بدون الحاجة لمصادقة OAuth).",
-      "في أي محادثة، انقر على زر '+' بجوار حقل الرسائل، واختر 'Connectors' ثم فعّل WaqfTech."
+      "في أي محادثة، انقر على زر '+' بجوار حقل الرسائل، واختر 'Connectors' ثم فعّل Islamic Sources."
     ],
     "chatgpt_web_steps": [
       "تفعيل وضع المطورين: افتح chatgpt.com، انقر على ملفك الشخصي أسفل اليسار، واختر الإعدادات (Settings) ← الأمان وتسجيل الدخول (Security and login)، ثم فعّل 'Developer mode'.",
       "الانتقال إلى الإضافات: افتح chatgpt.com/plugins (أو من القائمة الجانبية Plugins)، ثم انقر على تصفح الإضافات (Browse plugins)، ثم انقر على أيقونة الزائد (+) بأعلى اليمين.",
-      "بيانات الخادم: أدخل الاسم: 'WaqfTech(); Islamic Suite'، والوصف: 'Federated Islamic MCP Gateway'، ونوع الاتصال: 'Server URL'، ورابط الخادم: 'https://mcp.waqf.dev/mcp'، ونوع المصادقة: 'None'.",
+      "بيانات الخادم: أدخل الاسم: 'Islamic Sources (@IslamicSources)'، والوصف: 'Federated Islamic Knowledge & MCP Gateway'، ونوع الاتصال: 'Server URL'، ورابط الخادم: 'https://mcp.waqf.dev/mcp'، ونوع المصادقة: 'None'.",
       "التأكيد: حدد مربع 'I understand and want to continue' لتجاوز تحذير الإضافات الخارجية، ثم اضغط 'Create'.",
-      "الاستخدام في المحادثة: افتح محادثة جديدة تماماً (المحادثات السابقة لا تقرأ الإضافات الجديدة تلقائياً)، واختر الإضافة أو اسأل 'What tools do you have available?' للبحث في القرآن والسنة وكتب التراث."
+      "الاستخدام في المحادثة: افتح محادثة جديدة تماماً، واختر الإضافة أو اسأل 'What tools do you have available?' للبحث في القرآن والسنة وكتب التراث."
     ],
     "gemini_web_steps": [
       "افتح الرابط المباشر: https://gemini.google.com/apps في متصفحك.",
       "تحت قسم 'التطبيقات المرتبطة' (Connected Apps)، انقر على 'Add a custom app'.",
-      "أدخل الاسم: 'WaqfTech(); Islamic Suite' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
+      "أدخل الاسم: 'IslamicSources' ورابط الخادم: 'https://mcp.waqf.dev/mcp'.",
       "احفظ التطبيق المخصص واعتمد الربط.",
-      "في محادثة Gemini، اطرح أسئلتك للاستفادة مباشرة من أدوات البحث والتحليل في القرآن الكريم والسنة المطهرة والمكتبة التراثية."
+      "في محادثة Gemini، استدعِ أدوات البحث والمصادر الإسلامية مباشرة بكتابة @IslamicSources (مثال: '@IslamicSources تفسير آية الكرسي')."
     ],
     "config_note": "ملاحظة: يمكنك استخدام '?suite=core' للحصول على الأدوات الأساسية الموحدة فقط وتوفير مساحة السياق."
   },

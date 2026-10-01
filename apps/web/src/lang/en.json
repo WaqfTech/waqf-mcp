@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Waqf Tech — Islamic Model Context Protocol Aggregator (Waqf MCP)",
-    "description": "A unified edge gateway aggregating Islamic AI tools and MCP servers into a single, high-speed endpoint."
+    "title": "Islamic Sources (@IslamicSources) — Waqf MCP Gateway",
+    "description": "Unified edge gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath) into a single, high-speed interface for AI assistants."
   },
   "nav": {
-    "brand": "Waqf MCP",
+    "brand": "Islamic Sources",
     "servers": "Connected Servers",
     "setup": "Configuration",
     "submit": "Submit Server",
@@ -12,12 +12,12 @@
     "lang_label": "Language"
   },
   "announcement": {
-    "text": "Unified Islamic Model Context Protocol (MCP) Gateway"
+    "text": "@IslamicSources — Unified Islamic Model Context Protocol (MCP) Gateway"
   },
   "hero": {
-    "eyebrow": "WAQF MCP FEDERATION / 01",
+    "eyebrow": "@ISLAMICSOURCES / 01",
     "title_html": "All Islamic Knowledge Sources, in <em>One Interface.</em>",
-    "lede": "Stop juggling dozens of independent MCP servers. Add mcp.waqf.dev once to Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books with edge-caching and schema validation.",
+    "lede": "Stop juggling dozens of independent MCP servers. Connect @IslamicSources once to Gemini, Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books with edge-caching and schema validation.",
     "cta_copy": "Copy Server Config ←",
     "cta_explore": "Explore Tools",
     "note_badge": "EDGE NATIVE",
@@ -80,23 +80,23 @@
     "claude_web_steps": [
       "Open https://claude.ai/new#customize/connectors (or go to Settings → Connectors).",
       "Click 'Add custom connector'.",
-      "Set Name to 'WaqfTech(); Islamic Suite' and Server URL to 'https://mcp.waqf.dev/mcp'.",
+      "Set Name to 'Islamic Sources (@IslamicSources)' and Server URL to 'https://mcp.waqf.dev/mcp'.",
       "Click 'Add' to save (public open waqf endpoint, no OAuth required).",
-      "In any chat, click the '+' icon next to the message composer, choose 'Connectors', and toggle WaqfTech ON."
+      "In any chat, click the '+' icon next to the message composer, choose 'Connectors', and toggle Islamic Sources ON."
     ],
     "chatgpt_web_steps": [
       "Enable Developer Mode: Open chatgpt.com, click your profile in the bottom-left corner, select Settings → Security and login, and switch 'Developer mode' On.",
       "Navigate to Plugins: Open chatgpt.com/plugins (or Settings → Plugins in the left sidebar), click Browse plugins, then click the '+' (plus) icon near the top-right search box.",
-      "Enter MCP Details: Set Name: 'WaqfTech(); Islamic Suite', Description: 'Federated Islamic MCP Gateway', Connection: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', and Authentication: 'None'.",
+      "Enter MCP Details: Set Name: 'Islamic Sources (@IslamicSources)', Description: 'Federated Islamic Knowledge & MCP Gateway', Connection: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', and Authentication: 'None'.",
       "Authorize: Check the box 'I understand and want to continue' to bypass the unverified connector warning, then click 'Create'.",
-      "Use in Chat: Start a fresh new conversation (existing chats will not recognize newly added plugins), select WaqfTech as source or prompt 'What tools do you have available?' to query Quran, Hadith, and Turath."
+      "Use in Chat: Start a fresh new conversation (existing chats will not recognize newly added plugins), select Islamic Sources as source or prompt 'What tools do you have available?' to query Quran, Hadith, and Turath."
     ],
     "gemini_web_steps": [
       "Open https://gemini.google.com/apps in your browser.",
       "Under 'Connected Apps', click 'Add a custom app'.",
-      "Set Name to 'WaqfTech(); Islamic Suite' and Endpoint URL to 'https://mcp.waqf.dev/mcp'.",
+      "Set Name to 'IslamicSources' and Endpoint URL to 'https://mcp.waqf.dev/mcp'.",
       "Save and authorize the connected custom app.",
-      "In Gemini chat, ask questions or invoke Islamic tools to query verified Quran, Hadith, and classical texts directly."
+      "In Gemini chat, invoke tools naturally using @IslamicSources (e.g. '@IslamicSources search tafsir of Ayat al-Kursi')."
     ],
     "config_note": "Tip: Use '?suite=core' to expose only canonical tools and conserve token budget."
   },

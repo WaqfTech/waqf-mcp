@@ -7,6 +7,7 @@ import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
 import { ROBOTS_TXT } from "./robots";
 import { SITEMAP_XML } from "./sitemap";
 import { API_CATALOG_JSON } from "./api-catalog";
+import { MCP_SERVER_CARD_JSON } from "./server-card";
 
 export interface Env {
   DB: D1Database;
@@ -106,6 +107,16 @@ export default {
       return new Response(API_CATALOG_JSON, {
         headers: {
           "Content-Type": "application/linkset+json; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/.well-known/mcp/server-card.json") {
+      return new Response(MCP_SERVER_CARD_JSON, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=3600",
           ...DISCOVERY_HEADERS,
         },

@@ -327,5 +327,17 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/mcp")).toBe(true);
     expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/")).toBe(true);
   });
+
+  it("GET /.well-known/mcp/server-card.json returns SEP-1649 metadata with application/json", async () => {
+    const req = new Request("http://localhost:8787/.well-known/mcp/server-card.json");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { serverInfo: { name: string; version: string }; transport: { endpoint: string }; capabilities: Record<string, unknown> };
+    expect(data.serverInfo.name).toBe("mcp.waqf.dev");
+    expect(data.transport.endpoint).toBe("https://mcp.waqf.dev/mcp");
+    expect(data.capabilities.tools).toBeDefined();
+  });
 });
 

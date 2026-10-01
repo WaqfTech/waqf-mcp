@@ -19,8 +19,8 @@ describe("Canonical Tools & Schema Normalization", () => {
       includeTafsir: true,
     });
     expect(tafsirArgs).toEqual({
-      surah_number: 2,
-      ayah_number: 255,
+      surah: 2,
+      ayah: 255,
       include: ["tadabbur", "gharib"],
     });
   });

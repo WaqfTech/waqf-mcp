@@ -87,8 +87,8 @@ export class SchemaNormalizer {
   // Translates canonical Quran input to Tafsir.net format
   public toTafsirNetAyahArgs(input: CanonicalQuranAyahInput): Record<string, unknown> {
     return {
-      surah_number: input.surah,
-      ayah_number: input.ayah,
+      surah: input.surah,
+      ayah: input.ayah,
       include: input.includeTafsir ? ["tadabbur", "gharib"] : undefined,
     };
   }

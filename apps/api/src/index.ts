@@ -9,6 +9,7 @@ import { SITEMAP_XML } from "./sitemap";
 import { API_CATALOG_JSON } from "./api-catalog";
 import { MCP_SERVER_CARD_JSON } from "./server-card";
 import { AI_CATALOG_JSON } from "./ai-catalog";
+import { AGENT_SKILLS_INDEX_JSON } from "./agent-skills";
 
 export interface Env {
   DB: D1Database;
@@ -126,6 +127,16 @@ export default {
 
     if (request.method === "GET" && pathname === "/.well-known/ai-catalog.json") {
       return new Response(AI_CATALOG_JSON, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/.well-known/agent-skills/index.json") {
+      return new Response(AGENT_SKILLS_INDEX_JSON, {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "public, max-age=3600",

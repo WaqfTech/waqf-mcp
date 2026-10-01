@@ -353,5 +353,18 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.entries.some((e) => e.id === "urn:air:mcp.waqf.dev:mcp:core")).toBe(true);
     expect(data.entries.every((e) => Array.isArray(e.representativeQueries) && e.representativeQueries.length >= 2)).toBe(true);
   });
+
+  it("GET /.well-known/agent-skills/index.json returns RFC v0.2.0 skills catalog with sha256 hashes", async () => {
+    const req = new Request("http://localhost:8787/.well-known/agent-skills/index.json");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("application/json");
+    const data = (await res.json()) as { $schema: string; skills: Array<{ name: string; type: string; url: string; sha256: string }> };
+    expect(data.$schema).toContain("agentskills.io");
+    expect(Array.isArray(data.skills)).toBe(true);
+    expect(data.skills.some((s) => s.name === "quran-tafsir")).toBe(true);
+    expect(data.skills.every((s) => s.sha256.length === 64)).toBe(true);
+  });
 });
 

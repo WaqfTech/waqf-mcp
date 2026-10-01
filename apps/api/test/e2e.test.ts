@@ -260,6 +260,12 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const text = await res.text();
     expect(text).toContain("User-agent: *");
     expect(text).toContain("Allow: /");
+    expect(text).toContain("User-agent: OAI-SearchBot");
+    expect(text).toContain("User-agent: Claude-SearchBot");
+    expect(text).toContain("User-agent: PerplexityBot");
+    expect(text).toContain("User-agent: GPTBot");
+    expect(text).toContain("User-agent: ClaudeBot");
+    expect(text).toContain("User-agent: Google-Extended");
   });
 });
 

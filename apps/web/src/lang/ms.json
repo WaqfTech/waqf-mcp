@@ -121,7 +121,7 @@
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membina aset teknikal terbuka dan menyelenggarakannya untuk manfaat berterusan.",
-    "rights": "© 2026 WAQFTECH.ORG — Dilesenkan di bawah Lesen Awam Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)",
+    "rights": "© 2026 WAQFTECH.ORG — Dilesenkan di bawah <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Lesen Awam Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Direka dengan niat impak yang berpanjangan"
   }
 }

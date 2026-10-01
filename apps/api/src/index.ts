@@ -87,6 +87,7 @@ export default {
               documentation: "https://mcp.waqf.dev/#setup",
               submitMcp: "https://mcp.waqf.dev/#submit",
               repository: "https://github.com/waqftech/waqf-mcp",
+              license: "https://github.com/WaqfTech/waqf-license-draft",
             },
             transports: [
               "streamable-http (POST /mcp)",

@@ -121,7 +121,7 @@
   },
   "footer": {
     "brand_desc": "وقف رقمي يبني أصولاً تقنية متاحة ويصونها لتبقى منفعتها متصلة.",
-    "rights": "© 2026 WAQFTECH.ORG — licensed under رُخصة وَقْف الرَّقْمِيَّة العامَّة - الإصدار الأول (Waqf-DPL 1.0)",
+    "rights": "© 2026 WAQFTECH.ORG — licensed under <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">رُخصة وَقْف الرَّقْمِيَّة العامَّة - الإصدار الأول (Waqf-DPL 1.0)</a>",
     "made_for": "صُمم بنية الأثر المستمر"
   }
 }

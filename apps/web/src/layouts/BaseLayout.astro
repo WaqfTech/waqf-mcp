@@ -253,6 +253,17 @@ const currentPath = Astro.url.pathname;
         color: #a9bfbb;
       }
 
+      .license-link {
+        color: var(--lime);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: color 0.15s;
+      }
+
+      .license-link:hover {
+        color: var(--white);
+      }
+
       @media (max-width: 768px) {
         nav {
           display: none;
@@ -336,11 +347,14 @@ const currentPath = Astro.url.pathname;
             <a href="https://github.com/waqftech" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">
               GitHub ↗
             </a>
+            <a href="https://github.com/WaqfTech/waqf-license-draft" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">
+              License (Waqf-DPL) ↗
+            </a>
           </div>
         </div>
 
         <div class="footer-bottom">
-          <span>{t.footer.rights}</span>
+          <span set:html={t.footer.rights} />
           <span>{t.footer.made_for}</span>
         </div>
       </div>

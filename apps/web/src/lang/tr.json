@@ -121,7 +121,7 @@
   },
   "footer": {
     "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",
-    "rights": "© 2026 WAQFTECH.ORG — Vakıf Dijital Kamu Lisansı - Sürüm 1.0 (Waqf-DPL 1.0) kapsamında lisanslanmıştır",
+    "rights": "© 2026 WAQFTECH.ORG — <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Vakıf Dijital Kamu Lisansı - Sürüm 1.0 (Waqf-DPL 1.0)</a> kapsamında lisanslanmıştır",
     "made_for": "Kalıcı etki niyetiyle tasarlandı"
   }
 }

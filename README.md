@@ -154,4 +154,4 @@ aube run build
 
 ## 🛡️ License
 
-Part of the **WaqfTech** digital waqf initiative. Open source under the [Waqf Digital Public License (Waqf-DPL)](https://dev.waqftech.org/license).
+Part of the **WaqfTech** digital waqf initiative. Open source under the [Waqf Digital Public License (Waqf-DPL 1.0)](https://github.com/WaqfTech/waqf-license-draft).

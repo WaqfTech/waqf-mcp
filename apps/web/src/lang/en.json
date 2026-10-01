@@ -121,7 +121,7 @@
   },
   "footer": {
     "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",
-    "rights": "© 2026 WAQFTECH.ORG — Licensed under Waqf Digital Public License - Version 1.0 (Waqf-DPL 1.0)",
+    "rights": "© 2026 WAQFTECH.ORG — Licensed under <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Waqf Digital Public License - Version 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Built with the intention of lasting impact"
   }
 }

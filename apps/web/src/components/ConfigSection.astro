@@ -48,6 +48,8 @@ const CLINE_CONFIG = JSON.stringify(
     mcpServers: {
       "waqf-islamic-suite": {
         url: "https://mcp.waqf.dev/mcp",
+        disabled: false,
+        autoApprove: [],
       },
     },
   },
@@ -74,8 +76,8 @@ const CLINE_CONFIG = JSON.stringify(
         <button class="tab-btn" data-tab="cline">{t.config.tab_cline}</button>
       </div>
 
-      <div class="code-container">
-        <pre><code id="config-code">{CLAUDE_CONFIG}</code></pre>
+      <div class="code-container" dir="ltr">
+        <pre dir="ltr"><code id="config-code" dir="ltr">{CLAUDE_CONFIG}</code></pre>
         <button id="copy-btn" class="copy-action-btn" data-copied-text={t.config.copied_button}>
           <span id="copy-text">{t.config.copy_button}</span>
         </button>
@@ -200,10 +202,14 @@ const CLINE_CONFIG = JSON.stringify(
     position: relative;
     padding: 24px;
     overflow-x: auto;
+    direction: ltr !important;
+    text-align: left !important;
   }
 
   pre {
     margin: 0;
+    direction: ltr !important;
+    text-align: left !important;
   }
 
   code {
@@ -211,12 +217,17 @@ const CLINE_CONFIG = JSON.stringify(
     font-size: 14px;
     line-height: 1.6;
     color: #dbe9e4;
+    direction: ltr !important;
+    text-align: left !important;
+    unicode-bidi: isolate;
+    display: block;
+    white-space: pre;
   }
 
   .copy-action-btn {
     position: absolute;
     top: 20px;
-    inset-inline-end: 20px;
+    right: 20px;
     background: var(--lime);
     color: var(--ink);
     border: 1px solid var(--ink);
@@ -224,6 +235,7 @@ const CLINE_CONFIG = JSON.stringify(
     font: 700 13px "Tajawal", sans-serif;
     box-shadow: 3px 3px 0 var(--tide);
     transition: transform 0.15s;
+    z-index: 10;
   }
 
   .copy-action-btn:hover {

@@ -56,6 +56,12 @@ const currentPath = Astro.url.pathname;
         overflow-x: hidden;
       }
 
+      code, pre, kbd, samp {
+        font-family: var(--mono);
+        direction: ltr !important;
+        unicode-bidi: isolate;
+      }
+
       a {
         color: inherit;
         text-decoration: none;

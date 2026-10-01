@@ -11,6 +11,7 @@ import { MCP_SERVER_CARD_JSON } from "./server-card";
 import { AI_CATALOG_JSON } from "./ai-catalog";
 import { AGENT_SKILLS_INDEX_JSON } from "./agent-skills";
 import { OAUTH_AUTH_SERVER_JSON, OAUTH_PROTECTED_RESOURCE_JSON } from "./oauth";
+import { AUTH_MD } from "./auth-doc";
 
 export interface Env {
   DB: D1Database;
@@ -82,6 +83,16 @@ export default {
           "Content-Type": "text/plain; charset=utf-8",
           "Cache-Control": "public, max-age=3600",
           ...CORS_HEADERS,
+        },
+      });
+    }
+
+    if (request.method === "GET" && pathname === "/auth.md") {
+      return new Response(AUTH_MD, {
+        headers: {
+          "Content-Type": "text/markdown; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+          ...DISCOVERY_HEADERS,
         },
       });
     }

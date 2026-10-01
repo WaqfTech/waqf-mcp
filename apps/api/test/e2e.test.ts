@@ -391,5 +391,17 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.authorization_servers).toContain("https://mcp.waqf.dev");
     expect(data.scopes_supported).toContain("mcp:read");
   });
+
+  it("GET /auth.md returns agent authentication and registration instructions", async () => {
+    const req = new Request("http://localhost:8787/auth.md");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/markdown");
+    const text = await res.text();
+    expect(text).toContain("Agent Authentication & Registration Guide");
+    expect(text).toContain("Open Waqf");
+    expect(text).toContain("mcp.waqf.dev");
+  });
 });
 

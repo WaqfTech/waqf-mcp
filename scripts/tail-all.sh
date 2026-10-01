@@ -29,6 +29,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKERS_JSON="$REPO_ROOT/workers.json"
 FORMATTER="$REPO_ROOT/scripts/tail-formatter.js"
 
+export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-<CLOUDFLARE_ACCOUNT_ID>}"
+
 # ─── Defaults ────────────────────────────────────────────────────────────────
 ENV="prod"
 WORKER_FILTER=""
@@ -222,7 +224,7 @@ for i in "${!WORKER_IDS[@]}"; do
   # Spawn: wrangler tail | node formatter
   (
     cd "$REPO_ROOT/$dir"
-    npx wrangler tail "$wid" --format json 2>/dev/null
+    wrangler tail "$wid" --format json
   ) | node "$FORMATTER" \
       "$name" "$color" "$C_RESET" "$C_DIM" "$C_GRAY" \
       "$C_RED" "$C_GREEN" "$C_YELLOW" \

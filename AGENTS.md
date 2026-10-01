@@ -37,6 +37,8 @@ It federates independent Islamic MCP servers (e.g. `bahouth.tafsir.net`, `mcp.ta
 7. **Runtime & Type Isolation**:
    - DOM APIs (`window`, `document`) must NEVER leak into `apps/api` (Worker types only).
    - Worker types must NEVER leak into `apps/web` (DOM library only).
+8. **Communication Language**:
+   - **Never respond in Arabic**. Always communicate, explain, and report findings strictly in **English**, even when discussing Arabic domain terms or handling multilingual content.
 
 ---
 

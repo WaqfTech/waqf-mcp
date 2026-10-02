@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Islamic Sources (@IslamicSources) — Waqf MCP Gateway",
-    "description": "Unified edge gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath) verbatim without modification, providing the service as is for AI assistants."
+    "description": "Unified edge gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath) verbatim without modification, providing the service as is for AI assistants.",
+    "og_image_alt": "Islamic Sources (@IslamicSources) — Unified Model Context Protocol (MCP) Gateway for Islamic Knowledge"
   },
   "nav": {
     "brand": "Islamic Sources",

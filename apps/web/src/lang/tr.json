@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "İslami Kaynaklar (@IslamicSources) — Vakıf MCP Ağ Geçidi",
-    "description": "Özgün İslami bilgi kaynaklarını (Kur'an, Hadis, Tefsir, Miras) olduğu gibi toplayan ve yapay zeka asistanları için hiçbir değişiklik yapmadan aktaran birleşik ağ geçidi."
+    "description": "Özgün İslami bilgi kaynaklarını (Kur'an, Hadis, Tefsir, Miras) olduğu gibi toplayan ve yapay zeka asistanları için hiçbir değişiklik yapmadan aktaran birleşik ağ geçidi.",
+    "og_image_alt": "İslami Kaynaklar (@IslamicSources) — İslami İlimler için Birleşik Model Bağlam Protokolü (MCP) Ağ Geçidi"
   },
   "nav": {
     "brand": "Islamic Sources",

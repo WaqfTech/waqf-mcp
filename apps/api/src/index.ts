@@ -230,9 +230,14 @@ export default {
       (pathname === "/" || pathname === "/health" || pathname === "/mcp" || pathname === "/sse")
     ) {
       const accept = request.headers.get("accept") || "";
+      const userAgent = request.headers.get("user-agent") || "";
+      const isSocialCrawler =
+        /twitterbot|facebookexternalhit|linkedinbot|telegrambot|whatsapp|slackbot|discordbot|applebot|bingbot|googlebot/i.test(
+          userAgent
+        );
 
-      // If browser accesses root "/" preferring HTML, delegate to Astro web worker via service binding
-      const isHtmlPreferred = accept.includes("text/html") && !accept.includes("application/json");
+      // If browser or social crawler accesses root "/" preferring HTML, delegate to Astro web worker via service binding
+      const isHtmlPreferred = (accept.includes("text/html") || isSocialCrawler) && !accept.includes("application/json");
       if (pathname === "/" && isHtmlPreferred && env.WEB) {
         const res = await env.WEB.fetch(request);
         const headers = new Headers(res.headers);

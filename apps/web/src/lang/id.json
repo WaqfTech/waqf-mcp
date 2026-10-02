@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Sumber Islam (@IslamicSources) — Waqf MCP Gateway",
-    "description": "Gateway edge terpadu yang mengagregasikan sumber pengetahuan Islam autentik (Al-Qur'an, Hadis, Tafsir, Turats) apa adanya tanpa modifikasi untuk asisten AI."
+    "description": "Gateway edge terpadu yang mengagregasikan sumber pengetahuan Islam autentik (Al-Qur'an, Hadis, Tafsir, Turats) apa adanya tanpa modifikasi untuk asisten AI.",
+    "og_image_alt": "Sumber Islam (@IslamicSources) — Gateway Model Context Protocol (MCP) Terpadu untuk Sumber Islam"
   },
   "nav": {
     "brand": "Islamic Sources",

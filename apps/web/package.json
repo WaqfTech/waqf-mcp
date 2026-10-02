@@ -7,6 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
+    "generate:og": "python3 scripts/generate-og.py",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

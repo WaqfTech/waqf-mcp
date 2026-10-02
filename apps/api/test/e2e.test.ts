@@ -30,6 +30,50 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.status).toBe("healthy");
   });
 
+  it("GET / delegates to env.WEB for social crawlers (e.g. Twitterbot, WhatsApp, Facebook)", async () => {
+    const mockWebFetch = vi.fn().mockResolvedValue(
+      new Response("<!doctype html><html><head><meta property=\"og:image\" content=\"https://mcp.waqf.dev/og-image.png\"></head></html>", {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      })
+    );
+    const envWithWeb = {
+      ...mockEnv,
+      WEB: { fetch: mockWebFetch } as unknown as Fetcher,
+    };
+
+    const req = new Request("http://localhost:8787/", {
+      headers: { "User-Agent": "Twitterbot/1.0" },
+    });
+    const res = await worker.fetch(req, envWithWeb, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(mockWebFetch).toHaveBeenCalled();
+    const text = await res.text();
+    expect(text).toContain("og:image");
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
+  });
+
+  it("GET / delegates to env.WEB when Accept: text/html is sent by a browser", async () => {
+    const mockWebFetch = vi.fn().mockResolvedValue(
+      new Response("<!doctype html><html><body>Landing Page</body></html>", {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      })
+    );
+    const envWithWeb = {
+      ...mockEnv,
+      WEB: { fetch: mockWebFetch } as unknown as Fetcher,
+    };
+
+    const req = new Request("http://localhost:8787/", {
+      headers: { Accept: "text/html,application/xhtml+xml" },
+    });
+    const res = await worker.fetch(req, envWithWeb, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(mockWebFetch).toHaveBeenCalled();
+    expect(res.headers.get("Link")).toContain('rel="api-catalog"');
+  });
+
   it("GET /mcp returns gateway discovery JSON and available suites", async () => {
     const req = new Request("http://localhost:8787/mcp");
     const res = await worker.fetch(req, mockEnv, mockCtx);

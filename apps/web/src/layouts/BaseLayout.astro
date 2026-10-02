@@ -10,6 +10,27 @@ const t = getTranslations(lang);
 const dir = getDir(lang);
 
 const currentPath = Astro.url.pathname;
+const siteUrl = "https://mcp.waqf.dev";
+const canonicalUrl = `${siteUrl}${currentPath.endsWith("/") && currentPath !== "/" ? currentPath.slice(0, -1) : currentPath}`;
+
+// Pick language-specific social preview image
+const isEn = lang === "en";
+const ogImageUrl = `${siteUrl}${isEn ? "/og-image-en.png" : "/og-image.png"}`;
+
+// OpenGraph Locale mapping
+const ogLocaleMap: Record<string, string> = {
+  ar: "ar_SA",
+  en: "en_US",
+  tr: "tr_TR",
+  id: "id_ID",
+  ms: "ms_MY",
+};
+const ogLocale = ogLocaleMap[lang] || "ar_SA";
+const alternateLocales = Object.entries(ogLocaleMap)
+  .filter(([l]) => l !== lang)
+  .map(([, loc]) => loc);
+
+const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSources)" : "Islamic Sources (@IslamicSources)";
 ---
 
 <!doctype html>
@@ -19,7 +40,53 @@ const currentPath = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{t.meta.title}</title>
     <meta name="description" content={t.meta.description} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#112b38" />
+
+    {/* Canonical & Multilingual Alternates */}
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="ar" href={`${siteUrl}/`} />
+    <link rel="alternate" hreflang="en" href={`${siteUrl}/en/`} />
+    <link rel="alternate" hreflang="tr" href={`${siteUrl}/tr/`} />
+    <link rel="alternate" hreflang="id" href={`${siteUrl}/id/`} />
+    <link rel="alternate" hreflang="ms" href={`${siteUrl}/ms/`} />
+    <link rel="alternate" hreflang="x-default" href={`${siteUrl}/`} />
+
+    {/* Open Graph (WhatsApp, Telegram, LinkedIn, Discord, Facebook) */}
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.meta.og_image_alt} />
+    <meta property="og:locale" content={ogLocale} />
+    {alternateLocales.map((alt) => (
+      <meta property="og:locale:alternate" content={alt} />
+    ))}
+
+    {/* Twitter / X Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@waqftechorg" />
+    <meta name="twitter:creator" content="@waqftechorg" />
+    <meta name="twitter:title" content={t.meta.title} />
+    <meta name="twitter:description" content={t.meta.description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={t.meta.og_image_alt} />
+
+    {/* App and Browser Meta */}
+    <meta name="apple-mobile-web-app-title" content={siteName} />
+    <meta name="application-name" content={siteName} />
+
+    {/* Favicons & Apple Touch Icon */}
     <link rel="icon" type="image/svg+xml" href="/waqftech-logo.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    {/* Machine Agent Discovery */}
     <link rel="api-catalog" type="application/linkset+json" href="/.well-known/api-catalog" />
     <link rel="service-doc" type="text/markdown" href="/llms.txt" />
     <link rel="service-desc" type="application/json" href="/.well-known/mcp/server-card.json" />

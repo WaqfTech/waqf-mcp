@@ -8,7 +8,7 @@
 >
 > 🌐 **Live Portal**: [mcp.waqf.dev](https://mcp.waqf.dev) | 📖 **Agent Docs**: [llms.txt](https://mcp.waqf.dev/llms.txt) | 🔒 **Security**: [SECURITY.md](./SECURITY.md) | 🤝 **Contributing**: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-[![License](https://img.shields.io/badge/license-Waqf--DPL-2e7d76.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-Waqf--DPL-2e7d76.svg)](./LICENSE.md)
 [![CI](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml)
 [![Edge](https://img.shields.io/badge/runtime-Cloudflare%20Workers-orange.svg)](https://developers.cloudflare.com/workers/)
 [![Database](https://img.shields.io/badge/storage-D1%20SQLite%20%2B%20Drizzle-blue.svg)](https://developers.cloudflare.com/d1/)
@@ -22,7 +22,7 @@
 > **Islamic Sources (@IslamicSources)** operates strictly as a neutral aggregator and edge federation gateway.
 >
 > 1. **Independence & Ownership**: WaqfTech does **not** own, manage, or operate upstream Islamic MCP servers (e.g. `bahouth.tafsir.net`, `mcp.tafsir.net`, `mcp.turath.io`, `maheralfahel.net`), nor are we affiliated with their day-to-day operations.
-> 2. **Licensing Scope**: The [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE) applies **strictly to the gateway aggregator code and technical infrastructure**, NOT to the underlying Islamic texts or content.
+> 2. **Licensing Scope**: The [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE.md) applies **strictly to the gateway aggregator code and technical infrastructure**, NOT to the underlying Islamic texts or content.
 > 3. **Source Licensing**: Each upstream MCP server retains its own independent license, copyright, and terms of use, which must be verified directly at its respective source.
 > 4. **Unaltered Verbatim Transmission**: We do **not** author, add to, edit, or alter responses or texts from the underlying Islamic sources. All Quranic verses, Hadith narrations, Tafsir commentaries, and scholarly search results are relayed verbatim from their original upstream providers.
 > 5. **Provided "As Is"**: The gateway service is provided strictly on an "as is" and "as available" basis without warranties of any kind. For authoritative scholarly verification, consult the respective source institutions directly.
@@ -276,6 +276,6 @@ aube run build
 
 ## 🛡️ License
 
-The gateway software is part of the **WaqfTech** digital waqf initiative and is open source under the [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE).
+The gateway software is part of the **WaqfTech** digital waqf initiative and is open source under the [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE.md).
 
 As declared in the [Aggregator Notice](#️-aggregator--licensing-notice), the Waqf-DPL license applies strictly to the gateway aggregator code and technical edge infrastructure. Each federated Islamic MCP server and text corpus retains its own independent license and copyright from its respective source institution.

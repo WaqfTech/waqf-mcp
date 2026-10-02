@@ -75,4 +75,4 @@ To federate a new authentic Islamic MCP server:
 1. **Branch Naming**: Use descriptive prefixes: `feat/...`, `fix/...`, `docs/...`, `perf/...`.
 2. **Quality Gates**: Ensure `aube test` and `aube run typecheck` pass with zero warnings or errors.
 3. **Commit Messages**: Follow Conventional Commits (e.g. `feat(api): ...`, `fix(web): ...`).
-4. **License Agreement**: By submitting a pull request, you agree that your contribution is licensed under the [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE).
+4. **License Agreement**: By submitting a pull request, you agree that your contribution is licensed under the [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE.md).

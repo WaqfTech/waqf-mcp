@@ -123,6 +123,18 @@ describe("GET /api/stats Endpoint", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns 503 if ADMIN_API_KEY is not configured in env", async () => {
+    const envWithoutKey = { ...mockEnv, ADMIN_API_KEY: undefined };
+    const req = new Request("http://localhost:8787/api/stats", {
+      headers: { Authorization: "Bearer any-token" },
+    });
+    const res = await worker.fetch(req, envWithoutKey, mockCtx);
+
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toContain("not configured");
+  });
+
   it("serves aggregated metrics JSON when authorized with valid Bearer token", async () => {
     const req = new Request("http://localhost:8787/api/stats?hours=48", {
       headers: { Authorization: "Bearer secret-test-token-123" },

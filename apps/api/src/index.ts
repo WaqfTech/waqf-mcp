@@ -414,9 +414,15 @@ export default {
 
     // Authenticated Gateway Telemetry & Analytics Endpoint
     if (request.method === "GET" && (pathname === "/api/stats" || pathname === "/api/telemetry")) {
-      const authHeader = request.headers.get("authorization") || "";
-      const expectedKey = env.ADMIN_API_KEY || "waqf-telemetry-key-2026";
+      const expectedKey = env.ADMIN_API_KEY;
+      if (!expectedKey) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized: Admin API key not configured on server" }),
+          { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      }
 
+      const authHeader = request.headers.get("authorization") || "";
       const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
       if (!token || token !== expectedKey) {
         return new Response(

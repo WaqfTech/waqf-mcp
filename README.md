@@ -1,17 +1,37 @@
-# Waqf Islamic MCP Federation Gateway (`mcp.waqf.dev`)
+# Islamic Sources (@IslamicSources) — Waqf MCP Federation Gateway
 
-> **أصولٌ رقمية لأثرٍ باقٍ** — An open, edge-native Model Context Protocol (MCP) gateway aggregating Islamic knowledge sources into a single, high-performance interface for AI assistants and developers.
+<p align="center">
+  <img src="https://mcp.waqf.dev/og-image.png" alt="Islamic Sources (@IslamicSources) — Waqf MCP Gateway" width="100%" />
+</p>
 
-[![License](https://img.shields.io/badge/license-Waqf--DPL-2e7d76.svg)](https://dev.waqftech.org/license)
+> **أصولٌ رقمية لأثرٍ باقٍ** — An open, edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources into a single, high-performance interface for AI assistants and developers.
+>
+> 🌐 **Live Portal**: [mcp.waqf.dev](https://mcp.waqf.dev) | 📖 **Agent Docs**: [llms.txt](https://mcp.waqf.dev/llms.txt) | 🔒 **Security**: [SECURITY.md](./SECURITY.md) | 🤝 **Contributing**: [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+[![License](https://img.shields.io/badge/license-Waqf--DPL-2e7d76.svg)](./LICENSE)
+[![CI](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml)
 [![Edge](https://img.shields.io/badge/runtime-Cloudflare%20Workers-orange.svg)](https://developers.cloudflare.com/workers/)
 [![Database](https://img.shields.io/badge/storage-D1%20SQLite%20%2B%20Drizzle-blue.svg)](https://developers.cloudflare.com/d1/)
 [![Package Manager](https://img.shields.io/badge/package%20manager-aube-c6ee67.svg)](https://github.com/jdx/aube)
 
 ---
 
+## ⚖️ Aggregator & Licensing Notice
+
+> [!IMPORTANT]
+> **Islamic Sources (@IslamicSources)** operates strictly as a neutral aggregator and edge federation gateway.
+>
+> 1. **Independence & Ownership**: WaqfTech does **not** own, manage, or operate upstream Islamic MCP servers (e.g. `bahouth.tafsir.net`, `mcp.tafsir.net`, `mcp.turath.io`, `maheralfahel.net`), nor are we affiliated with their day-to-day operations.
+> 2. **Licensing Scope**: The [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE) applies **strictly to the gateway aggregator code and technical infrastructure**, NOT to the underlying Islamic texts or content.
+> 3. **Source Licensing**: Each upstream MCP server retains its own independent license, copyright, and terms of use, which must be verified directly at its respective source.
+> 4. **Unaltered Verbatim Transmission**: We do **not** author, add to, edit, or alter responses or texts from the underlying Islamic sources. All Quranic verses, Hadith narrations, Tafsir commentaries, and scholarly search results are relayed verbatim from their original upstream providers.
+> 5. **Provided "As Is"**: The gateway service is provided strictly on an "as is" and "as available" basis without warranties of any kind. For authoritative scholarly verification, consult the respective source institutions directly.
+
+---
+
 ## 🌟 Overview
 
-Instead of forcing users to configure 10+ independent Islamic MCP servers in their AI IDEs (Claude Desktop, Cursor, Antigravity, VS Code), **Waqf MCP** serves as a federated gateway:
+Instead of forcing users to configure 10+ independent Islamic MCP servers in their AI IDEs (Claude Desktop, Cursor, Antigravity, VS Code), **@IslamicSources** serves as a federated gateway:
 
 1. **Single Entrypoint**: Add `https://mcp.waqf.dev/mcp` once to access Quran, Hadith, Tafsir, and Islamic heritage books.
 2. **Stateless Edge Architecture**: Zero Durable Objects; runs on Cloudflare Workers with modern Streamable HTTP.
@@ -20,6 +40,7 @@ Instead of forcing users to configure 10+ independent Islamic MCP servers in the
 5. **Context Window Protection**: Supports `?suite=core` to expose only curated canonical tools and prevent prompt token bloat.
 6. **Multi-lingual Landing Page**: Built with Astro 7+, Arabic-first (RTL default), English, Turkish, Indonesian, and Malaysian, using `dev.waqftech.org` design tokens with zero embedded strings (`lang/{lang}.json`).
 7. **Agent & LLM Discovery**: Standardized [`llms.txt`](https://mcp.waqf.dev/llms.txt) and comprehensive [`llms-full.txt`](https://mcp.waqf.dev/llms-full.txt) explaining the gateway, tools, and schemas in full detail for autonomous agents.
+8. **Rich Social Preview**: Automated Open Graph and Twitter summary cards for clean sharing across Twitter/X, Telegram, WhatsApp, and developer forums.
 
 ---
 
@@ -246,6 +267,15 @@ aube run build
 
 ---
 
+## 🤝 Contributing & Security
+
+- **Security Vulnerabilities**: Please review our [Security Policy](./SECURITY.md) for private responsible disclosure procedures.
+- **Contributing**: Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for architectural invariants, testing protocols, and guide to adding new Islamic MCP providers.
+
+---
+
 ## 🛡️ License
 
-Part of the **WaqfTech** digital waqf initiative. Open source under the [Waqf Digital Public License (Waqf-DPL 1.0)](https://github.com/WaqfTech/waqf-license-draft).
+The gateway software is part of the **WaqfTech** digital waqf initiative and is open source under the [Waqf Digital Public License (Waqf-DPL 1.0)](./LICENSE).
+
+As declared in the [Aggregator Notice](#️-aggregator--licensing-notice), the Waqf-DPL license applies strictly to the gateway aggregator code and technical edge infrastructure. Each federated Islamic MCP server and text corpus retains its own independent license and copyright from its respective source institution.

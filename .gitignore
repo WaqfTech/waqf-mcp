@@ -42,7 +42,8 @@ coverage/
 *.tmp
 *.temp
 
-# Sila ephemeral claim locks
-goals/*/claim.json
+# Sila agent artifacts, goals & internal docs
+goals/
+docs/
 .sila/
 .delta/

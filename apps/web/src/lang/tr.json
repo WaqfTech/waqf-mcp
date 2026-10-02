@@ -129,7 +129,7 @@
     "q1": "Neden her sunucuyu ayrı eklemek yerine mcp.waqf.dev kullanmalıyım?",
     "a1": "Tek bir yapılandırma ile 10'dan fazla sunucuyu yönetme zahmetinden kurtulur, araç adı çakışmalarını önler ve hızlı uç önbellekten yararlanırsınız.",
     "q2": "Bu hizmet ücretsiz mi?",
-    "a2": "Evet, bu ağ geçidi kamu yararı için dijital bir vakıf olarak vakfedilmiştir.",
+    "a2": "Evet, bu ağ geçidi kamu yararı için kâr amacı gütmeyen dijital bir vakıf olarak tamamen ücretsiz ve açık kaynaklıdır. Ancak, toplayıcımızda bir araya getirilen bağımsız MCP sunucularının sahibi olmadığımızı, bunları yönetmediğimizi ve doğrudan işletmediğimizi lütfen unutmayın. Vakıf Dijital Kamu Lisansı (Waqf-DPL) yalnızca ağ geçidi toplayıcı yazılımı ve teknik altyapısı için geçerlidir; sunulan İslami içerik veya metinleri kapsamaz. Toplayıcıdaki her bağımsız MCP sunucusu kendi lisansına ve kullanım koşullarına tabidir ve doğrudan kaynağından kontrol edilmelidir.",
     "q3": "Gizlilik nasıl sağlanıyor?",
     "a3": "Özel API anahtarlarınızı veya istemlerinizi saklamıyoruz. Yalnızca sistem sağlığını izlemek için anonimleştirilmiş ölçümler tutulur.",
     "q4": "İslami kaynaklardan gelen yanıtlara ekleme, düzenleme veya değişiklik yapıyor musunuz?",
@@ -137,7 +137,7 @@
   },
   "footer": {
     "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",
-    "disclaimer": "Sorumluluk Reddi: @IslamicSources bağımsız bir toplayıcıdır. Kaynaklardan gelen yanıtları düzenlemez veya değiştirmeyiz; tüm içerik kelimesi kelimesine ve herhangi bir garanti olmaksızın olduğu gibi ('as is') sağlanır.",
+    "disclaimer": "Sorumluluk Reddi: @IslamicSources bağımsız bir toplayıcıdır. Kaynak MCP sunucularının sahibi değiliz, bunları yönetmeyiz ve yanıtları değiştirmeyiz; tüm içerik kelimesi kelimesine ve olduğu gibi ('as is') sunulur. Vakıf lisansı yalnızca ağ geçidi altyapısı için geçerlidir, her bağımsız MCP sunucusu kendi lisansına tabidir.",
     "rights": "© 2026 WAQFTECH.ORG — <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Vakıf Dijital Kamu Lisansı - Sürüm 1.0 (Waqf-DPL 1.0)</a> kapsamında lisanslanmıştır",
     "made_for": "Kalıcı etki niyetiyle tasarlandı"
   }

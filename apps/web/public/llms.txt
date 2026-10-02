@@ -15,6 +15,8 @@ Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into
 ## Aggregator & As-Is Transmission Notice
 
 > **IMPORTANT**: Islamic Sources (@IslamicSources) is strictly an aggregator and neutral edge gateway.
+> - **Independence & Ownership**: We do not own, manage, or operate the independent MCP servers federated in our aggregator, nor are we affiliated with their operations.
+> - **Licensing Scope**: The Waqf Digital Public License (Waqf-DPL) applies strictly to the gateway aggregator software and technical infrastructure, not to the underlying Islamic content or texts. Each upstream MCP server retains its own independent license and terms of use, which must be consulted directly at the source.
 > - **Zero Alteration**: We do not author, add, edit, or alter responses or texts from the underlying Islamic sources. All Quranic verses, Hadith narrations, Tafsir commentaries, and scholarly search results are relayed verbatim from their original upstream providers.
 > - **Provided "As Is"**: This service is provided on an "as is" and "as available" basis without warranties of any kind. For authoritative scholarly verification, consult the respective source institutions directly.
 

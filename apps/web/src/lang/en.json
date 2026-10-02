@@ -129,7 +129,7 @@
     "q1": "Why use mcp.waqf.dev instead of individual MCP servers?",
     "a1": "A single configuration eliminates managing 10+ server endpoints, prevents tool name collisions, caches authentic texts at the edge, and provides canonical tools that save context window tokens.",
     "q2": "Is this service free?",
-    "a2": "Yes, this gateway is 100% open-source and endowed as a digital waqf for public benefit.",
+    "a2": "Yes, this gateway is 100% open-source and endowed as a digital waqf for public benefit. Please note that we do not own, manage, or operate the independent MCP servers federated in our aggregator, nor are we affiliated with their operations. Furthermore, the Waqf Digital Public License (Waqf-DPL) applies strictly to the gateway aggregator software and technical infrastructure, not to the underlying Islamic content or texts. Each federated MCP server retains its own independent license and terms of use, which must be verified directly at the source.",
     "q3": "How is privacy handled?",
     "a3": "We do not store private API keys or personal prompts. Anonymized operational telemetry (country, tool called, response latency) is recorded strictly for health and capacity monitoring.",
     "q4": "Does @IslamicSources add, edit, or alter responses from the sources?",
@@ -137,7 +137,7 @@
   },
   "footer": {
     "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",
-    "disclaimer": "Disclaimer: @IslamicSources is an independent aggregator and gateway. We do not author, edit, or alter responses from upstream Islamic sources; all content is delivered verbatim and provided 'as is' without warranty.",
+    "disclaimer": "Disclaimer: @IslamicSources is an independent aggregator. We do not own, manage, author, or alter responses from upstream Islamic sources; all content is delivered verbatim and provided 'as is'. The Waqf license applies strictly to the gateway infrastructure, while each federated MCP server retains its own independent license.",
     "rights": "© 2026 WAQFTECH.ORG — Licensed under <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Waqf Digital Public License - Version 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Built with the intention of lasting impact"
   }

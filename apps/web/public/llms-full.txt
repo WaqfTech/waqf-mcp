@@ -405,6 +405,8 @@ console.log(result.content[0].text);
 ## 7. Licensing & Open-Source Governance
 
 The Waqf MCP Federation Gateway is published under the **Digital Waqf Public License (Waqf-DPL 1.0)** by the [WaqfTech Foundation](https://waqftech.org/).
+- **Scope of License**: The Waqf-DPL 1.0 applies strictly to the gateway aggregator code and technical federation infrastructure, not to the underlying Islamic content or texts.
+- **Provider Independence**: WaqfTech does not own, manage, or operate the federated upstream MCP servers. Each provider retains its own independent license, copyright, and terms of use, which must be verified directly at its source.
 - Source Code: [github.com/waqftech/waqf-mcp](https://github.com/waqftech/waqf-mcp)
 - License Draft: [github.com/WaqfTech/waqf-license-draft](https://github.com/WaqfTech/waqf-license-draft)
 - Contributions: Pull requests, new provider adapter submissions, and bug reports are warmly welcomed on GitHub.

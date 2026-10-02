@@ -273,7 +273,7 @@ export default {
             disclaimer: {
               type: "as-is-aggregator",
               statement:
-                "Islamic Sources (@IslamicSources) is strictly an aggregator and federation gateway. We do not author, add, edit, or alter responses from upstream Islamic sources. All content is transmitted verbatim and the service is provided strictly on an 'as-is' basis without warranties.",
+                "Islamic Sources (@IslamicSources) is strictly an aggregator and federation gateway. We do not own, manage, or operate upstream Islamic MCP servers, nor do we author, add, edit, or alter their responses. All content is transmitted verbatim and the service is provided strictly on an 'as-is' basis without warranties. The Waqf license governs the gateway code only; each upstream provider maintains its own license and terms.",
             },
             organization: {
               name: "WaqfTech();",

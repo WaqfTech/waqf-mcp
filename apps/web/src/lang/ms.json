@@ -129,7 +129,7 @@
     "q1": "Mengapa menggunakan mcp.waqf.dev berbanding menambah setiap pelayan secara individu?",
     "a1": "Satu konfigurasi mengelakkan pengurusan lebih 10 pelayan, mencegah pertembungan nama alatan, menyimpan teks sahih dalam cache pinggir, dan menjimatkan token prompt AI anda.",
     "q2": "Adakah perkhidmatan ini percuma?",
-    "a2": "Ya, gerbang ini diwakafkan sepenuhnya secara terbuka untuk faedah umum.",
+    "a2": "Ya, gerbang ini 100% sumber terbuka dan diwakafkan sebagai aset digital tanpa keuntungan untuk faedah umum. Sila ambil perhatian bahawa kami tidak memiliki, mengurus, atau mengendalikan pelayan-pelayan MCP bebas yang diagregatkan dalam gerbang ini, dan kami tidak terlibat dalam operasinya. Di samping itu, Lesen Awam Digital Wakaf (Waqf-DPL) hanya terpakai kepada perisian agregator dan infrastruktur teknikal gerbang, bukannya kepada kandungan atau teks Islam yang dipaparkan. Setiap pelayan MCP asal mengekalkan lesen dan syarat penggunaannya yang tersendiri yang mesti disemak terus di sumber asalnya.",
     "q3": "Bagaimanakah privasi data diuruskan?",
     "a3": "Kami tidak menyimpan kunci API peribadi atau perbualan anda. Hanya data telemetri operasi tanpa nama direkodkan untuk pemantauan sistem.",
     "q4": "Adakah @IslamicSources menambah, menyunting, atau mengubah maklum balas daripada sumber Islam?",
@@ -137,7 +137,7 @@
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membina aset teknikal terbuka dan menyelenggarakannya untuk manfaat berterusan.",
-    "disclaimer": "Penafian: @IslamicSources ialah agregator bebas. Kami tidak menyunting atau mengubah maklum balas daripada sumber Islam asal; semua kandungan disampaikan secara verbatim dan disediakan 'seadanya' (as is).",
+    "disclaimer": "Penafian: @IslamicSources ialah agregator bebas. Kami tidak memiliki, mengurus, atau mengubah maklum balas daripada sumber Islam asal; semua kandungan disampaikan secara verbatim dan disediakan 'seadanya' (as is). Lesen Wakaf hanya terpakai kepada infrastruktur gerbang, manakala setiap pelayan MCP mengekalkan lesennya yang tersendiri.",
     "rights": "© 2026 WAQFTECH.ORG — Dilesenkan di bawah <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Lesen Awam Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Direka dengan niat impak yang berpanjangan"
   }

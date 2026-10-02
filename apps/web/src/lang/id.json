@@ -129,7 +129,7 @@
     "q1": "Mengapa menggunakan mcp.waqf.dev daripada menambahkan setiap server secara terpisah?",
     "a1": "Satu konfigurasi menghemat pengelolaan lebih dari 10 server, mencegah tabrakan nama alat, menyimpan teks terverifikasi di edge cache, dan menghemat token prompt AI Anda.",
     "q2": "Apakah layanan ini gratis?",
-    "a2": "Ya, gateway ini sepenuhnya diwakafkan secara terbuka untuk kemaslahatan umum.",
+    "a2": "Ya, gateway ini 100% sumber terbuka dan diwakafkan sebagai aset digital nirlaba untuk kemaslahatan umum. Harap dipahami bahwa kami tidak memiliki, mengelola, atau mengoperasikan server-server MCP independen yang diagregasikan dalam gateway ini, dan kami tidak terafiliasi dengan operasional mereka. Selain itu, Lisensi Publik Digital Wakaf (Waqf-DPL) hanya berlaku untuk perangkat lunak agregator dan infrastruktur teknis gateway, bukan untuk konten atau teks Islam yang ditampilkan. Setiap server MCP hulu memiliki lisensi dan ketentuan penggunaannya masing-masing yang harus diverifikasi langsung di sumber aslinya.",
     "q3": "Bagaimana privasi dikelola?",
     "a3": "Kami tidak menyimpan kunci API pribadi atau percakapan Anda. Hanya telemetri operasional anonim yang dicatat untuk pemantauan sistem.",
     "q4": "Apakah @IslamicSources menambah, mengedit, atau mengubah respons dari sumber Islam?",
@@ -137,7 +137,7 @@
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membangun aset teknologi terbuka dan merawatnya agar manfaatnya terus berlanjut.",
-    "disclaimer": "Pemberitahuan: @IslamicSources adalah agregator independen. Kami tidak menyunting atau mengubah respons dari sumber Islam hulu; semua konten disampaikan secara verbatim dan disediakan 'apa adanya' (as is).",
+    "disclaimer": "Pemberitahuan: @IslamicSources adalah agregator independen. Kami tidak memiliki, mengelola, atau mengubah respons dari sumber Islam hulu; semua konten disampaikan secara verbatim dan disediakan 'apa adanya' (as is). Lisensi Wakaf hanya berlaku untuk infrastruktur gateway, sedangkan setiap server MCP mempertahankan lisensinya masing-masing.",
     "rights": "© 2026 WAQFTECH.ORG — Dilisensikan di bawah <a href=\"https://github.com/WaqfTech/waqf-license-draft\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"license-link\">Lisensi Publik Digital Wakaf - Versi 1.0 (Waqf-DPL 1.0)</a>",
     "made_for": "Dirancang untuk dampak yang berkelanjutan"
   }

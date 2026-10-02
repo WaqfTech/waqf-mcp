@@ -14,7 +14,7 @@ export const MCP_SERVER_CARD_JSON = JSON.stringify(
       unaltered: true,
       warranty: "as-is",
       statement:
-        "Islamic Sources is strictly an aggregator. We do not author, add, edit, or alter responses from upstream Islamic sources, and the service is provided as is without warranty.",
+        "Islamic Sources is strictly an aggregator. We do not own, manage, or operate upstream Islamic MCP servers, nor do we author, add, edit, or alter their responses. The Waqf license applies strictly to the gateway infrastructure; each upstream MCP server retains its own independent license.",
     },
     transport: {
       type: "streamable-http",

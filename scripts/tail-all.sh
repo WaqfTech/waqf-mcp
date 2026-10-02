@@ -29,7 +29,30 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKERS_JSON="$REPO_ROOT/workers.json"
 FORMATTER="$REPO_ROOT/scripts/tail-formatter.js"
 
-export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-<CLOUDFLARE_ACCOUNT_ID>}"
+# ─── Load local environment overrides if present ─────────────────────────────
+load_env_file() {
+  local env_file="$1"
+  if [[ -f "$env_file" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      line="$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+      [[ -z "$line" || "$line" =~ ^# ]] && continue
+      if [[ "$line" =~ ^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$ ]]; then
+        local key="${BASH_REMATCH[1]}"
+        local val="${BASH_REMATCH[2]}"
+        val="${val#[\"\']}"
+        val="${val%[\"\']}"
+        if [[ -z "${!key:-}" ]]; then
+          export "$key"="$val"
+        fi
+      fi
+    done < "$env_file"
+  fi
+}
+
+load_env_file "$REPO_ROOT/.env.local"
+load_env_file "$REPO_ROOT/.env"
+
+export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-}"
 
 # ─── Defaults ────────────────────────────────────────────────────────────────
 ENV="prod"

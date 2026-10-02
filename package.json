@@ -15,7 +15,8 @@
     "test": "aube -F @waqf/api run test",
     "tail": "bash scripts/tail-all.sh",
     "tail:debug": "bash scripts/tail-all.sh --debug",
-    "tail:errors": "bash scripts/tail-all.sh --status-only"
+    "tail:errors": "bash scripts/tail-all.sh --status-only",
+    "setup:git-filters": "bash scripts/setup-git-filters.sh"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

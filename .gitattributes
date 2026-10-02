@@ -1,0 +1,2 @@
+apps/api/wrangler.jsonc filter=cloudflare-creds
+apps/web/wrangler.jsonc filter=cloudflare-creds

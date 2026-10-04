@@ -151,7 +151,8 @@ const { t } = Astro.props;
           msgEl.textContent = successMsg;
           msgEl.className = "form-feedback success";
         } else {
-          msgEl.textContent = errorMsg;
+          const errData = await res.json().catch(() => null);
+          msgEl.textContent = (errData && errData.error) ? errData.error : errorMsg;
           msgEl.className = "form-feedback error";
         }
       } catch (err) {

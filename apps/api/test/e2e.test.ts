@@ -12,6 +12,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
       prepare: vi.fn().mockReturnValue({
         bind: vi.fn().mockReturnThis(),
         all: vi.fn().mockResolvedValue({ results: [] }),
+        raw: vi.fn().mockResolvedValue([]),
         first: vi.fn().mockResolvedValue(null),
         run: vi.fn().mockResolvedValue({ success: true }),
       }),

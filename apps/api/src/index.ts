@@ -3,6 +3,7 @@ import { FederationRouter } from "./core/router";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
 import { createDb, mcpSubmissions } from "@waqf/db";
+import { eq, desc } from "drizzle-orm";
 import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
 import { ROBOTS_TXT } from "./robots";
 import { SITEMAP_XML } from "./sitemap";
@@ -29,6 +30,26 @@ export interface Env {
 // Module-level hoisting per cf-cpu-audit: compile once per isolate
 const registry = new ProviderRegistry();
 const router = new FederationRouter(registry);
+const textEncoder = new TextEncoder();
+
+const submissionRateLimits = new Map<string, number[]>();
+
+export function isSubmissionRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const oneHourAgo = now - 3600 * 1000;
+  const timestamps = (submissionRateLimits.get(ip) || []).filter((t) => t > oneHourAgo);
+  if (timestamps.length >= 5) {
+    submissionRateLimits.set(ip, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  submissionRateLimits.set(ip, timestamps);
+  return false;
+}
+
+export function resetSubmissionRateLimits(): void {
+  submissionRateLimits.clear();
+}
 
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
@@ -37,10 +58,31 @@ const SECURITY_HEADERS = {
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With",
   ...SECURITY_HEADERS,
 };
+
+function checkAdminAuth(request: Request, env: Env): Response | null {
+  const expectedKey = env.ADMIN_API_KEY;
+  if (!expectedKey) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized: Admin API key not configured on server" }),
+      { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+
+  const authHeader = request.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!token || token !== expectedKey) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized: Invalid or missing Bearer token" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+
+  return null;
+}
 
 export const AGENT_DISCOVERY_LINK_HEADER = [
   '</.well-known/api-catalog>; rel="api-catalog"',
@@ -342,6 +384,14 @@ export default {
 
     // Community MCP Submission API Endpoint
     if (request.method === "POST" && pathname === "/api/submissions") {
+      const clientIp = request.headers.get("cf-connecting-ip") || "127.0.0.1";
+      if (isSubmissionRateLimited(clientIp)) {
+        return new Response(
+          JSON.stringify({ error: "Too many submissions from this IP. Limit is 5 per hour." }),
+          { status: 429, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      }
+
       try {
         const body = (await request.json()) as {
           submitterName: string;
@@ -355,6 +405,14 @@ export default {
         if (!body.serverUrl || !body.serverName || !body.submitterEmail) {
           return new Response(
             JSON.stringify({ error: "Missing required fields: serverUrl, serverName, submitterEmail" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(body.submitterEmail)) {
+          return new Response(
+            JSON.stringify({ error: "Invalid submitterEmail format" }),
             { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
           );
         }
@@ -386,6 +444,20 @@ export default {
 
         if (env.DB) {
           const db = createDb(env.DB);
+
+          const existing = await db
+            .select({ id: mcpSubmissions.id })
+            .from(mcpSubmissions)
+            .where(eq(mcpSubmissions.serverUrl, body.serverUrl))
+            .limit(1);
+
+          if (existing.length > 0) {
+            return new Response(
+              JSON.stringify({ error: "An MCP server with this URL has already been submitted" }),
+              { status: 409, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+            );
+          }
+
           await db.insert(mcpSubmissions).values({
             id: crypto.randomUUID(),
             submitterName: body.submitterName || "Anonymous",
@@ -412,24 +484,112 @@ export default {
       }
     }
 
-    // Authenticated Gateway Telemetry & Analytics Endpoint
-    if (request.method === "GET" && (pathname === "/api/stats" || pathname === "/api/telemetry")) {
-      const expectedKey = env.ADMIN_API_KEY;
-      if (!expectedKey) {
+    // Admin List Submissions Endpoint
+    if (request.method === "GET" && pathname === "/api/submissions") {
+      const authErr = checkAdminAuth(request, env);
+      if (authErr) return authErr;
+
+      if (!env.DB) {
         return new Response(
-          JSON.stringify({ error: "Unauthorized: Admin API key not configured on server" }),
+          JSON.stringify({ error: "Database not configured" }),
           { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       }
 
-      const authHeader = request.headers.get("authorization") || "";
-      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-      if (!token || token !== expectedKey) {
+      try {
+        const db = createDb(env.DB);
+        const statusParam = url.searchParams.get("status") || "pending";
+        const limitParam = Math.max(1, Math.min(100, Number(url.searchParams.get("limit") || "50")));
+
+        const allowedStatuses = ["pending", "verified", "rejected"] as const;
+        const baseQuery = db.select().from(mcpSubmissions);
+
+        const submissions =
+          statusParam === "all"
+            ? await baseQuery.orderBy(desc(mcpSubmissions.createdAt)).limit(limitParam)
+            : allowedStatuses.includes(statusParam as (typeof allowedStatuses)[number])
+              ? await baseQuery
+                  .where(eq(mcpSubmissions.status, statusParam as (typeof allowedStatuses)[number]))
+                  .orderBy(desc(mcpSubmissions.createdAt))
+                  .limit(limitParam)
+              : await baseQuery
+                  .where(eq(mcpSubmissions.status, "pending"))
+                  .orderBy(desc(mcpSubmissions.createdAt))
+                  .limit(limitParam);
+
+        return new Response(JSON.stringify(submissions, null, 2), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
+      }
+    }
+
+    // Admin Review Submissions Endpoint
+    if (request.method === "PATCH" && pathname === "/api/submissions") {
+      const authErr = checkAdminAuth(request, env);
+      if (authErr) return authErr;
+
+      if (!env.DB) {
         return new Response(
-          JSON.stringify({ error: "Unauthorized: Invalid or missing Bearer token" }),
-          { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          JSON.stringify({ error: "Database not configured" }),
+          { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       }
+
+      try {
+        const body = (await request.json()) as { id?: string; status?: string };
+        if (!body.id || !body.status) {
+          return new Response(
+            JSON.stringify({ error: "Missing required fields: id, status" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        const allowedStatuses = ["pending", "verified", "rejected"] as const;
+        if (!allowedStatuses.includes(body.status as (typeof allowedStatuses)[number])) {
+          return new Response(
+            JSON.stringify({ error: "Invalid status: must be pending, verified, or rejected" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        const db = createDb(env.DB);
+        const updated = await db
+          .update(mcpSubmissions)
+          .set({ status: body.status as (typeof allowedStatuses)[number] })
+          .where(eq(mcpSubmissions.id, body.id))
+          .returning();
+
+        if (updated.length === 0) {
+          return new Response(
+            JSON.stringify({ error: "Submission not found" }),
+            { status: 404, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, submission: updated[0] }),
+          { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        });
+      }
+    }
+
+    // Authenticated Gateway Telemetry & Analytics Endpoint
+    if (request.method === "GET" && (pathname === "/api/stats" || pathname === "/api/telemetry")) {
+      const authErr = checkAdminAuth(request, env);
+      if (authErr) return authErr;
 
       try {
         const timeWindowHours = Math.max(1, Math.min(720, Number(url.searchParams.get("hours") || "24")));
@@ -495,10 +655,16 @@ export default {
         provider: string | null,
         isCacheHit: boolean,
         statusCode: number,
-        errorMsg: string | null
+        errorMsg: string | null,
+        responseSizeBytes: number | null = null
       ) => {
         if (!telemetryService) return;
         const latencyMs = Math.round(performance.now() - startTime);
+
+        let toolArgumentsJson = toolArgs ? JSON.stringify(toolArgs) : null;
+        if (toolArgumentsJson && toolArgumentsJson.length > 2000) {
+          toolArgumentsJson = toolArgumentsJson.slice(0, 1997) + "...";
+        }
 
         ctx.waitUntil(
           (async () => {
@@ -517,41 +683,51 @@ export default {
               clientApp: telemetryService.detectClientApp(userAgent),
               method,
               toolName,
-              toolArgumentsJson: toolArgs ? JSON.stringify(toolArgs) : null,
+              toolArgumentsJson,
               upstreamProvider: provider,
               isCacheHit,
               statusCode,
               latencyMs,
               errorMessage: errorMsg,
-              responseSizeBytes: null,
+              responseSizeBytes,
             });
           })().catch(() => {})
         );
       };
 
+      const jsonResponse = (payload: unknown, status = 200) => {
+        const bodyStr = JSON.stringify(payload);
+        const bytes = textEncoder.encode(bodyStr).length;
+        return {
+          response: new Response(bodyStr, {
+            status,
+            headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+          }),
+          bytes,
+        };
+      };
+
       try {
         switch (rpc.method) {
           case "initialize": {
-            logExecution("initialize", null, null, "internal", false, 200, null);
-            return new Response(
-              JSON.stringify({
-                jsonrpc: "2.0",
-                id: reqId,
-                result: {
-                  protocolVersion: "2024-11-05",
-                  capabilities: {
-                    tools: {
-                      listChanged: false,
-                    },
-                  },
-                  serverInfo: {
-                    name: "IslamicSources",
-                    version: "1.0.0",
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: {
+                protocolVersion: "2024-11-05",
+                capabilities: {
+                  tools: {
+                    listChanged: false,
                   },
                 },
-              }),
-              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-            );
+                serverInfo: {
+                  name: "IslamicSources",
+                  version: "1.0.0",
+                },
+              },
+            });
+            logExecution("initialize", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
           }
 
           case "notifications/initialized": {
@@ -559,39 +735,34 @@ export default {
           }
 
           case "ping": {
-            return new Response(
-              JSON.stringify({ jsonrpc: "2.0", id: reqId, result: {} }),
-              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-            );
+            const resData = jsonResponse({ jsonrpc: "2.0", id: reqId, result: {} });
+            logExecution("ping", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
           }
 
           case "tools/list": {
             const tools = await router.listAllTools(suite);
-            logExecution("tools/list", null, null, "internal", false, 200, null);
-            return new Response(
-              JSON.stringify({
-                jsonrpc: "2.0",
-                id: reqId,
-                result: {
-                  tools,
-                },
-              }),
-              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-            );
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: {
+                tools,
+              },
+            });
+            logExecution("tools/list", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
           }
 
           case "tools/call": {
             const params = rpc.params as { name?: string; arguments?: Record<string, unknown> } | undefined;
             if (!params?.name) {
-              logExecution("tools/call", null, null, null, false, 400, "Missing tool name");
-              return new Response(
-                JSON.stringify({
-                  jsonrpc: "2.0",
-                  id: reqId,
-                  error: { code: -32602, message: "Missing required tool 'name' parameter" },
-                }),
-                { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-              );
+              const resData = jsonResponse({
+                jsonrpc: "2.0",
+                id: reqId,
+                error: { code: -32602, message: "Missing required tool 'name' parameter" },
+              });
+              logExecution("tools/call", null, null, null, false, 400, "Missing tool name", resData.bytes);
+              return resData.response;
             }
 
             const { providerId, result, isCacheHit } = await router.callTool(
@@ -601,6 +772,12 @@ export default {
               ctx
             );
 
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result,
+            });
+
             logExecution(
               "tools/call",
               params.name,
@@ -608,42 +785,32 @@ export default {
               providerId,
               isCacheHit,
               result.isError ? 500 : 200,
-              result.isError ? "Tool execution error" : null
+              result.isError ? "Tool execution error" : null,
+              resData.bytes
             );
 
-            return new Response(
-              JSON.stringify({
-                jsonrpc: "2.0",
-                id: reqId,
-                result,
-              }),
-              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-            );
+            return resData.response;
           }
 
           default: {
-            logExecution(rpc.method, null, null, null, false, 404, "Method not found");
-            return new Response(
-              JSON.stringify({
-                jsonrpc: "2.0",
-                id: reqId,
-                error: { code: -32601, message: `Method '${rpc.method}' not found` },
-              }),
-              { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-            );
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              error: { code: -32601, message: `Method '${rpc.method}' not found` },
+            });
+            logExecution(rpc.method, null, null, null, false, 404, "Method not found", resData.bytes);
+            return resData.response;
           }
         }
       } catch (err: unknown) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        logExecution(rpc.method, null, null, null, false, 500, errorMsg);
-        return new Response(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: reqId,
-            error: { code: -32603, message: `Internal error: ${errorMsg}` },
-          }),
-          { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-        );
+        const resData = jsonResponse({
+          jsonrpc: "2.0",
+          id: reqId,
+          error: { code: -32603, message: `Internal error: ${errorMsg}` },
+        });
+        logExecution(rpc.method, null, null, null, false, 500, errorMsg, resData.bytes);
+        return resData.response;
       }
     }
 

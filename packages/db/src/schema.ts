@@ -27,9 +27,6 @@ export const mcpLogs = sqliteTable(
   },
   (table) => [
     index("idx_mcp_logs_timestamp").on(table.timestamp),
-    index("idx_mcp_logs_tool_name").on(table.toolName),
-    index("idx_mcp_logs_client_app").on(table.clientApp),
-    index("idx_mcp_logs_country").on(table.country),
   ]
 );
 
@@ -67,6 +64,7 @@ export const mcpSubmissions = sqliteTable(
   },
   (table) => [
     index("idx_mcp_submissions_status").on(table.status),
+    index("idx_mcp_submissions_created_at").on(table.createdAt),
   ]
 );
 

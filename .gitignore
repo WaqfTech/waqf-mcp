@@ -48,3 +48,7 @@ docs/
 .sila/
 .delta/
 CLAUDE.md
+GEMINI.md
+.cursor/
+.devin/
+

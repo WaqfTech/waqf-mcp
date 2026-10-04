@@ -60,7 +60,7 @@ export class D1TelemetryService {
         SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) as cache_hits,
         AVG(latency_ms) as avg_latency_ms,
         SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count
-      FROM mcp_logs 
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ?
     `).bind(since);
 
@@ -69,7 +69,7 @@ export class D1TelemetryService {
         tool_name, 
         COUNT(*) as count, 
         AVG(latency_ms) as avg_latency_ms 
-      FROM mcp_logs 
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ? AND tool_name IS NOT NULL 
       GROUP BY tool_name 
       ORDER BY count DESC 
@@ -80,7 +80,7 @@ export class D1TelemetryService {
       SELECT 
         client_app, 
         COUNT(*) as count 
-      FROM mcp_logs 
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ? AND client_app IS NOT NULL 
       GROUP BY client_app 
       ORDER BY count DESC
@@ -90,7 +90,7 @@ export class D1TelemetryService {
       SELECT 
         country, 
         COUNT(*) as count 
-      FROM mcp_logs 
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ? AND country IS NOT NULL 
       GROUP BY country 
       ORDER BY count DESC 

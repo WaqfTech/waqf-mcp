@@ -129,8 +129,8 @@ export class FederationRouter {
 
     const result = await provider.callTool(originalToolName, sanitizedArgs);
 
-    // Save to cache asynchronously
-    if (cacheService && cacheKey && !result.isError) {
+    // Save to cache asynchronously if valid and non-empty
+    if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
       if (ctx) {
         ctx.waitUntil(cacheService.set(cacheKey, providerId, originalToolName, result));
       } else {
@@ -289,7 +289,7 @@ export class FederationRouter {
         throw new Error(`Unhandled canonical tool: '${toolName}'`);
     }
 
-    if (cacheService && cacheKey && !result.isError) {
+    if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
       if (ctx) {
         ctx.waitUntil(cacheService.set(cacheKey, "canonical", toolName, result));
       } else {
@@ -303,5 +303,30 @@ export class FederationRouter {
       result,
       isCacheHit: false,
     };
+  }
+
+  public isEmptyResult(result: ToolResult): boolean {
+    if (!result.content || result.content.length === 0) {
+      return true;
+    }
+    return result.content.every((block) => {
+      if (block.type === "text") {
+        const text = block.text.trim();
+        if (!text || text === "[]" || text === "{}") {
+          return true;
+        }
+        try {
+          const parsed = JSON.parse(text) as Record<string, unknown>;
+          if (Array.isArray(parsed) && parsed.length === 0) return true;
+          if (parsed && typeof parsed === "object") {
+            if (Array.isArray(parsed.result) && parsed.result.length === 0) return true;
+            if (Array.isArray(parsed.results) && parsed.results.length === 0) return true;
+          }
+        } catch {
+          // Plain text content, non-empty
+        }
+      }
+      return false;
+    });
   }
 }

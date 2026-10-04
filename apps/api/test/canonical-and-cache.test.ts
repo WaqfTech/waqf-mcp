@@ -74,6 +74,53 @@ describe("Canonical Tools & Schema Normalization", () => {
     expect(key1).toHaveLength(64); // SHA-256 hex is 64 characters
   });
 
+  it("router.isEmptyResult correctly detects empty tool results", () => {
+    const registry = new ProviderRegistry([]);
+    const router = new FederationRouter(registry, normalizer);
+
+    expect(router.isEmptyResult({ content: [] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: "" }] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: "   " }] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: "[]" }] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: "{}" }] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: '{"result":[]}' }] })).toBe(true);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: '{"results":[]}' }] })).toBe(true);
+
+    expect(router.isEmptyResult({ content: [{ type: "text", text: "Valid text content" }] })).toBe(false);
+    expect(router.isEmptyResult({ content: [{ type: "text", text: '{"result":["item1"]}' }] })).toBe(false);
+  });
+
+  it("router does not cache empty tool results", async () => {
+    const registry = new ProviderRegistry([]);
+    const mockTafsir = new SseMcpAdapter({
+      id: "tafsir_net",
+      name: "Tafsir.net",
+      baseUrl: "https://mcp.tafsir.net/mcp",
+      transport: "sse",
+      description: "Tafsir",
+    });
+
+    vi.spyOn(mockTafsir, "callTool").mockResolvedValue({
+      content: [],
+      isError: false,
+    });
+
+    registry.register(mockTafsir);
+    const router = new FederationRouter(registry, normalizer);
+
+    const fakeCache = {
+      computeKey: vi.fn().mockResolvedValue("cache-key-123"),
+      get: vi.fn().mockResolvedValue(null),
+      set: vi.fn().mockResolvedValue(undefined),
+      recordHit: vi.fn(),
+    } as unknown as D1CacheService;
+
+    await router.callTool("tafsir_net__search_quran_text", { query: "empty-query" }, fakeCache);
+
+    expect(fakeCache.get).toHaveBeenCalledWith("cache-key-123");
+    expect(fakeCache.set).not.toHaveBeenCalled();
+  });
+
   describe("Provider Argument Sanitization", () => {
     it("normalizes colon-separated verse keys for Bahouth", () => {
       const sanitized = normalizer.sanitizeProviderArgs("bahouth", "get_verse", {

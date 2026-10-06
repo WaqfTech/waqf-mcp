@@ -7,7 +7,6 @@ interface Props {
 }
 
 const { t, lang = "ar" } = Astro.props;
-const isArabic = lang === "ar";
 
 const SERVERS = [
   {
@@ -15,6 +14,7 @@ const SERVERS = [
     url: "https://mcp.tafsir.net/mcp",
     toolsCount: 17,
     category: "quran",
+    featured: true,
     tools: [
       "fetch_ayah",
       "fetch_tafsir",
@@ -23,6 +23,16 @@ const SERVERS = [
       "analyze_word",
       "find_root_occurrences",
       "get_root_stats",
+      "fetch_nuzool_reason",
+      "fetch_surah_info",
+      "search_quran_text",
+      "search_in_tafsir",
+      "get_quran_overview",
+      "get_page_fawaed",
+      "get_surah_statistics",
+      "list_science_sources",
+      "list_all_sources",
+      "list_sources_for_ayah",
     ],
     resources: [
       "quran://surahs",
@@ -43,13 +53,25 @@ const SERVERS = [
     url: "https://bahouth.tafsir.net/mcp",
     toolsCount: 9,
     category: "quran",
-    tools: ["get_verse", "list_surah_verses", "find_root", "list_verse_words", "list_verse_topics"],
+    featured: false,
+    tools: [
+      "get_verse",
+      "list_surah_verses",
+      "find_root",
+      "list_verse_words",
+      "list_verse_topics",
+      "search_roots",
+      "get_word_morphology",
+      "get_surah_info",
+      "search_verses",
+    ],
   },
   {
     id: "turath" as const,
     url: "https://mcp.turath.io/mcp/",
     toolsCount: 5,
     category: "turath",
+    featured: false,
     tools: ["discover_turath", "search_turath", "get_book", "get_page", "get_author"],
   },
   {
@@ -57,6 +79,7 @@ const SERVERS = [
     url: "https://maheralfahel.net/mcp/",
     toolsCount: 5,
     category: "turath",
+    featured: false,
     tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
   },
   {
@@ -64,6 +87,7 @@ const SERVERS = [
     url: "https://search.waqf.app/",
     toolsCount: 2,
     category: "tools",
+    featured: false,
     tools: ["search_islamic_sources", "list_indexed_sources"],
   },
 ];
@@ -82,10 +106,12 @@ const SERVERS = [
     <div class="servers-grid">
       {SERVERS.map((server) => {
         const cardData = t.servers.cards[server.id];
+        const isFeatured = Boolean(server.featured || (server.resources && server.prompts));
+
         return (
-          <article class="server-card">
+          <article class:list={["server-card", { "is-featured": isFeatured }]}>
             <div class="card-top">
-              <div>
+              <div class="title-group">
                 <h3>{cardData.title}</h3>
                 <span class="provider-pill">{cardData.subtitle}</span>
               </div>
@@ -99,32 +125,51 @@ const SERVERS = [
 
             <p class="server-desc">{cardData.desc}</p>
 
-            <div class="preview-block">
-              <span class="preview-label">{formatToolsCount(server.toolsCount, lang, t)}</span>
-              <div class="chips-row">
-                {server.tools.map((tool) => (
-                  <code>{tool}</code>
-                ))}
-              </div>
-            </div>
-
-            {server.resources && (
-              <div class="preview-block resources-block">
-                <span class="preview-label">{t.servers.resources_count_label}</span>
-                <div class="chips-row">
-                  {server.resources.map((res) => (
-                    <code class="resource-chip">{res}</code>
-                  ))}
+            {isFeatured ? (
+              <div class="capabilities-grid">
+                <div class="capability-panel tools-panel">
+                  <div class="panel-header">
+                    <span class="panel-tag">{formatToolsCount(server.toolsCount, lang, t)}</span>
+                  </div>
+                  <div class="chips-row">
+                    {server.tools.map((tool) => (
+                      <code>{tool}</code>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {server.prompts && (
-              <div class="preview-block prompts-block">
-                <span class="preview-label">{t.servers.prompts_count_label}</span>
+                {server.resources && (
+                  <div class="capability-panel resources-panel">
+                    <div class="panel-header">
+                      <span class="panel-tag">{t.servers.resources_count_label}</span>
+                    </div>
+                    <div class="chips-row">
+                      {server.resources.map((res) => (
+                        <code class="resource-chip">{res}</code>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {server.prompts && (
+                  <div class="capability-panel prompts-panel">
+                    <div class="panel-header">
+                      <span class="panel-tag">{t.servers.prompts_count_label}</span>
+                    </div>
+                    <div class="chips-row">
+                      {server.prompts.map((p) => (
+                        <code class="prompt-chip">{p}</code>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div class="preview-block">
+                <span class="preview-label">{formatToolsCount(server.toolsCount, lang, t)}</span>
                 <div class="chips-row">
-                  {server.prompts.map((p) => (
-                    <code class="prompt-chip">{p}</code>
+                  {server.tools.map((tool) => (
+                    <code>{tool}</code>
                   ))}
                 </div>
               </div>
@@ -151,9 +196,9 @@ const SERVERS = [
 
 <style>
   .servers-section {
-    padding: 70px 0;
+    padding-block: 70px;
     background: var(--white);
-    border-bottom: 1px solid var(--line);
+    border-block-end: 1px solid var(--line);
   }
 
   .section-header {
@@ -161,7 +206,7 @@ const SERVERS = [
     justify-content: space-between;
     align-items: flex-end;
     gap: 30px;
-    margin-bottom: 40px;
+    margin-block-end: 40px;
     flex-wrap: wrap;
   }
 
@@ -170,7 +215,8 @@ const SERVERS = [
     line-height: 1.2;
     letter-spacing: -0.04em;
     font-weight: 800;
-    margin: 8px 0 0;
+    margin-block-start: 8px;
+    margin-block-end: 0;
     color: var(--ink);
   }
 
@@ -183,7 +229,7 @@ const SERVERS = [
 
   .servers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
 
@@ -195,26 +241,62 @@ const SERVERS = [
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
   }
 
   .server-card:hover {
     transform: translateY(-2px);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+
+  .server-card:focus-within {
+    outline: 2px solid var(--tide);
+    outline-offset: 2px;
+  }
+
+  .server-card.is-featured {
+    grid-column: 1 / -1;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    padding-inline-start: 28px;
+  }
+
+  .server-card.is-featured::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, var(--lime), var(--tide));
   }
 
   .card-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 16px;
+    margin-block-end: 12px;
+    flex-wrap: wrap;
+  }
+
+  .title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   h3 {
     font-size: 20px;
-    margin: 0 0 4px;
+    margin: 0;
     font-weight: 800;
     color: var(--ink);
+  }
+
+  .is-featured h3 {
+    font-size: 24px;
   }
 
   .provider-pill {
@@ -225,9 +307,9 @@ const SERVERS = [
 
   .badge-group {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .status-badge {
@@ -235,7 +317,8 @@ const SERVERS = [
     color: #166534;
     border: 1px solid #86efac;
     font: 700 11px var(--mono);
-    padding: 3px 8px;
+    padding-block: 3px;
+    padding-inline: 8px;
     border-radius: 2px;
     white-space: nowrap;
   }
@@ -244,8 +327,9 @@ const SERVERS = [
     background: #eef2ff;
     color: #4338ca;
     border: 1px solid #c7d2fe;
-    font: 700 10px var(--mono);
-    padding: 2px 6px;
+    font: 700 11px var(--mono);
+    padding-block: 3px;
+    padding-inline: 8px;
     border-radius: 2px;
     white-space: nowrap;
   }
@@ -254,21 +338,80 @@ const SERVERS = [
     font-size: 15px;
     color: var(--soft);
     line-height: 1.6;
-    margin: 0 0 14px;
+    margin-block-start: 0;
+    margin-block-end: 16px;
+  }
+
+  .is-featured .server-desc {
+    max-width: 900px;
+  }
+
+  .capabilities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-block-end: 20px;
+  }
+
+  .capability-panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .capability-panel.tools-panel {
+    border-block-start: 3px solid var(--tide);
+  }
+
+  .capability-panel.resources-panel {
+    background: #fcfdfc;
+    border-color: #bbf7d0;
+    border-block-start: 3px solid #16a34a;
+  }
+
+  .capability-panel.prompts-panel {
+    background: #fbfdff;
+    border-color: #bfdbfe;
+    border-block-start: 3px solid #2563eb;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-tag {
+    font: 700 11px var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--tide);
+  }
+
+  .resources-panel .panel-tag {
+    color: #15803d;
+  }
+
+  .prompts-panel .panel-tag {
+    color: #1d4ed8;
   }
 
   .preview-block {
-    margin: 6px 0;
-    padding: 10px 12px;
+    margin-block: 6px 14px;
+    padding: 12px;
     background: var(--white);
     border: 1px solid var(--line);
+    border-block-start: 2px solid var(--tide);
   }
 
   .preview-label {
     display: block;
     font: 700 11px var(--mono);
     color: var(--tide);
-    margin-bottom: 6px;
+    margin-block-end: 8px;
     text-transform: uppercase;
   }
 
@@ -282,12 +425,17 @@ const SERVERS = [
     background: var(--paper);
     color: var(--ink);
     border: 1px solid var(--line);
-    padding: 2px 6px;
+    padding-block: 2px;
+    padding-inline: 6px;
     font-size: 11px;
     font-family: var(--mono);
     direction: ltr !important;
     unicode-bidi: isolate;
     display: inline-block;
+  }
+
+  .capability-panel .chips-row code {
+    background: var(--white);
   }
 
   .chips-row code.resource-chip {
@@ -306,8 +454,8 @@ const SERVERS = [
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
+    padding-block-start: 14px;
+    border-block-start: 1px solid var(--line);
     font-size: 13px;
   }
 
@@ -319,5 +467,41 @@ const SERVERS = [
   .source-link {
     font-weight: 800;
     color: var(--tide);
+    text-decoration: none;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: color 0.15s;
+  }
+
+  .source-link:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .source-link:focus-visible {
+    outline: 2px solid var(--tide);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 960px) {
+    .capabilities-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .servers-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .server-card {
+      padding: 20px;
+    }
+
+    .server-card.is-featured {
+      padding-inline-start: 22px;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
   }
 </style>

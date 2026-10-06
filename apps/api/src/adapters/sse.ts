@@ -1,5 +1,12 @@
 import { BaseMcpAdapter } from "./base";
-import type { ToolDefinition, ToolResult } from "@waqf/types";
+import type {
+  GetPromptResult,
+  PromptDefinition,
+  ReadResourceResult,
+  ResourceDefinition,
+  ToolDefinition,
+  ToolResult,
+} from "@waqf/types";
 
 export class SseMcpAdapter extends BaseMcpAdapter {
   private endpointUrl(): string {
@@ -130,5 +137,140 @@ export class SseMcpAdapter extends BaseMcpAdapter {
         },
       ],
     };
+  }
+
+  async listResources(): Promise<ResourceDefinition[]> {
+    const url = this.endpointUrl();
+    const res = await this.fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        ...this.defaultHeaders,
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "waqf-sse-resources-list",
+        method: "resources/list",
+        params: {},
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`[${this.id}] SSE resources/list HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    const text = await res.text();
+    const parsed = this.parseResponsePayload(text) as {
+      result?: { resources?: ResourceDefinition[] };
+      error?: { message?: string };
+    };
+
+    if (parsed.error) {
+      throw new Error(`[${this.id}] SSE resources/list error: ${parsed.error.message ?? "Unknown error"}`);
+    }
+
+    return parsed.result?.resources ?? [];
+  }
+
+  async readResource(uri: string): Promise<ReadResourceResult> {
+    const url = this.endpointUrl();
+    const res = await this.fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        ...this.defaultHeaders,
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "waqf-sse-resources-read",
+        method: "resources/read",
+        params: { uri },
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`[${this.id}] SSE resources/read HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    const text = await res.text();
+    const parsed = this.parseResponsePayload(text) as {
+      result?: ReadResourceResult;
+      error?: { message?: string };
+    };
+
+    if (parsed.error) {
+      throw new Error(`[${this.id}] SSE resources/read error: ${parsed.error.message ?? "Unknown error"}`);
+    }
+
+    return parsed.result ?? { contents: [] };
+  }
+
+  async listPrompts(): Promise<PromptDefinition[]> {
+    const url = this.endpointUrl();
+    const res = await this.fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        ...this.defaultHeaders,
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "waqf-sse-prompts-list",
+        method: "prompts/list",
+        params: {},
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`[${this.id}] SSE prompts/list HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    const text = await res.text();
+    const parsed = this.parseResponsePayload(text) as {
+      result?: { prompts?: PromptDefinition[] };
+      error?: { message?: string };
+    };
+
+    if (parsed.error) {
+      throw new Error(`[${this.id}] SSE prompts/list error: ${parsed.error.message ?? "Unknown error"}`);
+    }
+
+    return parsed.result?.prompts ?? [];
+  }
+
+  async getPrompt(promptName: string, args?: Record<string, string>): Promise<GetPromptResult> {
+    const url = this.endpointUrl();
+    const res = await this.fetchWithTimeout(url, {
+      method: "POST",
+      headers: {
+        ...this.defaultHeaders,
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "waqf-sse-prompts-get",
+        method: "prompts/get",
+        params: {
+          name: promptName,
+          arguments: args ?? {},
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`[${this.id}] SSE prompts/get HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    const text = await res.text();
+    const parsed = this.parseResponsePayload(text) as {
+      result?: GetPromptResult;
+      error?: { message?: string };
+    };
+
+    if (parsed.error) {
+      throw new Error(`[${this.id}] SSE prompts/get error: ${parsed.error.message ?? "Unknown error"}`);
+    }
+
+    return parsed.result ?? { messages: [] };
   }
 }

@@ -43,7 +43,9 @@ Loading 40+ tools into an LLM's system prompt consumes excessive context tokens.
 
 1. **Tafsir Center for Quranic Studies** (`tafsir_net`):
    - Host: `https://mcp.tafsir.net/mcp` (SSE)
-   - Scope: Authentic Tafsir compendia (al-Mukhtasar, al-Tabari, Ibn Kathir, al-Sa'di), Asbab al-Nuzul (reasons for revelation), Qira'at variants, word morphology, and Quranic statistics.
+   - Scope: 17 specialized tools (al-Mukhtasar, al-Tabari, Ibn Kathir, al-Sa'di, Asbab al-Nuzul, Qira'at variants, word morphology, FTS5 Quran search, root stats).
+   - Resources: `quran://surahs`, `quran://tafsirs`, `quran://sciences`, `quran://schema`.
+   - Prompts: `study_ayah`, `compare_tafsirs`, `root_study`, `surah_overview`, `tajweed_lesson`.
 2. **Bahouth Quran & Tafsir Project** (`bahouth`):
    - Host: `https://bahouth.tafsir.net/mcp` (JSON-RPC)
    - Scope: Quranic root search, morphological analysis, verse words, thematic topics, and verse lookups.

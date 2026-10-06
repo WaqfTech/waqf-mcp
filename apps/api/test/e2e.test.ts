@@ -507,6 +507,177 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const data = (await res.json()) as { keys: unknown[] };
     expect(Array.isArray(data.keys)).toBe(true);
   });
+
+  it("POST /mcp initialize advertises tools, resources, and prompts capabilities", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "init-01",
+        method: "initialize",
+        params: {},
+      }),
+    });
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      result: {
+        capabilities: {
+          tools?: unknown;
+          resources?: unknown;
+          prompts?: unknown;
+        };
+      };
+    };
+    expect(body.result.capabilities.tools).toBeDefined();
+    expect(body.result.capabilities.resources).toBeDefined();
+    expect(body.result.capabilities.prompts).toBeDefined();
+  });
+
+  it("POST /mcp resources/list and resources/read work through gateway", async () => {
+    // Mock upstream response for resources
+    const listSse = `event: message\ndata: {"result":{"resources":[{"uri":"quran://surahs","name":"surahs_catalog"}]}}\n\n`;
+    const readSse = `event: message\ndata: {"result":{"contents":[{"uri":"quran://surahs","text":"[114 surahs]"}]}}\n\n`;
+
+    const mockFetch = vi.fn().mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : {};
+
+      if (urlStr.includes("mcp.tafsir.net")) {
+        if (body.method === "resources/list") {
+          return new Response(listSse, {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream" },
+          });
+        }
+        if (body.method === "resources/read") {
+          return new Response(readSse, {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream" },
+          });
+        }
+      }
+
+      if (body.method === "resources/list") {
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { resources: [] } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: {} }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
+    globalThis.fetch = mockFetch;
+
+    // 1. Test resources/list
+    const reqList = new Request("http://localhost:8787/mcp?suite=quran", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "res-list-01",
+        method: "resources/list",
+      }),
+    });
+    const resList = await worker.fetch(reqList, mockEnv, mockCtx);
+    expect(resList.status).toBe(200);
+    const bodyList = (await resList.json()) as { result: { resources: Array<{ uri: string }> } };
+    expect(bodyList.result.resources.length).toBeGreaterThan(0);
+    expect(bodyList.result.resources[0].uri).toBe("quran://surahs");
+
+    // 2. Test resources/read
+    const reqRead = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "res-read-01",
+        method: "resources/read",
+        params: { uri: "quran://surahs" },
+      }),
+    });
+    const resRead = await worker.fetch(reqRead, mockEnv, mockCtx);
+    expect(resRead.status).toBe(200);
+    const bodyRead = (await resRead.json()) as { result: { contents: Array<{ text: string }> } };
+    expect(bodyRead.result.contents[0].text).toContain("114 surahs");
+  });
+
+  it("POST /mcp prompts/list and prompts/get work through gateway", async () => {
+    const listSse = `event: message\ndata: {"result":{"prompts":[{"name":"study_ayah","description":"Ayah study"}]}}\n\n`;
+    const getSse = `event: message\ndata: {"result":{"messages":[{"role":"user","content":{"type":"text","text":"Study 1:1"}}]}}\n\n`;
+
+    const mockFetch = vi.fn().mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
+      const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : {};
+
+      if (urlStr.includes("mcp.tafsir.net")) {
+        if (body.method === "prompts/list") {
+          return new Response(listSse, {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream" },
+          });
+        }
+        if (body.method === "prompts/get") {
+          return new Response(getSse, {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream" },
+          });
+        }
+      }
+
+      if (body.method === "prompts/list") {
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { prompts: [] } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: {} }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
+    globalThis.fetch = mockFetch;
+
+    // 1. Test prompts/list
+    const reqList = new Request("http://localhost:8787/mcp?suite=quran", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "prompt-list-01",
+        method: "prompts/list",
+      }),
+    });
+    const resList = await worker.fetch(reqList, mockEnv, mockCtx);
+    expect(resList.status).toBe(200);
+    const bodyList = (await resList.json()) as { result: { prompts: Array<{ name: string }> } };
+    expect(bodyList.result.prompts.length).toBeGreaterThan(0);
+    expect(bodyList.result.prompts[0].name).toBe("study_ayah");
+
+    // 2. Test prompts/get
+    const reqGet = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "prompt-get-01",
+        method: "prompts/get",
+        params: { name: "study_ayah", arguments: { surah: "1", ayah: "1" } },
+      }),
+    });
+    const resGet = await worker.fetch(reqGet, mockEnv, mockCtx);
+    expect(resGet.status).toBe(200);
+    const bodyGet = (await resGet.json()) as { result: { messages: Array<{ role: string }> } };
+    expect(bodyGet.result.messages[0].role).toBe("user");
+  });
 });
 
 

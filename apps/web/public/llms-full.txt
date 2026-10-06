@@ -206,6 +206,21 @@ Upstream: `https://mcp.tafsir.net/mcp` (SSE)
 16. `tafsir_net__get_page_fawaed`: Contemplative benefits (Fawa'id) from al-Mukhtasar for a Mushaf page.
 17. `tafsir_net__get_surah_statistics`: Word and character counts, vocabulary density for a Surah.
 
+#### Tafsir Center Resources (`resources/list`, `resources/read`)
+Accessible directly or via the gateway:
+1. `quran://surahs` (`surahs_catalog`): Index of all 114 Surahs with metadata (JSON).
+2. `quran://tafsirs` (`tafsirs_catalog`): Index of 28 Tafsir sources with author death years and isnad coverage (JSON).
+3. `quran://sciences` (`sciences_catalog`): Index of Quranic science sources (I'rab, Asbab al-Nuzul, Gharib, Qira'at, Tadabbur) (JSON).
+4. `quran://schema` (`schema_documentation`): Complete database schema documentation for developers (Markdown).
+
+#### Tafsir Center Prompts (`prompts/list`, `prompts/get`)
+Standardized prompt templates ready for LLM invocation:
+1. `study_ayah`: Ayah study template combining text, I'rab, Tafsir, and word vocabulary (`surah`, `ayah`).
+2. `compare_tafsirs`: Comparative tafsir template across the 5 primary works (`surah`, `ayah`).
+3. `root_study`: In-depth study of an Arabic root, occurrences, patterns, and contexts (`root`).
+4. `surah_overview`: Comprehensive Surah overview (themes, virtues, statistics) (`surah`).
+5. `tajweed_lesson`: Tajweed study lesson with rules, Qira'at variants, and word breakdown (`surah`, `ayah`).
+
 ---
 
 ### Group 3: Bahouth Quran & Tafsir Project (`bahouth__*`)
@@ -331,7 +346,7 @@ If an upstream tool call fails (e.g. invalid arguments or range violation), the 
 | :---: | :--- | :--- |
 | `-32700` | Parse Error | Invalid JSON sent to `/mcp` |
 | `-32600` | Invalid Request | Request is not a valid JSON-RPC 2.0 object |
-| `-32601` | Method Not Found | Requested method is not `initialize`, `tools/list`, or `tools/call` |
+| `-32601` | Method Not Found | Requested method is not supported (supported: initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list, prompts/get) |
 | `-32602` | Invalid Params | Missing required arguments or schema type violation |
 | `-32603` | Internal Error | Upstream provider timeout or unreachable |
 

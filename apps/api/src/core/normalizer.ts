@@ -31,6 +31,18 @@ export class SchemaNormalizer {
               default: false,
               description: "Whether to include concise Tafsir explanation",
             },
+            tafsirSource: {
+              type: "string",
+              description: "Specific tafsir source slug (e.g. 'mukhtasar', 'ibnkathir', 'tabari', 'saadi', 'muyassar', 'qurtubi')",
+            },
+            includeSciences: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["tajweed", "irab", "gharib", "qiraat_ayah", "tadabbur"],
+              },
+              description: "Optional Quranic science annotations to include",
+            },
           },
           required: ["surah", "ayah"],
         },
@@ -115,11 +127,34 @@ export class SchemaNormalizer {
 
   // Translates canonical Quran input to Tafsir.net format
   public toTafsirNetAyahArgs(input: CanonicalQuranAyahInput): Record<string, unknown> {
-    return {
+    const includeSet = new Set<string>();
+    if (input.includeTafsir) {
+      includeSet.add("tadabbur");
+      includeSet.add("gharib");
+    }
+    if (input.includeTajweed) {
+      includeSet.add("tajweed");
+    }
+    if (Array.isArray(input.includeSciences)) {
+      for (const s of input.includeSciences) {
+        includeSet.add(s);
+      }
+    }
+
+    const args: Record<string, unknown> = {
       surah: input.surah,
       ayah: input.ayah,
-      include: input.includeTafsir ? ["tadabbur", "gharib"] : undefined,
     };
+
+    if (includeSet.size > 0) {
+      args.include = Array.from(includeSet);
+    }
+
+    if (input.tafsirSource) {
+      args.tafsir_source = input.tafsirSource;
+    }
+
+    return args;
   }
 
   // Normalizes diverse upstream output blocks into a unified Waqf text envelope
@@ -158,6 +193,7 @@ export class SchemaNormalizer {
       }
       return sanitized;
     }
+
     return args;
   }
 }

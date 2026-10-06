@@ -345,6 +345,11 @@ export default {
               "streamable-http (POST /mcp)",
               "sse (GET /mcp with Accept: text/event-stream)",
             ],
+            capabilities: [
+              "tools (tools/list, tools/call)",
+              "resources (resources/list, resources/read)",
+              "prompts (prompts/list, prompts/get)",
+            ],
             runtime: {
               engine: "Cloudflare Workers (Stateless Edge V8)",
               database: "Cloudflare D1 SQLite",
@@ -719,6 +724,13 @@ export default {
                   tools: {
                     listChanged: false,
                   },
+                  resources: {
+                    subscribe: false,
+                    listChanged: false,
+                  },
+                  prompts: {
+                    listChanged: false,
+                  },
                 },
                 serverInfo: {
                   name: "IslamicSources",
@@ -786,6 +798,107 @@ export default {
               isCacheHit,
               result.isError ? 500 : 200,
               result.isError ? "Tool execution error" : null,
+              resData.bytes
+            );
+
+            return resData.response;
+          }
+
+          case "resources/list": {
+            const resources = await router.listAllResources(suite);
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: {
+                resources,
+              },
+            });
+            logExecution("resources/list", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
+          }
+
+          case "resources/read": {
+            const params = rpc.params as { uri?: string } | undefined;
+            if (!params?.uri) {
+              const resData = jsonResponse({
+                jsonrpc: "2.0",
+                id: reqId,
+                error: { code: -32602, message: "Missing required 'uri' parameter" },
+              });
+              logExecution("resources/read", null, null, null, false, 400, "Missing resource uri", resData.bytes);
+              return resData.response;
+            }
+
+            const { providerId, result, isCacheHit } = await router.readResource(
+              params.uri,
+              cacheService,
+              ctx
+            );
+
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result,
+            });
+
+            logExecution(
+              "resources/read",
+              params.uri,
+              null,
+              providerId,
+              isCacheHit,
+              200,
+              null,
+              resData.bytes
+            );
+
+            return resData.response;
+          }
+
+          case "prompts/list": {
+            const prompts = await router.listAllPrompts(suite);
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: {
+                prompts,
+              },
+            });
+            logExecution("prompts/list", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
+          }
+
+          case "prompts/get": {
+            const params = rpc.params as { name?: string; arguments?: Record<string, string> } | undefined;
+            if (!params?.name) {
+              const resData = jsonResponse({
+                jsonrpc: "2.0",
+                id: reqId,
+                error: { code: -32602, message: "Missing required prompt 'name' parameter" },
+              });
+              logExecution("prompts/get", null, null, null, false, 400, "Missing prompt name", resData.bytes);
+              return resData.response;
+            }
+
+            const { providerId, result } = await router.getPrompt(
+              params.name,
+              params.arguments ?? {}
+            );
+
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result,
+            });
+
+            logExecution(
+              "prompts/get",
+              params.name,
+              (params.arguments as Record<string, unknown>) ?? null,
+              providerId,
+              false,
+              200,
+              null,
               resData.bytes
             );
 

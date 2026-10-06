@@ -4,6 +4,7 @@ export interface CanonicalQuranAyahInput {
   includeTajweed?: boolean;
   includeTafsir?: boolean;
   tafsirSource?: string;
+  includeSciences?: string[];
 }
 
 export interface CanonicalQuranAyahResult {

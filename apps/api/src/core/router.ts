@@ -1,4 +1,11 @@
-import type { ToolDefinition, ToolResult } from "@waqf/types";
+import type {
+  GetPromptResult,
+  PromptDefinition,
+  ReadResourceResult,
+  ResourceDefinition,
+  ToolDefinition,
+  ToolResult,
+} from "@waqf/types";
 import { ProviderRegistry } from "./registry";
 import { SchemaNormalizer } from "./normalizer";
 import type { D1CacheService } from "../services/cache";
@@ -8,6 +15,17 @@ export interface CallToolResponse {
   originalToolName: string;
   result: ToolResult;
   isCacheHit: boolean;
+}
+
+export interface ReadResourceResponse {
+  providerId: string;
+  result: ReadResourceResult;
+  isCacheHit: boolean;
+}
+
+export interface GetPromptResponse {
+  providerId: string;
+  result: GetPromptResult;
 }
 
 export class FederationRouter {
@@ -191,6 +209,11 @@ export class FederationRouter {
               surah,
               ayah,
               includeTafsir: Boolean(args.includeTafsir),
+              includeTajweed: Boolean(args.includeTajweed),
+              tafsirSource: args.tafsirSource ? String(args.tafsirSource) : undefined,
+              includeSciences: Array.isArray(args.includeSciences)
+                ? (args.includeSciences as string[])
+                : undefined,
             });
             const raw = await tafsirProvider.callTool("fetch_ayah", upstreamArgs);
             if (!raw.isError) {
@@ -328,5 +351,160 @@ export class FederationRouter {
       }
       return false;
     });
+  }
+
+  public async listAllResources(suite = "all"): Promise<ResourceDefinition[]> {
+    if (suite === "turath" || suite === "search") {
+      return [];
+    }
+
+    let providers = this.registry.getAll();
+    if (suite === "quran") {
+      providers = providers.filter((p) => p.id === "tafsir_net" || p.id === "bahouth");
+    }
+
+    const settled = await Promise.allSettled(
+      providers.map(async (provider) => {
+        const resources = await this.registry.getProviderResources(provider);
+        return resources.map((r) => ({
+          ...r,
+          description: `[${provider.name}] ${r.description ?? ""}`.trim(),
+        }));
+      })
+    );
+
+    const allResources: ResourceDefinition[] = [];
+    for (const result of settled) {
+      if (result.status === "fulfilled") {
+        allResources.push(...result.value);
+      }
+    }
+
+    return allResources;
+  }
+
+  public async readResource(
+    uri: string,
+    cacheService?: D1CacheService,
+    ctx?: ExecutionContext
+  ): Promise<ReadResourceResponse> {
+    let targetProviderId = "tafsir_net";
+    let targetUri = uri;
+
+    if (uri.startsWith("quran://")) {
+      targetProviderId = "tafsir_net";
+    } else if (uri.includes("__")) {
+      const sep = uri.indexOf("__");
+      targetProviderId = uri.slice(0, sep);
+      targetUri = uri.slice(sep + 2);
+    }
+
+    const provider = this.registry.get(targetProviderId);
+    if (!provider || !provider.readResource) {
+      throw new Error(`No provider available to read resource: '${uri}'`);
+    }
+
+    // Cache lookup
+    let cacheKey: string | null = null;
+    if (cacheService) {
+      cacheKey = await cacheService.computeKey(targetProviderId, "read_resource", { uri: targetUri });
+      const cached = await cacheService.get(cacheKey);
+      if (cached && !cached.isError) {
+        if (ctx) {
+          ctx.waitUntil(cacheService.recordHit(cacheKey));
+        } else {
+          cacheService.recordHit(cacheKey).catch(() => {});
+        }
+        try {
+          const parsed = JSON.parse(cached.content[0]?.type === "text" ? cached.content[0].text : "{}") as ReadResourceResult;
+          if (parsed && Array.isArray(parsed.contents)) {
+            return {
+              providerId: targetProviderId,
+              result: parsed,
+              isCacheHit: true,
+            };
+          }
+        } catch {
+          // Fall through to live fetch
+        }
+      }
+    }
+
+    const result = await provider.readResource(targetUri);
+
+    // Save to cache asynchronously if valid
+    if (cacheService && cacheKey && result.contents && result.contents.length > 0) {
+      const toolResultWrapper: ToolResult = {
+        content: [{ type: "text", text: JSON.stringify(result) }],
+      };
+      if (ctx) {
+        ctx.waitUntil(cacheService.set(cacheKey, targetProviderId, "read_resource", toolResultWrapper));
+      } else {
+        cacheService.set(cacheKey, targetProviderId, "read_resource", toolResultWrapper).catch(() => {});
+      }
+    }
+
+    return {
+      providerId: targetProviderId,
+      result,
+      isCacheHit: false,
+    };
+  }
+
+  public async listAllPrompts(suite = "all"): Promise<PromptDefinition[]> {
+    if (suite === "turath" || suite === "search") {
+      return [];
+    }
+
+    let providers = this.registry.getAll();
+    if (suite === "quran") {
+      providers = providers.filter((p) => p.id === "tafsir_net" || p.id === "bahouth");
+    }
+
+    const settled = await Promise.allSettled(
+      providers.map(async (provider) => {
+        const prompts = await this.registry.getProviderPrompts(provider);
+        return prompts.map((p) => ({
+          ...p,
+          description: `[${provider.name}] ${p.description ?? ""}`.trim(),
+        }));
+      })
+    );
+
+    const allPrompts: PromptDefinition[] = [];
+    for (const result of settled) {
+      if (result.status === "fulfilled") {
+        allPrompts.push(...result.value);
+      }
+    }
+
+    return allPrompts;
+  }
+
+  public async getPrompt(
+    name: string,
+    args: Record<string, string> = {}
+  ): Promise<GetPromptResponse> {
+    let targetProviderId = "tafsir_net";
+    let targetPromptName = name;
+
+    const sepIndex = name.indexOf("__");
+    if (sepIndex !== -1) {
+      targetProviderId = name.slice(0, sepIndex);
+      targetPromptName = name.slice(sepIndex + 2);
+    } else {
+      targetProviderId = "tafsir_net";
+    }
+
+    const provider = this.registry.get(targetProviderId);
+    if (!provider || !provider.getPrompt) {
+      throw new Error(`No provider available to get prompt: '${name}'`);
+    }
+
+    const result = await provider.getPrompt(targetPromptName, args);
+    return {
+      providerId: targetProviderId,
+      result,
+    };
   }
 }

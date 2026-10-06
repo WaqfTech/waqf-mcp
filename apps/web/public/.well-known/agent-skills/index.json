@@ -6,7 +6,7 @@
       "type": "skill",
       "description": "Retrieve Quranic verses in Arabic Uthmani script and verified classical/contemporary Tafsir.",
       "url": "https://mcp.waqf.dev/.well-known/agent-skills/quran-tafsir/SKILL.md",
-      "sha256": "869998d1fcece59eb80e8f0316ff513fa66664faa84aad1241cc19e0a8047c68"
+      "sha256": "ca7cb05750c96b54ff38bd18642ea87399ec61732751335925dd05066c8e3b89"
     },
     {
       "name": "hadith-heritage",

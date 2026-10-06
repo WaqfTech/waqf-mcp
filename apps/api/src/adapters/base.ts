@@ -34,6 +34,22 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
   abstract listTools(): Promise<ToolDefinition[]>;
   abstract callTool(toolName: string, args: Record<string, unknown>): Promise<ToolResult>;
 
+  async listResources(): Promise<import("@waqf/types").ResourceDefinition[]> {
+    return [];
+  }
+
+  async readResource(_uri: string): Promise<import("@waqf/types").ReadResourceResult> {
+    throw new Error(`[${this.id}] readResource not supported`);
+  }
+
+  async listPrompts(): Promise<import("@waqf/types").PromptDefinition[]> {
+    return [];
+  }
+
+  async getPrompt(_promptName: string, _args?: Record<string, string>): Promise<import("@waqf/types").GetPromptResult> {
+    throw new Error(`[${this.id}] getPrompt not supported`);
+  }
+
   async healthCheck(): Promise<boolean> {
     try {
       const tools = await this.listTools();

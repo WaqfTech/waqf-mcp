@@ -11,54 +11,60 @@ const isArabic = lang === "ar";
 
 const SERVERS = [
   {
-    id: "tafsir_net",
-    name: "Tafsir.net Specialized Suite",
-    provider: "مركز تفسير للدراسات القرآنية",
+    id: "tafsir_net" as const,
     url: "https://mcp.tafsir.net/mcp",
     toolsCount: 17,
     category: "quran",
-    tools: ["fetch_ayah", "fetch_tafsir", "list_tafsir_sources", "get_qeraat_variants", "analyze_word"],
-    desc: "أدوات متخصصة في التفسير القرآني الموثق، أسباب النزول، القراءات، وغريب القرآن الكريم.",
+    tools: [
+      "fetch_ayah",
+      "fetch_tafsir",
+      "list_tafsir_sources",
+      "get_qeraat_variants",
+      "analyze_word",
+      "find_root_occurrences",
+      "get_root_stats",
+    ],
+    resources: [
+      "quran://surahs",
+      "quran://tafsirs",
+      "quran://sciences",
+      "quran://schema",
+    ],
+    prompts: [
+      "study_ayah",
+      "compare_tafsirs",
+      "root_study",
+      "surah_overview",
+      "tajweed_lesson",
+    ],
   },
   {
-    id: "bahouth",
-    name: "Bahouth Quran & Tafsir",
-    provider: "مشروع باحث القرآني",
+    id: "bahouth" as const,
     url: "https://bahouth.tafsir.net/mcp",
     toolsCount: 9,
     category: "quran",
     tools: ["get_verse", "list_surah_verses", "find_root", "list_verse_words", "list_verse_topics"],
-    desc: "محرك تحليلي لجذور كلمات القرآن، التراكيب الصرفية، ورسم المصحف الشريف.",
   },
   {
-    id: "turath",
-    name: "Turath Islamic Heritage Library",
-    provider: "مكتبة تراث الإسلامية",
+    id: "turath" as const,
     url: "https://mcp.turath.io/mcp/",
     toolsCount: 5,
     category: "turath",
     tools: ["discover_turath", "search_turath", "get_book", "get_page", "get_author"],
-    desc: "فهرسة وبحث شامل في آلاف أمهات الكتب والمصنفات التراثية وكتب الحديث الشريف.",
   },
   {
-    id: "maheralfahel",
-    name: "Sheikh Maher Al-Fahel Library",
-    provider: "الموقع العلمي للشيخ ماهر الفحل",
+    id: "maheralfahel" as const,
     url: "https://maheralfahel.net/mcp/",
     toolsCount: 5,
     category: "turath",
     tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
-    desc: "كتب وتحقيقات في علم الحديث ومصطلح الحديث والمصنفات الفقهية المحققة.",
   },
   {
-    id: "fihris",
-    name: "Fihris Islamic Web Search",
-    provider: "محرك فهرس للبحث العلمي",
+    id: "fihris" as const,
     url: "https://search.waqf.app/",
     toolsCount: 2,
     category: "tools",
     tools: ["search_islamic_sources", "list_indexed_sources"],
-    desc: "محرك بحث مخصص ومفهرس لأكثر من 38 بوابة وموقعاً علمياً معتمداً لكبار العلماء والمؤسسات الشرعية.",
   },
 ];
 ---
@@ -75,34 +81,67 @@ const SERVERS = [
 
     <div class="servers-grid">
       {SERVERS.map((server) => {
-        const cardTitle = isArabic ? server.provider : server.name;
-        const cardSubtitle = isArabic ? server.name : server.provider;
+        const cardData = t.servers.cards[server.id];
         return (
           <article class="server-card">
             <div class="card-top">
               <div>
-                <h3>{cardTitle}</h3>
-                <span class="provider-pill">{cardSubtitle}</span>
+                <h3>{cardData.title}</h3>
+                <span class="provider-pill">{cardData.subtitle}</span>
               </div>
-              <span class="status-badge">{t.servers.active_badge}</span>
+              <div class="badge-group">
+                <span class="status-badge">{t.servers.active_badge}</span>
+                {server.resources && (
+                  <span class="parity-badge">{t.servers.full_parity_badge}</span>
+                )}
+              </div>
             </div>
 
-          <p class="server-desc">{server.desc}</p>
+            <p class="server-desc">{cardData.desc}</p>
 
-          <div class="tools-preview">
-            <span class="tools-count">{formatToolsCount(server.toolsCount, lang, t)}</span>
-            <div class="tools-chips">
-              {server.tools.map((tool) => (
-                <code>{tool}</code>
-              ))}
+            <div class="preview-block">
+              <span class="preview-label">{formatToolsCount(server.toolsCount, lang, t)}</span>
+              <div class="chips-row">
+                {server.tools.map((tool) => (
+                  <code>{tool}</code>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div class="card-footer">
-            <span class="category-tag">{server.category === "quran" ? t.servers.filter_quran : (server.category === "turath" ? t.servers.filter_turath : t.submit.cat_tools)}</span>
-            <a href={server.url} target="_blank" rel="noopener noreferrer" class="source-link">
-              {t.servers.view_source} ↗
-            </a>
+            {server.resources && (
+              <div class="preview-block resources-block">
+                <span class="preview-label">{t.servers.resources_count_label}</span>
+                <div class="chips-row">
+                  {server.resources.map((res) => (
+                    <code class="resource-chip">{res}</code>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {server.prompts && (
+              <div class="preview-block prompts-block">
+                <span class="preview-label">{t.servers.prompts_count_label}</span>
+                <div class="chips-row">
+                  {server.prompts.map((p) => (
+                    <code class="prompt-chip">{p}</code>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div class="card-footer">
+              <span class="category-tag">
+                {server.category === "quran"
+                  ? t.servers.filter_quran
+                  : server.category === "turath"
+                    ? t.servers.filter_turath
+                    : t.submit.cat_tools}
+              </span>
+              <a href={server.url} target="_blank" rel="noopener noreferrer" class="source-link">
+                {t.servers.view_source} ↗
+              </a>
+            </div>
           </article>
         );
       })}
@@ -184,6 +223,13 @@ const SERVERS = [
     font-weight: 700;
   }
 
+  .badge-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
   .status-badge {
     background: #dcfce7;
     color: #166534;
@@ -194,35 +240,45 @@ const SERVERS = [
     white-space: nowrap;
   }
 
+  .parity-badge {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    font: 700 10px var(--mono);
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
   .server-desc {
     font-size: 15px;
     color: var(--soft);
     line-height: 1.6;
-    margin: 0 0 16px;
+    margin: 0 0 14px;
   }
 
-  .tools-preview {
-    margin: 12px 0 18px;
-    padding: 12px;
+  .preview-block {
+    margin: 6px 0;
+    padding: 10px 12px;
     background: var(--white);
     border: 1px solid var(--line);
   }
 
-  .tools-count {
+  .preview-label {
     display: block;
     font: 700 11px var(--mono);
     color: var(--tide);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-transform: uppercase;
   }
 
-  .tools-chips {
+  .chips-row {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .tools-chips code {
+  .chips-row code {
     background: var(--paper);
     color: var(--ink);
     border: 1px solid var(--line);
@@ -232,6 +288,18 @@ const SERVERS = [
     direction: ltr !important;
     unicode-bidi: isolate;
     display: inline-block;
+  }
+
+  .chips-row code.resource-chip {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+
+  .chips-row code.prompt-chip {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
   }
 
   .card-footer {

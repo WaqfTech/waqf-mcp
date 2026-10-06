@@ -23,6 +23,10 @@
     "cta_explore": "Jelajahi Alat",
     "note_badge": "EDGE NATIVE",
     "note_text": "Didukung oleh Cloudflare Workers tanpa instalasi lokal",
+    "stats_tools": "38+ Alat",
+    "stats_resources": "4 Katalog",
+    "stats_prompts": "5 Templat Kajian",
+    "stats_servers": "5 Server Terverifikasi",
     "disclaimer_badge": "AGREGATOR NETRAL",
     "disclaimer_text": "@IslamicSources beroperasi murni sebagai agregator. Kami tidak menambah, mengedit, atau mengubah respons dari sumber Islam asli; layanan disediakan apa adanya ('as is')."
   },
@@ -53,7 +57,37 @@
     "tools_count_other": "{count} Alat Aktif",
     "tools_count_suffix": "Alat Aktif",
     "active_badge": "Aktif & Terverifikasi",
-    "view_source": "Tautan Sumber"
+    "view_source": "Tautan Sumber",
+    "resources_count_label": "4 Katalog Langsung (Resources)",
+    "prompts_count_label": "5 Templat Prompt (Prompts)",
+    "full_parity_badge": "100% Paritas MCP: Alat · Sumber Daya · Prompt",
+    "cards": {
+      "tafsir_net": {
+        "title": "Pusat Studi Al-Qur'an Tafsir",
+        "subtitle": "Paket Khusus Tafsir.net (v2.0)",
+        "desc": "Cakupan protokol MCP 100% lengkap yang menampilkan 17 alat khusus, 4 sumber daya katalog langsung (Surah, Tafsir, ilmu Al-Qur'an, skema basis data), dan 5 templat prompt terstruktur untuk kajian ayat."
+      },
+      "bahouth": {
+        "title": "Proyek Al-Qur'an Bahouth",
+        "subtitle": "Mesin Morfologi Bahouth",
+        "desc": "Mesin analitik untuk kosakata akar Al-Qur'an, morfologi tata bahasa, dan teks Mushaf Utsmani."
+      },
+      "turath": {
+        "title": "Perpustakaan Warisan Islam Turath",
+        "subtitle": "Kompilasi Hadits & Warisan Klasik",
+        "desc": "Pencarian dan pengindeksan komprehensif di ribuan kitab warisan Islam dan korpus Hadits."
+      },
+      "maheralfahel": {
+        "title": "Perpustakaan Syaikh Maher Al-Fahel",
+        "subtitle": "Edisi Kritis Hadits & Fikih",
+        "desc": "Penelitian ilmiah dan edisi kritis terverifikasi dalam metodologi, terminologi Hadits, dan fikih."
+      },
+      "fihris": {
+        "title": "Pencarian Web Islam Fihris",
+        "subtitle": "Portal Ilmiah Terindeks",
+        "desc": "Mesin pencari khusus yang mengindeks lebih dari 38 portal ilmiah terverifikasi dan lembaga fikih resmi."
+      }
+    }
   },
   "config": {
     "eyebrow": "Panduan Cepat / 03",
@@ -134,7 +168,9 @@
     "q3": "Bagaimana privasi dikelola?",
     "a3": "Kami tidak menyimpan kunci API pribadi atau percakapan Anda. Hanya telemetri operasional anonim yang dicatat untuk pemantauan sistem.",
     "q4": "Apakah @IslamicSources menambah, mengedit, atau mengubah respons dari sumber Islam?",
-    "a4": "Sama sekali tidak. @IslamicSources beroperasi murni sebagai agregator dan gerbang transmisi netral. Kami tidak menambah, menyunting, memfilter, atau mengubah respons dari penyedia sumber Islam; semua konten diteruskan secara verbatim dan layanan disediakan 'apa adanya' (as is) tanpa jaminan."
+    "a4": "Sama sekali tidak. @IslamicSources beroperasi murni sebagai agregator dan gerbang transmisi netral. Kami tidak menambah, menyunting, memfilter, atau mengubah respons dari penyedia sumber Islam; semua konten diteruskan secara verbatim dan layanan disediakan 'apa adanya' (as is) tanpa jaminan.",
+    "q5": "Apakah gateway mendukung MCP Resources dan Prompts selain Tools?",
+    "a5": "Ya. Gateway menyediakan cakupan protokol MCP 100% lengkap. Selain 38+ alat khusus, gateway ini menggabungkan sumber daya katalog langsung (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) dan 5 templat prompt terstandarisasi untuk studi ayat dengan cache tepi Cloudflare D1."
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membangun aset teknologi terbuka dan merawatnya agar manfaatnya terus berlanjut.",

@@ -91,6 +91,22 @@ payload = {
 }
 ayah_resp = httpx.post("https://mcp.waqf.dev/mcp", json=payload, headers=headers)
 print("Ayah Result:", ayah_resp.json()["result"]["content"][0]["text"])
+
+# 3. Read Quran catalog resource (cached in Cloudflare D1)
+res_resp = httpx.post(
+    "https://mcp.waqf.dev/mcp",
+    json={"jsonrpc": "2.0", "id": 3, "method": "resources/read", "params": {"uri": "quran://surahs"}},
+    headers=headers,
+)
+print("Surahs Catalog:", res_resp.json()["result"]["contents"][0]["text"][:100], "...")
+
+# 4. Fetch structured Quran study prompt template
+prompt_resp = httpx.post(
+    "https://mcp.waqf.dev/mcp",
+    json={"jsonrpc": "2.0", "id": 4, "method": "prompts/get", "params": {"name": "study_ayah", "arguments": {"surah": "1", "ayah": "1"}}},
+    headers=headers,
+)
+print("Study Prompt:", prompt_resp.json()["result"]["messages"][0]["content"]["text"][:100], "...")
 `;
 
 const TYPESCRIPT_SNIPPET = `import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -109,16 +125,27 @@ const transport = new StreamableHttpClientTransport(
 const client = new Client({ name: "waqf-app", version: "1.0.0" });
 await client.connect(transport);
 
-// List available canonical tools
+// 1. List available canonical tools
 const { tools } = await client.listTools();
 console.log("Federated Tools:", tools.map(t => t.name));
 
-// Call canonical Quran lookup with automatic fallback
+// 2. Call canonical Quran lookup with automatic fallback
 const result = await client.callTool({
   name: "waqf_quran_get_ayah",
   arguments: { surah: 112, ayah: 1 },
 });
 console.log("Ayah Result:", (result.content[0] as { text: string }).text);
+
+// 3. Read Quran catalog resource (cached in Cloudflare D1)
+const { contents } = await client.readResource({ uri: "quran://surahs" });
+console.log("Surahs Catalog:", (contents[0] as { text?: string }).text?.slice(0, 100));
+
+// 4. Fetch structured Quran study prompt template
+const prompt = await client.getPrompt({
+  name: "study_ayah",
+  arguments: { surah: "1", ayah: "1" },
+});
+console.log("Study Prompt Message:", prompt.messages[0]);
 `;
 
 const CURL_SNIPPET = `# 1. List canonical tools (saving tokens with ?suite=core)
@@ -138,6 +165,26 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     "params": {
       "name": "waqf_quran_get_ayah",
       "arguments": { "surah": 112, "ayah": 1 }
+    }
+  }'
+
+# 3. Read Quran catalog resource (cached in Cloudflare D1)
+curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+  -H "Content-Type: application/json" \\
+  -H "User-Agent: WaqfClient/1.0" \\
+  -d '{"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"uri":"quran://surahs"}}'
+
+# 4. Fetch structured Quran study prompt template
+curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+  -H "Content-Type: application/json" \\
+  -H "User-Agent: WaqfClient/1.0" \\
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "prompts/get",
+    "params": {
+      "name": "study_ayah",
+      "arguments": { "surah": "1", "ayah": "1" }
     }
   }'
 `;

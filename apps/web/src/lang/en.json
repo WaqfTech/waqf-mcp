@@ -23,6 +23,10 @@
     "cta_explore": "Explore Tools",
     "note_badge": "EDGE NATIVE",
     "note_text": "Powered by Cloudflare Workers with zero local installation",
+    "stats_tools": "38+ Tools",
+    "stats_resources": "4 Catalogs",
+    "stats_prompts": "5 Study Prompts",
+    "stats_servers": "5 Federated Servers",
     "disclaimer_badge": "UNALTERED AGGREGATOR",
     "disclaimer_text": "@IslamicSources operates strictly as an aggregator. We do not add, edit, or alter responses from upstream Islamic sources; all data is transmitted verbatim and provided 'as is'."
   },
@@ -53,7 +57,37 @@
     "tools_count_other": "{count} Tools Enabled",
     "tools_count_suffix": "Tools Enabled",
     "active_badge": "Live & Verified",
-    "view_source": "Source URL"
+    "view_source": "Source URL",
+    "resources_count_label": "4 Direct Catalogs (Resources)",
+    "prompts_count_label": "5 Prompt Templates (Prompts)",
+    "full_parity_badge": "100% MCP Parity: Tools · Resources · Prompts",
+    "cards": {
+      "tafsir_net": {
+        "title": "Tafsir Center for Quranic Studies",
+        "subtitle": "Tafsir.net Specialized Suite (v2.0)",
+        "desc": "Complete 100% MCP protocol coverage featuring 17 specialized tools, 4 direct catalog resources (Surahs, Tafsirs, Quranic sciences, database schema), and 5 structured prompt templates for verse study."
+      },
+      "bahouth": {
+        "title": "Bahouth Quran Project",
+        "subtitle": "Bahouth Morphological Engine",
+        "desc": "Analytical engine for Quranic root vocabulary, grammatical morphology, and Mushaf Uthmani text."
+      },
+      "turath": {
+        "title": "Turath Islamic Heritage Library",
+        "subtitle": "Primary Hadith & Classical Compendia",
+        "desc": "Comprehensive search and indexing across thousands of primary Islamic heritage books and Hadith corpora."
+      },
+      "maheralfahel": {
+        "title": "Sheikh Maher Al-Fahel Library",
+        "subtitle": "Critical Hadith Editions & Fiqh",
+        "desc": "Scholarly research and verified critical editions in Hadith methodology, terminology, and jurisprudence."
+      },
+      "fihris": {
+        "title": "Fihris Islamic Web Search",
+        "subtitle": "Indexed Scholarly Portals",
+        "desc": "Custom search engine indexing over 38 verified scholarly portals and official jurisprudential bodies."
+      }
+    }
   },
   "config": {
     "eyebrow": "Quickstart / 03",
@@ -134,7 +168,9 @@
     "q3": "How is privacy handled?",
     "a3": "We do not store private API keys or personal prompts. Anonymized operational telemetry (country, tool called, response latency) is recorded strictly for health and capacity monitoring.",
     "q4": "Does @IslamicSources add, edit, or alter responses from the sources?",
-    "a4": "No. @IslamicSources operates strictly as an aggregator and neutral edge gateway. We do not author, add to, edit, or alter any response or text received from connected Islamic providers. All content is relayed verbatim and the service is provided strictly on an 'as is' basis without warranties."
+    "a4": "No. @IslamicSources operates strictly as an aggregator and neutral edge gateway. We do not author, add to, edit, or alter any response or text received from connected Islamic providers. All content is relayed verbatim and the service is provided strictly on an 'as is' basis without warranties.",
+    "q5": "Does the gateway support MCP Resources and Prompts in addition to Tools?",
+    "a5": "Yes. The gateway provides 100% MCP protocol coverage. Alongside 38+ specialized tools, it federates direct catalog resources (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) and 5 standardized prompt templates (study_ayah, compare_tafsirs, root_study, surah_overview, tajweed_lesson) with Cloudflare D1 edge caching."
   },
   "footer": {
     "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",

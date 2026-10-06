@@ -20,6 +20,25 @@ const { t } = Astro.props;
         <a class="btn btn-secondary" href="#servers">{t.hero.cta_explore}</a>
       </div>
 
+      <div class="hero-stats-row">
+        <div class="stat-pill">
+          <span class="stat-num">38+</span>
+          <span class="stat-text">{t.hero.stats_tools}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">4</span>
+          <span class="stat-text">{t.hero.stats_resources}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">5</span>
+          <span class="stat-text">{t.hero.stats_prompts}</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">5</span>
+          <span class="stat-text">{t.hero.stats_servers}</span>
+        </div>
+      </div>
+
       <div class="hero-badge-note">
         <span class="badge-accent">{t.hero.note_badge}</span>
         <span>{t.hero.note_text}</span>
@@ -130,6 +149,37 @@ const { t } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
+  }
+
+  .hero-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: 2px 2px 0 var(--ink);
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .stat-num {
+    font-family: var(--mono);
+    color: var(--tide);
+    font-weight: 800;
+    font-size: 14px;
+  }
+
+  .stat-text {
+    color: var(--soft);
   }
 
   .hero-badge-note {

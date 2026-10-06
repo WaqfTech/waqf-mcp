@@ -23,6 +23,10 @@
     "cta_explore": "Araçları İncele",
     "note_badge": "EDGE NATIVE",
     "note_text": "Cloudflare Workers ile yerel kuruluma gerek olmadan çalışır",
+    "stats_tools": "38+ Araç",
+    "stats_resources": "4 Katalog",
+    "stats_prompts": "5 Çalışma Şablonu",
+    "stats_servers": "5 Doğrulanmış Sunucu",
     "disclaimer_badge": "MÜDAHALESİZ TOPLAYICI",
     "disclaimer_text": "@IslamicSources yalnızca bir toplayıcı olarak çalışır. Kaynaklardan gelen yanıtları asla eklemez, düzenlemez veya değiştirmeyiz; tüm içerik olduğu gibi ('as is') aktarılır."
   },
@@ -53,7 +57,37 @@
     "tools_count_other": "{count} Araç Etkin",
     "tools_count_suffix": "Araç Etkin",
     "active_badge": "Aktif ve Doğrulanmış",
-    "view_source": "Kaynak Bağlantısı"
+    "view_source": "Kaynak Bağlantısı",
+    "resources_count_label": "4 Doğrudan Katalog (Resources)",
+    "prompts_count_label": "5 İstek Şablonu (Prompts)",
+    "full_parity_badge": "%100 MCP Uyumu: Araçlar · Kaynaklar · Şablonlar",
+    "cards": {
+      "tafsir_net": {
+        "title": "Tefsir Kur'an Araştırmaları Merkezi",
+        "subtitle": "Tafsir.net Özel Paketi (v2.0)",
+        "desc": "17 özel araç, 4 doğrudan katalog kaynağı (Sureler, Tefsirler, Kur'an ilimleri, veritabanı şeması) ve ayet incelemesi için 5 hazır istek şablonu ile eksiksiz %100 MCP protokol kapsamı."
+      },
+      "bahouth": {
+        "title": "Bahouth Kur'an Projesi",
+        "subtitle": "Bahouth Morfolojik Motor",
+        "desc": "Kur'an kelime kökleri, dilbilgisi morfolojisi ve Osmani Mushaf metni için analitik motor."
+      },
+      "turath": {
+        "title": "Turath İslami Miras Kütüphanesi",
+        "subtitle": "Temel Hadis ve Klasik Eserler",
+        "desc": "Binlerce temel İslami miras eseri ve Hadis külliyatında kapsamlı arama ve indeksleme."
+      },
+      "maheralfahel": {
+        "title": "Şeyh Mahir el-Fahl Kütüphanesi",
+        "subtitle": "Tahkikli Hadis Eserleri ve Fıkıh",
+        "desc": "Hadis metodolojisi, terminolojisi ve fıkıh alanında tahkikli ilmi araştırmalar."
+      },
+      "fihris": {
+        "title": "Fihris İslami Web Arama",
+        "subtitle": "İndekslenmiş İlim Portalları",
+        "desc": "38'den fazla doğrulanmış ilim portalını ve resmi fıkıh kurumunu indeksleyen özel arama motoru."
+      }
+    }
   },
   "config": {
     "eyebrow": "Kurulum / 03",
@@ -134,7 +168,9 @@
     "q3": "Gizlilik nasıl sağlanıyor?",
     "a3": "Özel API anahtarlarınızı veya istemlerinizi saklamıyoruz. Yalnızca sistem sağlığını izlemek için anonimleştirilmiş ölçümler tutulur.",
     "q4": "İslami kaynaklardan gelen yanıtlara ekleme, düzenleme veya değişiklik yapıyor musunuz?",
-    "a4": "Kesinlikle hayır. @IslamicSources yalnızca bir toplayıcı ve tarafsız ağ geçididir. Bağlı İslami sağlayıcılardan gelen hiçbir metni veya cevabı değiştirmez, ekleme yapmaz ve düzenlemeyiz; tüm veriler kelimesi kelimesine aktarılır ve hizmet olduğu gibi ('as is') sağlanır."
+    "a4": "Kesinlikle hayır. @IslamicSources yalnızca bir toplayıcı ve tarafsız ağ geçididir. Bağlı İslami sağlayıcılardan gelen hiçbir metni veya cevabı değiştirmez, ekleme yapmaz ve düzenlemeyiz; tüm veriler kelimesi kelimesine aktarılır ve hizmet olduğu gibi ('as is') sağlanır.",
+    "q5": "Ağ geçidi Araçlara (Tools) ek olarak MCP Kaynaklarını (Resources) ve İstek Şablonlarını (Prompts) destekliyor mu?",
+    "a5": "Evet. Ağ geçidi %100 tam MCP protokol uyumu sunar. 38'den fazla araca ek olarak doğrudan katalog kaynaklarını (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) ve Cloudflare D1 önbelleklemesiyle ayet inceleme için 5 hazır şablonu (study_ayah, compare_tafsirs vb.) birleştirir."
   },
   "footer": {
     "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",

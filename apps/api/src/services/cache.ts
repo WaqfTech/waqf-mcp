@@ -2,6 +2,24 @@ import { eq, sql } from "drizzle-orm";
 import { createDb, mcpCache } from "@waqf/db";
 import type { ToolResult } from "@waqf/types";
 
+/**
+ * Without the local schema applied (or on any D1 fault) caching degrades
+ * silently: lookups keep missing and writes keep disappearing. Warn once per
+ * isolate, naming the command that fixes it, instead of logging every request.
+ */
+let warnedD1Unavailable = false;
+
+function warnD1Unavailable(operation: string, error: unknown): void {
+  if (warnedD1Unavailable) {
+    return;
+  }
+  warnedD1Unavailable = true;
+  const detail = error instanceof Error ? error.message : String(error);
+  console.warn(
+    `[cache] D1 ${operation} failed — is the local schema applied? Run "aube run db:migrate:local". (${detail})`
+  );
+}
+
 export class D1CacheService {
   constructor(private d1: D1Database) {}
 
@@ -41,7 +59,7 @@ export class D1CacheService {
 
       return JSON.parse(entry.responsePayloadJson) as ToolResult;
     } catch (err) {
-      console.warn("D1 cache read failed:", err);
+      warnD1Unavailable("read", err);
       return null;
     }
   }
@@ -54,7 +72,7 @@ export class D1CacheService {
         .set({ hitCount: sql`${mcpCache.hitCount} + 1` })
         .where(eq(mcpCache.cacheKey, cacheKey));
     } catch (err) {
-      console.warn("D1 record hit failed:", err);
+      warnD1Unavailable("hit counter update", err);
     }
   }
 
@@ -90,7 +108,7 @@ export class D1CacheService {
           },
         });
     } catch (err) {
-      console.warn("D1 cache write failed:", err);
+      warnD1Unavailable("write", err);
     }
   }
 }

@@ -11,6 +11,7 @@
     "deploy": "aube -F @waqf/api run deploy && aube -F @waqf/web run deploy",
     "deploy:api": "aube -F @waqf/api run deploy",
     "deploy:web": "aube -F @waqf/web run deploy",
+    "db:migrate:local": "aube -F @waqf/api run db:migrate:local",
     "typecheck": "aube run --recursive typecheck",
     "test": "aube -F @waqf/api run test",
     "tail": "bash scripts/tail-all.sh",

@@ -1,10 +1,10 @@
 export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
   {
-    issuer: "https://mcp.waqf.dev",
-    authorization_endpoint: "https://mcp.waqf.dev/oauth/authorize",
-    token_endpoint: "https://mcp.waqf.dev/oauth/token",
-    registration_endpoint: "https://mcp.waqf.dev/oauth/register",
-    jwks_uri: "https://mcp.waqf.dev/.well-known/jwks.json",
+    issuer: "https://mcp.waqf.app",
+    authorization_endpoint: "https://mcp.waqf.app/oauth/authorize",
+    token_endpoint: "https://mcp.waqf.app/oauth/token",
+    registration_endpoint: "https://mcp.waqf.app/oauth/register",
+    jwks_uri: "https://mcp.waqf.app/.well-known/jwks.json",
     response_types_supported: ["code", "token"],
     grant_types_supported: [
       "authorization_code",
@@ -18,10 +18,10 @@ export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
       "client_secret_basic",
     ],
     scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
-    service_documentation: "https://mcp.waqf.dev/auth.md",
+    service_documentation: "https://mcp.waqf.app/auth.md",
     ui_locales_supported: ["ar", "en", "tr", "id", "ms"],
     agent_auth: {
-      registration_uri: "https://mcp.waqf.dev/oauth/register",
+      registration_uri: "https://mcp.waqf.app/oauth/register",
       public_access: true,
       description:
         "All Islamic MCP tool discovery and execution endpoints are open without authentication. Dynamic Client Registration (RFC 7591) is enabled for automatic AI client connections.",
@@ -33,11 +33,11 @@ export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
 
 export const OAUTH_PROTECTED_RESOURCE_JSON = JSON.stringify(
   {
-    resource: "https://mcp.waqf.dev",
-    authorization_servers: ["https://mcp.waqf.dev"],
+    resource: "https://mcp.waqf.app",
+    authorization_servers: ["https://mcp.waqf.app"],
     scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
     bearer_methods_supported: ["header"],
-    resource_documentation: "https://mcp.waqf.dev/auth.md",
+    resource_documentation: "https://mcp.waqf.app/auth.md",
   },
   null,
   2

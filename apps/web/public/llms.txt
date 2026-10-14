@@ -1,12 +1,12 @@
-# Islamic Sources (@IslamicSources) — Waqf MCP Gateway (`mcp.waqf.dev`)
+# Islamic Sources (@IslamicSources) — Waqf MCP Gateway (`mcp.waqf.app`)
 
 > An edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources (Quran, Hadith, Tafsir, Turath heritage literature, and scholarly search) into a single, unified interface for AI assistants (invoked with `@IslamicSources`), IDEs, and autonomous agents.
 
-Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into one endpoint (`https://mcp.waqf.dev/mcp`), unifies divergent schemas, caches immutable texts in Cloudflare D1 SQLite, and provides token-optimized query profiles to prevent agent context window bloat.
+Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into one endpoint (`https://mcp.waqf.app/mcp`), unifies divergent schemas, caches immutable texts in Cloudflare D1 SQLite, and provides token-optimized query profiles to prevent agent context window bloat.
 
 ## Quick Links
 
-- [Full Technical Reference (llms-full.txt)](https://mcp.waqf.dev/llms-full.txt): Complete tool schemas, parameters, and comprehensive integration guide.
+- [Full Technical Reference (llms-full.txt)](https://mcp.waqf.app/llms-full.txt): Complete tool schemas, parameters, and comprehensive integration guide.
 - [Web Portal](https://mcp.waqf.dev/): Multi-lingual landing page with interactive setup guides and documentation.
 - [GitHub Repository](https://github.com/waqftech/waqf-mcp): Open-source monorepo.
 - [License (Waqf-DPL 1.0)](https://github.com/WaqfTech/waqf-license-draft): Digital Waqf Public License.
@@ -22,22 +22,22 @@ Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into
 
 ## Connection Endpoints
 
-- **Streamable HTTP (JSON-RPC 2.0)**: `POST https://mcp.waqf.dev/mcp`
-- **Server-Sent Events (SSE)**: `GET https://mcp.waqf.dev/sse` (or `GET /mcp` with `Accept: text/event-stream`)
-- **Gateway Discovery**: `GET https://mcp.waqf.dev/` (returns health status, federated providers, available suites)
+- **Streamable HTTP (JSON-RPC 2.0)**: `POST https://mcp.waqf.app/mcp`
+- **Server-Sent Events (SSE)**: `GET https://mcp.waqf.app/sse` (or `GET /mcp` with `Accept: text/event-stream`)
+- **Gateway Discovery**: `GET https://mcp.waqf.app/` (returns health status, federated providers, available suites)
 - **Authentication**: None required for public MCP tools. Completely open and free of charge.
 
-> ⚠️ **Cloudflare WAF Bot Notice**: When calling `https://mcp.waqf.dev/mcp` programmatically, always include a custom `User-Agent` header (e.g. `User-Agent: my-agent/1.0`). Generic default scrapers like `Python-urllib` are blocked by Cloudflare WAF.
+> ⚠️ **Cloudflare WAF Bot Notice**: When calling `https://mcp.waqf.app/mcp` programmatically, always include a custom `User-Agent` header (e.g. `User-Agent: my-agent/1.0`). Generic default scrapers like `Python-urllib` are blocked by Cloudflare WAF.
 
 ## Query Profiles (Agent Context Optimization)
 
 Loading 50+ tools into an LLM's system prompt consumes excessive context tokens. Waqf MCP supports targeted suites via the `?suite=` query parameter:
 
-- `https://mcp.waqf.dev/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,400 tokens total).
-- `https://mcp.waqf.dev/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
-- `https://mcp.waqf.dev/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, Hadith critique, and scholarly libraries.
-- `https://mcp.waqf.dev/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
-- `https://mcp.waqf.dev/mcp` (or `?suite=all`): Full federation suite with all 51 tools across all 6 providers.
+- `https://mcp.waqf.app/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,400 tokens total).
+- `https://mcp.waqf.app/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
+- `https://mcp.waqf.app/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, Hadith critique, and scholarly libraries.
+- `https://mcp.waqf.app/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
+- `https://mcp.waqf.app/mcp` (or `?suite=all`): Full federation suite with all 51 tools across all 6 providers.
 
 ## Federated Providers
 
@@ -121,7 +121,7 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
 {
   "mcpServers": {
     "waqf-islamic-core": {
-      "url": "https://mcp.waqf.dev/mcp?suite=core"
+      "url": "https://mcp.waqf.app/mcp?suite=core"
     }
   }
 }
@@ -132,7 +132,7 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
 {
   "mcpServers": {
     "waqf-islamic-core": {
-      "url": "https://mcp.waqf.dev/mcp?suite=core"
+      "url": "https://mcp.waqf.app/mcp?suite=core"
     }
   }
 }
@@ -143,7 +143,7 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
 {
   "mcpServers": {
     "waqf-islamic-core": {
-      "url": "https://mcp.waqf.dev/mcp?suite=core"
+      "url": "https://mcp.waqf.app/mcp?suite=core"
     }
   }
 }
@@ -151,7 +151,7 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
 
 ### Direct JSON-RPC 2.0 Example (cURL)
 ```bash
-curl -s -X POST https://mcp.waqf.dev/mcp?suite=core \
+curl -s -X POST https://mcp.waqf.app/mcp?suite=core \
   -H "Content-Type: application/json" \
   -H "User-Agent: WaqfAgent/1.0" \
   -d '{
@@ -170,7 +170,7 @@ curl -s -X POST https://mcp.waqf.dev/mcp?suite=core \
 import httpx
 
 client = httpx.Client(
-    base_url="https://mcp.waqf.dev",
+    base_url="https://mcp.waqf.app",
     headers={"User-Agent": "MyAgent/1.0", "Content-Type": "application/json"}
 )
 

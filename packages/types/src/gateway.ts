@@ -8,7 +8,10 @@
 
 import { type ProviderId } from "./catalog";
 
-export const GATEWAY_MCP_URL = "https://mcp.waqf.dev/mcp";
+/** Human-facing site: landing page, docs for readers, sitemap, canonical URLs. */
+export const GATEWAY_SITE_URL = "https://mcp.waqf.dev";
+/** Protocol endpoint agents configure in their MCP client. */
+export const GATEWAY_MCP_URL = "https://mcp.waqf.app/mcp";
 export const GATEWAY_TRANSPORT_LABEL = "MCP Streamable HTTP";
 
 export type WebAssistantId = "claude_web" | "chatgpt_web" | "gemini_web";

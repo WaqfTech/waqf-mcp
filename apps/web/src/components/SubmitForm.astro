@@ -233,6 +233,9 @@ const { t } = Astro.props;
   input, select, textarea {
     font: inherit;
     font-size: 15px;
+    /* Native controls render below the 44px touch floor; unlike the buttons they
+       cannot fall back on a pseudo-element hit area. */
+    min-height: 44px;
     padding: 10px 14px;
     border: 1px solid var(--line);
     background: var(--white);

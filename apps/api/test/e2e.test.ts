@@ -286,7 +286,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const text = await res.text();
     expect(text).toContain("# Islamic Sources (@IslamicSources)");
     expect(text).toContain("waqf_quran_get_ayah");
-    expect(text).toContain("https://mcp.waqf.dev/llms-full.txt");
+    expect(text).toContain("https://mcp.waqf.app/llms-full.txt");
   });
 
   it("GET /llms-full.txt returns full technical catalog with 200", async () => {
@@ -332,6 +332,16 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("<loc>https://mcp.waqf.dev/</loc>");
     expect(text).toContain("hreflang=\"ar\"");
     expect(text).toContain("hreflang=\"en\"");
+    // Arabic is served at the root, so /ar/ must never be advertised.
+    expect(text).not.toContain("/ar/");
+  });
+
+  it("GET /ar and /ar/ redirect to the Arabic root with 301", async () => {
+    for (const path of ["/ar", "/ar/"]) {
+      const res = await worker.fetch(new Request(`http://localhost:8787${path}`), mockEnv, mockCtx);
+      expect(res.status).toBe(301);
+      expect(res.headers.get("Location")).toBe("http://localhost:8787/");
+    }
   });
 
   it("GET / with Accept: text/markdown returns markdown and x-markdown-tokens", async () => {
@@ -369,8 +379,8 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.headers.get("Content-Type")).toContain("application/linkset+json");
     const data = (await res.json()) as { linkset: Array<{ anchor: string; "service-desc"?: unknown[]; "service-doc"?: unknown[]; status?: unknown[] }> };
     expect(Array.isArray(data.linkset)).toBe(true);
-    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/mcp")).toBe(true);
-    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.dev/")).toBe(true);
+    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.app/mcp")).toBe(true);
+    expect(data.linkset.some((entry) => entry.anchor === "https://mcp.waqf.app/")).toBe(true);
   });
 
   it("GET /.well-known/mcp/server-card.json returns SEP-1649 metadata with application/json", async () => {
@@ -381,7 +391,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.headers.get("Content-Type")).toContain("application/json");
     const data = (await res.json()) as { serverInfo: { name: string; version: string }; transport: { endpoint: string }; capabilities: Record<string, unknown> };
     expect(data.serverInfo.name).toBe("IslamicSources");
-    expect(data.transport.endpoint).toBe("https://mcp.waqf.dev/mcp");
+    expect(data.transport.endpoint).toBe("https://mcp.waqf.app/mcp");
     expect(data.capabilities.tools).toBeDefined();
   });
 
@@ -393,9 +403,9 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.headers.get("Content-Type")).toContain("application/json");
     const data = (await res.json()) as { specVersion: string; host: { name: string }; entries: Array<{ id: string; representativeQueries: string[] }> };
     expect(data.specVersion).toBe("1.0.0");
-    expect(data.host.name).toBe("mcp.waqf.dev");
+    expect(data.host.name).toBe("mcp.waqf.app");
     expect(Array.isArray(data.entries)).toBe(true);
-    expect(data.entries.some((e) => e.id === "urn:air:mcp.waqf.dev:mcp:core")).toBe(true);
+    expect(data.entries.some((e) => e.id === "urn:air:mcp.waqf.app:mcp:core")).toBe(true);
     expect(data.entries.every((e) => Array.isArray(e.representativeQueries) && e.representativeQueries.length >= 2)).toBe(true);
   });
 
@@ -419,8 +429,8 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("application/json");
     const data = (await res.json()) as { issuer: string; token_endpoint: string; scopes_supported: string[]; agent_auth?: { public_access: boolean } };
-    expect(data.issuer).toBe("https://mcp.waqf.dev");
-    expect(data.token_endpoint).toBe("https://mcp.waqf.dev/oauth/token");
+    expect(data.issuer).toBe("https://mcp.waqf.app");
+    expect(data.token_endpoint).toBe("https://mcp.waqf.app/oauth/token");
     expect(data.scopes_supported).toContain("mcp:read");
     expect(data.agent_auth?.public_access).toBe(true);
   });
@@ -432,8 +442,8 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("application/json");
     const data = (await res.json()) as { resource: string; authorization_servers: string[]; scopes_supported: string[] };
-    expect(data.resource).toBe("https://mcp.waqf.dev");
-    expect(data.authorization_servers).toContain("https://mcp.waqf.dev");
+    expect(data.resource).toBe("https://mcp.waqf.app");
+    expect(data.authorization_servers).toContain("https://mcp.waqf.app");
     expect(data.scopes_supported).toContain("mcp:read");
   });
 
@@ -446,7 +456,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const text = await res.text();
     expect(text).toContain("Agent Authentication & Registration Guide");
     expect(text).toContain("Open Waqf");
-    expect(text).toContain("mcp.waqf.dev");
+    expect(text).toContain("mcp.waqf.app");
   });
 
   it("POST /oauth/register implements RFC 7591 Dynamic Client Registration", async () => {

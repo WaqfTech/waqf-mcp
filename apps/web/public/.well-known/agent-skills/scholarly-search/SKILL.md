@@ -3,7 +3,7 @@
 Enables AI agents to query verified Islamic research portals, university faculties, and fatwa archives across 38+ authenticated Islamic institutions.
 
 ## Gateway Tool
-- **Endpoint**: https://mcp.waqf.dev/mcp?suite=search
+- **Endpoint**: https://mcp.waqf.app/mcp?suite=search
 - **Method**: tools/call
 - **Tool**: waqf_search_scholarship
 

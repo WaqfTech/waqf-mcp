@@ -73,7 +73,15 @@ function initCopyButtons(): void {
     const doneLabel = button.dataset.copyDoneLabel ?? originalLabel;
     const failedLabel = button.dataset.copyFailedLabel ?? "";
 
+    // Each click takes a sequence number: an older clipboard promise that settles
+    // after a newer click must not overwrite the newer label or announcement.
+    const attempt = Number(button.dataset.copyAttempt ?? "0") + 1;
+    button.dataset.copyAttempt = String(attempt);
+
     void writeClipboard(resolveValue(button)).then((ok) => {
+      if (Number(button.dataset.copyAttempt) !== attempt) {
+        return;
+      }
       // A denied clipboard must not leave a dead-looking button: both outcomes
       // swap the label and announce through the status region. Only the most
       // recent click owns the state, so drop the opposite class and any pending
@@ -96,6 +104,9 @@ function initCopyButtons(): void {
       }
 
       const revert = window.setTimeout(() => {
+        if (Number(button.dataset.copyAttempt) !== attempt) {
+          return;
+        }
         button.classList.remove(stateClass);
         button.removeAttribute("data-copy-revert");
         if (label) {

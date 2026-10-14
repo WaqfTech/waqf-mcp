@@ -178,18 +178,20 @@ export class FederationRouter {
     cacheService?: D1CacheService,
     ctx?: ExecutionContext
   ): Promise<CallToolResponse> {
+    // Books calls are keyed on their sanitized upstream arguments so that
+    // equivalent spellings ({query, limit} vs {query, per_page}) share one cache
+    // entry instead of calling upstream twice. The same sanitized object is sent
+    // upstream, so the cache key and the upstream call cannot drift apart.
+    const bookArgs =
+      toolName === "waqf_books_search"
+        ? this.normalizer.toAljam3Args("search", args)
+        : toolName === "waqf_books_read_page"
+          ? this.normalizer.toAljam3Args("get_page", args)
+          : null;
+
     let cacheKey: string | null = null;
     if (cacheService) {
-      // Books calls are keyed on their sanitized upstream arguments so that
-      // equivalent spellings ({query, limit} vs {query, per_page}) share one
-      // cache entry instead of calling upstream twice.
-      const keyArgs =
-        toolName === "waqf_books_search"
-          ? this.normalizer.toAljam3Args("search", args)
-          : toolName === "waqf_books_read_page"
-            ? this.normalizer.toAljam3Args("get_page", args)
-            : args;
-      cacheKey = await cacheService.computeKey("canonical", toolName, keyArgs);
+      cacheKey = await cacheService.computeKey("canonical", toolName, bookArgs ?? args);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
         if (ctx) {
@@ -208,6 +210,7 @@ export class FederationRouter {
 
     let result: ToolResult = { content: [] };
     let targetProvider = "canonical";
+    let servedByFallback = false;
 
     switch (toolName) {
       case "waqf_quran_get_ayah": {
@@ -306,14 +309,40 @@ export class FederationRouter {
           }
         }
 
-        // Resilient Fallback: Turath heritage library search if Fihris failed or had isError
+        // Resilient Fallback: Turath heritage library search if Fihris failed or had isError.
+        // Turath accepts only a free-text query, so a request carrying filters
+        // (fileType, dateRestrict, page) cannot be answered faithfully: fail
+        // explicitly instead of returning a wider result set as the answer.
         if (!fetched && turathProvider) {
+          const unsupported = Object.keys(args).filter((key) => key !== "query" && key !== "q");
+          if (unsupported.length > 0) {
+            // Tool-level failure, not a protocol error: the caller receives the
+            // reason as result content it can act on (retry without the filters)
+            // instead of a generic internal error, and nothing is cached.
+            return {
+              providerId: targetProvider,
+              originalToolName: toolName,
+              isCacheHit: false,
+              result: {
+                isError: true,
+                content: [
+                  {
+                    type: "text",
+                    text: `Fihris web search is unavailable and the Turath fallback cannot honour ${unsupported.join(
+                      ", "
+                    )}; retry without those filters or after Fihris recovers.`,
+                  },
+                ],
+              },
+            };
+          }
           try {
             targetProvider = "turath";
             const query = String(args.query || args.q || "");
             const raw = await turathProvider.callTool("search_turath", { q: query });
             result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Scholarship Fallback)");
             fetched = true;
+            servedByFallback = true;
           } catch {
             // Fall through
           }
@@ -334,10 +363,7 @@ export class FederationRouter {
         if (aljam3Provider) {
           try {
             targetProvider = "aljam3";
-            const raw = await aljam3Provider.callTool(
-              "search",
-              this.normalizer.toAljam3Args("search", args)
-            );
+            const raw = await aljam3Provider.callTool("search", bookArgs ?? {});
             if (!raw.isError) {
               result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
               fetched = true;
@@ -347,14 +373,39 @@ export class FederationRouter {
           }
         }
 
-        // Resilient fallback: Turath heritage library full-text search
+        // Resilient fallback: Turath heritage library full-text search. Turath
+        // accepts only a free-text query, so book/author/category/library filters
+        // and pagination cannot be preserved: a constrained call fails explicitly
+        // rather than silently answering from a broader corpus.
         if (!fetched && turathProvider) {
+          const unsupported = Object.keys(bookArgs ?? {}).filter((key) => key !== "q" && key !== "locale");
+          if (unsupported.length > 0) {
+            // Same contract as the scholarship refusal: a tool error carrying the
+            // reason, so the caller can retry unfiltered, and no cache write.
+            return {
+              providerId: targetProvider,
+              originalToolName: toolName,
+              isCacheHit: false,
+              result: {
+                isError: true,
+                content: [
+                  {
+                    type: "text",
+                    text: `Aljam3 books search is unavailable and the Turath fallback cannot honour ${unsupported.join(
+                      ", "
+                    )}; retry without those filters or after Aljam3 recovers.`,
+                  },
+                ],
+              },
+            };
+          }
           try {
             targetProvider = "turath";
-            const query = String(args.query ?? args.q ?? "");
+            const query = String((bookArgs ?? {}).q ?? "");
             const raw = await turathProvider.callTool("search_turath", { q: query });
             result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Books Fallback)");
             fetched = true;
+            servedByFallback = true;
           } catch {
             // Fall through
           }
@@ -372,10 +423,7 @@ export class FederationRouter {
           throw new Error("Aljam3 books provider not configured");
         }
         targetProvider = "aljam3";
-        const raw = await aljam3Provider.callTool(
-          "get_page",
-          this.normalizer.toAljam3Args("get_page", args)
-        );
+        const raw = await aljam3Provider.callTool("get_page", bookArgs ?? {});
         result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
         break;
       }
@@ -384,7 +432,10 @@ export class FederationRouter {
         throw new Error(`Unhandled canonical tool: '${toolName}'`);
     }
 
-    if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
+    // A fallback answer comes from a different corpus, so it is never cached
+    // under the primary tool's key: the cache must not keep serving it after the
+    // primary provider recovers.
+    if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result) && !servedByFallback) {
       const ttl = this.registry.get(targetProvider)?.cacheTtlSeconds;
       if (ctx) {
         ctx.waitUntil(cacheService.set(cacheKey, "canonical", toolName, result, ttl));

@@ -6,7 +6,7 @@
 
 > **أصولٌ رقمية لأثرٍ باقٍ** — An open, edge-native Model Context Protocol (MCP) gateway aggregating authentic Islamic knowledge sources into a single, high-performance interface for AI assistants and developers.
 >
-> 🌐 **Live Portal**: [mcp.waqf.dev](https://mcp.waqf.dev) | 📖 **Agent Docs**: [llms.txt](https://mcp.waqf.dev/llms.txt) | 🔒 **Security**: [SECURITY.md](./SECURITY.md) | 🤝 **Contributing**: [CONTRIBUTING.md](./CONTRIBUTING.md)
+> 🌐 **Live Portal**: [mcp.waqf.dev](https://mcp.waqf.dev) | 📖 **Agent Docs**: [llms.txt](https://mcp.waqf.app/llms.txt) | 🔒 **Security**: [SECURITY.md](./SECURITY.md) | 🤝 **Contributing**: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 [![License](https://img.shields.io/badge/license-Waqf--DPL-2e7d76.svg)](./LICENSE.md)
 [![CI](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/waqftech/waqf-mcp/actions/workflows/ci.yml)
@@ -33,13 +33,13 @@
 
 Instead of forcing users to configure 10+ independent Islamic MCP servers in their AI IDEs (Claude Desktop, Cursor, Antigravity, VS Code), **@IslamicSources** serves as a federated gateway:
 
-1. **Single Entrypoint**: Add `https://mcp.waqf.dev/mcp` once to access Quran, Hadith, Tafsir, and Islamic heritage books.
+1. **Single Entrypoint**: Add `https://mcp.waqf.app/mcp` once to access Quran, Hadith, Tafsir, and Islamic heritage books.
 2. **Stateless Edge Architecture**: Zero Durable Objects; runs on Cloudflare Workers with modern Streamable HTTP.
 3. **High-Speed Universal Cache (D1 SQLite)**: Caches immutable Islamic texts with SHA-256 keys, providing `< 5ms` repeat lookups.
 4. **Collision Defense & Normalization**: Namespaces provider tools (`bahouth__get_verse`, `tafsir_net__fetch_ayah`, `turath__get_book`) and provides unified canonical tools (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`).
 5. **Context Window Protection**: Supports `?suite=core` to expose only curated canonical tools and prevent prompt token bloat.
 6. **Multi-lingual Landing Page**: Built with Astro 7+, Arabic-first (RTL default), English, Turkish, Indonesian, and Malaysian, using `dev.waqftech.org` design tokens with zero embedded strings (`lang/{lang}.json`).
-7. **Agent & LLM Discovery**: Standardized [`llms.txt`](https://mcp.waqf.dev/llms.txt) and comprehensive [`llms-full.txt`](https://mcp.waqf.dev/llms-full.txt) explaining the gateway, tools, and schemas in full detail for autonomous agents.
+7. **Agent & LLM Discovery**: Standardized [`llms.txt`](https://mcp.waqf.app/llms.txt) and comprehensive [`llms-full.txt`](https://mcp.waqf.app/llms-full.txt) explaining the gateway, tools, and schemas in full detail for autonomous agents.
 8. **Rich Social Preview**: Automated Open Graph and Twitter summary cards for clean sharing across Twitter/X, Telegram, WhatsApp, and developer forums.
 
 ---
@@ -66,7 +66,7 @@ Add the following configuration block to your AI tool of choice:
 {
   "mcpServers": {
     "waqf-islamic-suite": {
-      "url": "https://mcp.waqf.dev/mcp"
+      "url": "https://mcp.waqf.app/mcp"
     }
   }
 }
@@ -77,7 +77,7 @@ Add the following configuration block to your AI tool of choice:
 {
   "mcpServers": {
     "waqf-islamic-suite": {
-      "url": "https://mcp.waqf.dev/mcp"
+      "url": "https://mcp.waqf.app/mcp"
     }
   }
 }
@@ -88,7 +88,7 @@ Add the following configuration block to your AI tool of choice:
 {
   "mcpServers": {
     "waqf-islamic-suite": {
-      "url": "https://mcp.waqf.dev/mcp"
+      "url": "https://mcp.waqf.app/mcp"
     }
   }
 }
@@ -99,25 +99,25 @@ Add the following configuration block to your AI tool of choice:
 {
   "mcpServers": {
     "waqf-islamic-suite": {
-      "url": "https://mcp.waqf.dev/mcp"
+      "url": "https://mcp.waqf.app/mcp"
     }
   }
 }
 ```
 
 ### Query Profiles (Context Optimization)
-* **`https://mcp.waqf.dev/mcp?suite=core`**: **(Recommended)** Exposes only unified canonical tools (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`). Preserves context window!
-* **`https://mcp.waqf.dev/mcp?suite=quran`**: Exposes only Quran and Tafsir tools.
-* **`https://mcp.waqf.dev/mcp?suite=turath`**: Exposes only Hadith and classical heritage library tools.
-* **`https://mcp.waqf.dev/mcp?suite=search`**: Exposes only contemporary scholarly web search tools (`fihris`).
-* **`https://mcp.waqf.dev/mcp`**: Full federation suite (all canonical + all namespaced tools).
+* **`https://mcp.waqf.app/mcp?suite=core`**: **(Recommended)** Exposes only unified canonical tools (`waqf_quran_get_ayah`, `waqf_hadith_search`, `waqf_turath_search_books`). Preserves context window!
+* **`https://mcp.waqf.app/mcp?suite=quran`**: Exposes only Quran and Tafsir tools.
+* **`https://mcp.waqf.app/mcp?suite=turath`**: Exposes only Hadith and classical heritage library tools.
+* **`https://mcp.waqf.app/mcp?suite=search`**: Exposes only contemporary scholarly web search tools (`fihris`).
+* **`https://mcp.waqf.app/mcp`**: Full federation suite (all canonical + all namespaced tools).
 
 ---
 
 ## 💻 Developer Code Integration & SDKs
 
 > 🛡️ **Cloudflare WAF Bot Protection Notice**:
-> Cloudflare's Automated Bot Defense automatically challenges or drops requests bearing default generic scrapers (e.g. `Python-urllib/3.x`). When calling `https://mcp.waqf.dev/mcp` programmatically, **always supply a custom `User-Agent` header** (e.g. `User-Agent: my-app/1.0.0`).
+> Cloudflare's Automated Bot Defense automatically challenges or drops requests bearing default generic scrapers (e.g. `Python-urllib/3.x`). When calling `https://mcp.waqf.app/mcp` programmatically, **always supply a custom `User-Agent` header** (e.g. `User-Agent: my-app/1.0.0`).
 
 ### 1. Python (`httpx` / `requests`)
 ```python
@@ -130,7 +130,7 @@ headers = {
 
 # Discover canonical tools (preserves token budget)
 tools_resp = httpx.post(
-    "https://mcp.waqf.dev/mcp?suite=core",
+    "https://mcp.waqf.app/mcp?suite=core",
     json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
     headers=headers,
 )
@@ -146,7 +146,7 @@ ayah_payload = {
         "arguments": {"surah": 112, "ayah": 1}
     }
 }
-ayah_resp = httpx.post("https://mcp.waqf.dev/mcp", json=ayah_payload, headers=headers)
+ayah_resp = httpx.post("https://mcp.waqf.app/mcp", json=ayah_payload, headers=headers)
 print("Ayah Result:", ayah_resp.json()["result"]["content"][0]["text"])
 ```
 
@@ -157,7 +157,7 @@ import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/
 
 // Cloudflare WAF requires a custom User-Agent for programmatic clients
 const transport = new StreamableHttpClientTransport(
-  new URL("https://mcp.waqf.dev/mcp?suite=core"),
+  new URL("https://mcp.waqf.app/mcp?suite=core"),
   {
     headers: {
       "User-Agent": "WaqfApp/1.0.0 (contact@example.com)",
@@ -183,13 +183,13 @@ console.log("Ayah Result:", (result.content[0] as { text: string }).text);
 ### 3. cURL (Command Line)
 ```bash
 # 1. List canonical tools (saving tokens with ?suite=core)
-curl -s -X POST "https://mcp.waqf.dev/mcp?suite=core" \
+curl -s -X POST "https://mcp.waqf.app/mcp?suite=core" \
   -H "Content-Type: application/json" \
   -H "User-Agent: WaqfClient/1.0" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 
 # 2. Call canonical Quran verse lookup (with automatic fallback)
-curl -s -X POST "https://mcp.waqf.dev/mcp" \
+curl -s -X POST "https://mcp.waqf.app/mcp" \
   -H "Content-Type: application/json" \
   -H "User-Agent: WaqfClient/1.0" \
   -d '{

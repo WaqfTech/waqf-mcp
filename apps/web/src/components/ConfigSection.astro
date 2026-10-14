@@ -97,7 +97,7 @@ headers = {
 
 # 1. Discover available tools (use ?suite=core for canonical tools)
 tools_resp = httpx.post(
-    "https://mcp.waqf.dev/mcp?suite=core",
+    "https://mcp.waqf.app/mcp?suite=core",
     json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
     headers=headers,
 )
@@ -113,12 +113,12 @@ payload = {
         "arguments": {"surah": 112, "ayah": 1}
     }
 }
-ayah_resp = httpx.post("https://mcp.waqf.dev/mcp", json=payload, headers=headers)
+ayah_resp = httpx.post("https://mcp.waqf.app/mcp", json=payload, headers=headers)
 print("Ayah Result:", ayah_resp.json()["result"]["content"][0]["text"])
 
 # 3. Read Quran catalog resource (cached in Cloudflare D1)
 res_resp = httpx.post(
-    "https://mcp.waqf.dev/mcp",
+    "https://mcp.waqf.app/mcp",
     json={"jsonrpc": "2.0", "id": 3, "method": "resources/read", "params": {"uri": "quran://surahs"}},
     headers=headers,
 )
@@ -126,7 +126,7 @@ print("Surahs Catalog:", res_resp.json()["result"]["contents"][0]["text"][:100],
 
 # 4. Fetch structured Quran study prompt template
 prompt_resp = httpx.post(
-    "https://mcp.waqf.dev/mcp",
+    "https://mcp.waqf.app/mcp",
     json={"jsonrpc": "2.0", "id": 4, "method": "prompts/get", "params": {"name": "study_ayah", "arguments": {"surah": "1", "ayah": "1"}}},
     headers=headers,
 )
@@ -138,7 +138,7 @@ import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/
 
 // Cloudflare WAF requires a custom User-Agent for programmatic clients
 const transport = new StreamableHttpClientTransport(
-  new URL("https://mcp.waqf.dev/mcp?suite=core"),
+  new URL("https://mcp.waqf.app/mcp?suite=core"),
   {
     headers: {
       "User-Agent": "WaqfClient/1.0 (https://waqf.dev)",
@@ -173,13 +173,13 @@ console.log("Study Prompt Message:", prompt.messages[0]);
 `;
 
 const CURL_SNIPPET = `# 1. List canonical tools (saving tokens with ?suite=core)
-curl -s -X POST "https://mcp.waqf.dev/mcp?suite=core" \\
+curl -s -X POST "https://mcp.waqf.app/mcp?suite=core" \\
   -H "Content-Type: application/json" \\
   -H "User-Agent: WaqfClient/1.0" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 
 # 2. Call canonical Quran verse lookup (with automatic fallback)
-curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+curl -s -X POST "https://mcp.waqf.app/mcp" \\
   -H "Content-Type: application/json" \\
   -H "User-Agent: WaqfClient/1.0" \\
   -d '{
@@ -193,13 +193,13 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
   }'
 
 # 3. Read Quran catalog resource (cached in Cloudflare D1)
-curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+curl -s -X POST "https://mcp.waqf.app/mcp" \\
   -H "Content-Type: application/json" \\
   -H "User-Agent: WaqfClient/1.0" \\
   -d '{"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"uri":"quran://surahs"}}'
 
 # 4. Fetch structured Quran study prompt template
-curl -s -X POST "https://mcp.waqf.dev/mcp" \\
+curl -s -X POST "https://mcp.waqf.app/mcp" \\
   -H "Content-Type: application/json" \\
   -H "User-Agent: WaqfClient/1.0" \\
   -d '{

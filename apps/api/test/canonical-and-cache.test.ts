@@ -295,5 +295,126 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect((res.result.content[0] as { text: string }).text).toContain("كتاب الصلاة");
     });
   });
+
+  describe("Fallback Fidelity", () => {
+    function booksRegistry() {
+      const registry = new ProviderRegistry([]);
+      const aljam3 = new JsonRpcMcpAdapter({
+        id: "aljam3",
+        name: "Aljam3 Library",
+        baseUrl: "https://aljam3.com/mcp",
+        transport: "json-rpc",
+        description: "Aljam3 books corpus",
+      });
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io",
+        transport: "json-rpc",
+        description: "Turath Library",
+      });
+      registry.register(aljam3);
+      registry.register(turath);
+      return { registry, aljam3, turath };
+    }
+
+    function fakeCache() {
+      return {
+        computeKey: vi.fn().mockResolvedValue("cache-key"),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
+    }
+
+    it("fails explicitly instead of answering a filtered books search from Turath", async () => {
+      const { registry, aljam3, turath } = booksRegistry();
+      vi.spyOn(aljam3, "callTool").mockRejectedValue(new Error("Aljam3 offline"));
+      const turathSpy = vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "unfiltered result" }],
+      });
+      const cache = fakeCache();
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool(
+        "waqf_books_search",
+        { query: "test", bookId: 123, page: 2, limit: 1 },
+        cache
+      );
+
+      const text = (res.result.content[0] as { text: string }).text;
+      expect(res.result.isError).toBe(true);
+      expect(text).toContain("Aljam3 books search is unavailable");
+      expect(text).toContain("book_id");
+      expect(text).toContain("page");
+      expect(text).toContain("per_page");
+      expect(turathSpy).not.toHaveBeenCalled();
+      expect(cache.set).not.toHaveBeenCalled();
+    });
+
+    it("serves an unfiltered books search from Turath without caching it as the primary answer", async () => {
+      const { registry, aljam3, turath } = booksRegistry();
+      vi.spyOn(aljam3, "callTool").mockRejectedValue(new Error("Aljam3 offline"));
+      const turathSpy = vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "fallback result" }],
+      });
+      const cache = fakeCache();
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_books_search", { query: "test" }, cache);
+
+      expect(turathSpy).toHaveBeenCalledWith("search_turath", { q: "test" });
+      expect(res.providerId).toBe("turath");
+      expect((res.result.content[0] as { text: string }).text).toContain("Books Fallback");
+      expect(cache.set).not.toHaveBeenCalled();
+    });
+
+    it("keeps caching a healthy Aljam3 books answer", async () => {
+      const { registry, aljam3 } = booksRegistry();
+      vi.spyOn(aljam3, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "aljam3 result" }],
+      });
+      const cache = fakeCache();
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_books_search", { query: "test", bookId: 123 }, cache);
+
+      expect(res.providerId).toBe("aljam3");
+      expect(cache.set).toHaveBeenCalledTimes(1);
+    });
+
+    it("fails explicitly instead of answering a filtered scholarship search from Turath", async () => {
+      const registry = new ProviderRegistry([]);
+      const fihris = new JsonRpcMcpAdapter({
+        id: "fihris",
+        name: "Fihris Islamic Web Search",
+        baseUrl: "https://search.waqf.app/api/mcp",
+        transport: "json-rpc",
+        description: "Fihris Search",
+      });
+      vi.spyOn(fihris, "callTool").mockRejectedValue(new Error("Quota Exceeded (429)"));
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io",
+        transport: "json-rpc",
+        description: "Turath Library",
+      });
+      const turathSpy = vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: "unfiltered result" }],
+      });
+      registry.register(fihris);
+      registry.register(turath);
+      const cache = fakeCache();
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_search_scholarship", { query: "الصلاة", page: 2 }, cache);
+
+      expect(res.result.isError).toBe(true);
+      expect((res.result.content[0] as { text: string }).text).toContain("cannot honour page");
+      expect(turathSpy).not.toHaveBeenCalled();
+      expect(cache.set).not.toHaveBeenCalled();
+    });
+  });
 });
 

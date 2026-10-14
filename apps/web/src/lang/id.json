@@ -8,25 +8,31 @@
     "brand": "Islamic Sources",
     "servers": "Server Terhubung",
     "setup": "Panduan Konfigurasi",
+    "limits": "Batas Penggunaan",
     "submit": "Daftarkan Server",
+    "faq": "FAQ",
     "docs": "Dokumentasi",
     "lang_label": "Bahasa"
+  },
+  "common": {
+    "copied": "Tersalin!",
+    "announcement_label": "Pengumuman"
   },
   "announcement": {
     "text": "@IslamicSources — Gateway Model Context Protocol (MCP) Islam Terpadu"
   },
   "hero": {
-    "eyebrow": "@ISLAMICSOURCES / 01",
+    "eyebrow": "@ISLAMICSOURCES",
     "title_html": "Semua Sumber Pengetahuan Islam, dalam <em>Satu Antarmuka.</em>",
     "lede": "Hentikan kerumitan mengelola puluhan server terpisah. Cukup hubungkan @IslamicSources sekali ke Gemini, Claude Desktop, Cursor, atau Antigravity. Sebagai agregator netral, kami meneruskan respons apa adanya tanpa perubahan, disediakan 'apa adanya' (as is).",
     "cta_copy": "Salin Konfigurasi Server ←",
     "cta_explore": "Jelajahi Alat",
     "note_badge": "EDGE NATIVE",
     "note_text": "Didukung oleh Cloudflare Workers tanpa instalasi lokal",
-    "stats_tools": "38+ Alat",
-    "stats_resources": "4 Katalog",
-    "stats_prompts": "5 Templat Kajian",
-    "stats_servers": "5 Server Terverifikasi",
+    "stats_tools": "Alat Khusus",
+    "stats_resources": "Katalog",
+    "stats_prompts": "Templat Kajian",
+    "stats_servers": "Server Terverifikasi",
     "disclaimer_badge": "AGREGATOR NETRAL",
     "disclaimer_text": "@IslamicSources beroperasi murni sebagai agregator. Kami tidak menambah, mengedit, atau mengubah respons dari sumber Islam asli; layanan disediakan apa adanya ('as is')."
   },
@@ -42,8 +48,24 @@
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
     "footer_right": "Wakaf Digital Abadi"
   },
+  "connect": {
+    "eyebrow": "Satu Tautan untuk Terhubung",
+    "title": "Hubungkan Sekali, Lalu Bertanya dengan Cara Anda.",
+    "subtitle": "Satu URL untuk semua server terhubung. Hanya-baca, dan tidak perlu akun atau kunci API pada sumbernya.",
+    "url_label": "URL Koneksi",
+    "copy_url": "Salin URL",
+    "meta_connection_label": "Jenis koneksi",
+    "meta_auth_label": "Autentikasi",
+    "auth_value": "Tidak diperlukan",
+    "beat1_title": "Temukan sumbernya",
+    "beat1_desc": "Cari judul, matan, karya seorang penulis, atau topik, lalu pilih yang layak dibaca.",
+    "beat2_title": "Baca dalam konteksnya",
+    "beat2_desc": "Minta asisten membaca bagian itu beserta halaman sekitarnya sebelum menjelaskan, bukan hanya kutipannya.",
+    "beat3_title": "Simpan rujukannya",
+    "beat3_desc": "Dapatkan kitab, penulis, nomor halaman, dan tautan sumber langsung, agar setiap kalimat tetap dapat diperiksa."
+  },
   "servers": {
-    "eyebrow": "Server Terhubung / 02",
+    "eyebrow": "Server Terhubung",
     "title": "Sumber Otentik dalam Satu Portofolio.",
     "subtitle": "Menghubungkan inisiatif perangkat lunak Islam terkemuka di bawah satu namespace terpadu.",
     "filter_all": "Semua Server",
@@ -86,13 +108,19 @@
         "title": "Pencarian Web Islam Fihris",
         "subtitle": "Portal Ilmiah Terindeks",
         "desc": "Mesin pencari khusus yang mengindeks lebih dari 38 portal ilmiah terverifikasi dan lembaga fikih resmi."
+      },
+      "aljam3": {
+        "title": "Perpustakaan Kitab Islam Aljam3",
+        "subtitle": "Membaca Sumber dalam Konteks",
+        "desc": "Akses hanya-baca ke perpustakaan digital kitab Islam yang luas: telusuri matan, buka kitab dan berkasnya, lalu baca halaman dalam konteks beserta penulis, perpustakaan sumber, dan tautan langsung ke sumbernya."
       }
     }
   },
   "config": {
-    "eyebrow": "Panduan Cepat / 03",
+    "eyebrow": "Panduan Cepat",
     "title": "Konfigurasikan Asisten AI Anda dalam Satu Menit.",
     "subtitle": "Pilih aplikasi AI atau asisten web Anda dan ikuti langkah penyiapan mudah berikut.",
+    "group_switcher_label": "Metode penyiapan",
     "group_web": "Asisten Web",
     "group_ide": "Desktop & IDE",
     "group_code": "SDK & API Pengembang",
@@ -114,6 +142,14 @@
     "server_url_label": "URL Server Remote",
     "web_guide_title": "Langkah Penyiapan",
     "open_setup_page": "Buka Halaman Penyiapan ↗",
+    "guides_title": "Panduan Resmi",
+    "guide_claude": "Menambahkan konektor kustom di Claude",
+    "guide_chatgpt": "Panduan plugin ChatGPT",
+    "guide_gemini": "Halaman aplikasi terhubung Gemini",
+    "caveats_title": "Sebelum Menghubungkan",
+    "caveat_claude": "Akun gratis hanya mengizinkan satu konektor kustom; pada paket Team dan Enterprise, pemilik menambahkannya lebih dulu.",
+    "caveat_chatgpt": "Ketersediaan plugin bergantung pada akun dan izin ruang kerja Anda.",
+    "caveat_gemini": "Aplikasi kustom ditambahkan dari halaman aplikasi terhubung pada akun Anda.",
     "claude_web_steps": [
       "Buka https://claude.ai/new#customize/connectors (atau buka Settings → Connectors).",
       "Klik 'Add custom connector'.",
@@ -137,8 +173,43 @@
     ],
     "config_note": "Tips: Gunakan '?suite=core' untuk hanya menampilkan alat penting dan menghemat token konteks."
   },
+  "limits": {
+    "eyebrow": "Batas Penggunaan",
+    "title": "Batas Jelas Sebelum Anda Mulai.",
+    "subtitle": "Angka yang dipublikasikan gateway dan sumber terhubung, agar Anda dapat mengukur permintaan tanpa kejutan.",
+    "gateway_heading": "Gateway",
+    "upstream_heading": "Kebijakan Sumber Terhubung",
+    "rate_limit_note": "Batas penggunaan wajar yang dipublikasikan untuk gateway, diterapkan melalui perlindungan Cloudflare.",
+    "languages_note": "Hanya berlaku untuk tautan yang dikembalikan; teks kitab tidak diterjemahkan.",
+    "upstream_note": "Angka di atas adalah kebijakan yang dipublikasikan {provider} dan dapat berubah di sumbernya.",
+    "row_gateway_rate_limit": "Permintaan per IP (permintaan/menit)",
+    "row_gateway_body_cap": "Ukuran maksimum badan permintaan (MB)",
+    "row_upstream_query_chars": "Panjang maksimum kueri pencarian (karakter)",
+    "row_upstream_list_page": "Hasil daftar per halaman (bawaan / maksimum)",
+    "row_upstream_excerpt_chars": "Panjang maksimum kutipan (karakter)",
+    "row_upstream_page_text_chars": "Teks halaman yang dikembalikan (bawaan / maksimum, karakter)",
+    "row_upstream_rate_limit": "Permintaan per IP (permintaan/menit)",
+    "row_upstream_retry": "Waktu tunggu setelah batas tercapai (detik)",
+    "row_upstream_languages": "Bahasa tautan yang didukung"
+  },
+  "prompts": {
+    "eyebrow": "Pertanyaan Siap Pakai",
+    "title": "Mulai dengan Pertanyaan, Biarkan Asisten Membaca Sumbernya.",
+    "subtitle": "Tempelkan salah satunya ke obrolan Anda, dan sebut gateway sebelum pertanyaan.",
+    "tools_hint": "Alat yang dipakai",
+    "copy_prompt": "Salin Pertanyaan",
+    "card1_title": "Mengkaji teks tentang niat",
+    "card1_body": "Cari di Aljam3 teks tentang niat dalam ibadah. Baca halaman sekitarnya, jelaskan teks dengan sederhana, dan sebutkan kitab, penulis, dan nomor halaman beserta tautan sumber.",
+    "card2_title": "Memilih kitab untuk dikaji",
+    "card2_body": "Cari kitab ushul fikih di Aljam3. Tampilkan penulis dan perpustakaan sumbernya, lalu bantu saya memilih bagian untuk dikaji beserta rujukannya.",
+    "card3_title": "Memverifikasi kutipan",
+    "card3_body": "Periksa kutipan penting terhadap PDF. Teks hasil ekstraksi bisa mengandung kesalahan, dan nomor halaman berkas dapat berbeda dari nomor cetak. Pisahkan penjelasan Anda dari perkataan penulis.",
+    "caveat_ocr": "Teks hasil ekstraksi otomatis bisa mengandung kesalahan; verifikasi kutipan penting pada PDF aslinya.",
+    "caveat_pagination": "Nomor halaman mengacu pada berkas digital dan bisa berbeda dari edisi cetak.",
+    "caveat_attribution": "Pisahkan penjelasan asisten dari perkataan penulis, dan sebutkan kitab, penulis, halaman, serta tautan sumber."
+  },
   "submit": {
-    "eyebrow": "Inisiatif Komunitas / 04",
+    "eyebrow": "Inisiatif Komunitas",
     "title": "Pernah Membangun Server MCP Islam?",
     "subtitle": "Daftarkan server Anda agar dapat diakses oleh pengembang dan model AI di seluruh dunia sebagai wakaf digital.",
     "form_name": "Nama Anda atau Lembaga",
@@ -159,7 +230,7 @@
     "form_error": "Terjadi kesalahan saat mengirim. Silakan periksa kembali data Anda dan coba lagi."
   },
   "faq": {
-    "eyebrow": "Pertanyaan Umum / 05",
+    "eyebrow": "Pertanyaan Umum",
     "title": "Pertanyaan yang Sering Diajukan",
     "q1": "Mengapa menggunakan mcp.waqf.dev daripada menambahkan setiap server secara terpisah?",
     "a1": "Satu konfigurasi menghemat pengelolaan lebih dari 10 server, mencegah tabrakan nama alat, menyimpan teks terverifikasi di edge cache, dan menghemat token prompt AI Anda.",
@@ -170,7 +241,7 @@
     "q4": "Apakah @IslamicSources menambah, mengedit, atau mengubah respons dari sumber Islam?",
     "a4": "Sama sekali tidak. @IslamicSources beroperasi murni sebagai agregator dan gerbang transmisi netral. Kami tidak menambah, menyunting, memfilter, atau mengubah respons dari penyedia sumber Islam; semua konten diteruskan secara verbatim dan layanan disediakan 'apa adanya' (as is) tanpa jaminan.",
     "q5": "Apakah gateway mendukung MCP Resources dan Prompts selain Tools?",
-    "a5": "Ya. Gateway menyediakan cakupan protokol MCP 100% lengkap. Selain 38+ alat khusus, gateway ini menggabungkan sumber daya katalog langsung (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) dan 5 templat prompt terstandarisasi untuk studi ayat dengan cache tepi Cloudflare D1."
+    "a5": "Ya. Gateway menyediakan cakupan protokol MCP secara lengkap. Selain alat khusus yang terhubung, gateway menggabungkan sumber daya katalog langsung (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) dan templat prompt terstandarisasi untuk kajian ayat dengan cache tepi Cloudflare D1."
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membangun aset teknologi terbuka dan merawatnya agar manfaatnya terus berlanjut.",

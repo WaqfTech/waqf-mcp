@@ -1,0 +1,214 @@
+---
+import { getProviderCatalogEntry, sectionNumber, type ProviderId } from "@waqf/types";
+import type { getTranslations } from "../lib/i18n";
+import CopyButton from "./CopyButton.astro";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+
+const BOOKS_PROVIDER: ProviderId = "aljam3";
+const booksTools = getProviderCatalogEntry(BOOKS_PROVIDER).tools;
+
+const relatedTools = (names: readonly string[]) =>
+  names.filter((name) => booksTools.includes(name));
+
+const PROMPTS = [
+  {
+    title: t.prompts.card1_title,
+    body: t.prompts.card1_body,
+    tools: relatedTools(["search", "get_page"]),
+  },
+  {
+    title: t.prompts.card2_title,
+    body: t.prompts.card2_body,
+    tools: relatedTools(["list_books", "get_book", "get_page"]),
+  },
+  {
+    title: t.prompts.card3_title,
+    body: t.prompts.card3_body,
+    tools: relatedTools(["search", "get_page"]),
+  },
+];
+
+const CAVEATS = [t.prompts.caveat_ocr, t.prompts.caveat_pagination, t.prompts.caveat_attribution];
+---
+
+<section id="prompts" class="prompts-section">
+  <div class="shell">
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">{t.prompts.eyebrow} / {sectionNumber("prompts")}</div>
+        <h2>{t.prompts.title}</h2>
+      </div>
+      <p class="section-desc">{t.prompts.subtitle}</p>
+    </div>
+
+    <div class="prompts-grid">
+      {PROMPTS.map((prompt) => (
+        <article class="prompt-card">
+          <h3>{prompt.title}</h3>
+          <p class="prompt-body">{prompt.body}</p>
+          <div class="prompt-foot">
+            <div class="prompt-tools">
+              <span class="tools-hint">{t.prompts.tools_hint}</span>
+              <div class="chips-row">
+                {prompt.tools.map((tool) => (
+                  <code>{tool}</code>
+                ))}
+              </div>
+            </div>
+            <CopyButton
+              value={prompt.body}
+              label={t.prompts.copy_prompt}
+              copiedLabel={t.common.copied}
+              variant="outline"
+            />
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <ul class="caveats">
+      {CAVEATS.map((caveat) => (
+        <li>{caveat}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .prompts-section {
+    padding: 70px 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    max-width: 440px;
+    color: var(--soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .prompts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .prompt-card {
+    background: var(--white);
+    border: 1px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .prompt-card h3 {
+    font-size: 17px;
+    margin: 0;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .prompt-body {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--soft);
+    border-inline-start: 3px solid var(--lime);
+    padding-inline-start: 12px;
+    flex-grow: 1;
+  }
+
+  .prompt-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .prompt-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tools-hint {
+    font: 700 10px var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--soft);
+  }
+
+  .chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chips-row code {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: var(--mono);
+    direction: ltr !important;
+    unicode-bidi: isolate;
+    display: inline-block;
+  }
+
+  .caveats {
+    list-style: none;
+    margin: 0;
+    padding: 16px 20px;
+    background: var(--white);
+    border: 1px solid var(--ink);
+    border-inline-start: 5px solid var(--clay);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .caveats li {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--soft);
+  }
+
+  @media (max-width: 960px) {
+    .prompts-grid,
+    .caveats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

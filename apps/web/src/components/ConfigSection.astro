@@ -1,5 +1,7 @@
 ---
+import { GATEWAY_MCP_URL, WEB_ASSISTANT_GUIDES, sectionNumber, type WebAssistantId } from "@waqf/types";
 import type { getTranslations } from "../lib/i18n";
+import CopyButton from "./CopyButton.astro";
 
 interface Props {
   t: ReturnType<typeof getTranslations>;
@@ -7,7 +9,29 @@ interface Props {
 
 const { t } = Astro.props;
 
-const MCP_URL = "https://mcp.waqf.dev/mcp";
+const MCP_URL = GATEWAY_MCP_URL;
+
+const WEB_SETUP_URLS: Record<string, string> = Object.fromEntries(
+  WEB_ASSISTANT_GUIDES.map((guide) => [guide.id, guide.setUpUrl])
+);
+
+const WEB_CAVEATS: Record<string, string> = {
+  claude_web: t.config.caveat_claude,
+  chatgpt_web: t.config.caveat_chatgpt,
+  gemini_web: t.config.caveat_gemini,
+};
+
+const GUIDE_LABELS: Record<WebAssistantId, string> = {
+  claude_web: t.config.guide_claude,
+  chatgpt_web: t.config.guide_chatgpt,
+  gemini_web: t.config.guide_gemini,
+};
+
+const CLIENT_GUIDES = WEB_ASSISTANT_GUIDES.filter((guide) => guide.docsUrl !== null).map((guide) => ({
+  id: guide.id,
+  href: guide.docsUrl as string,
+  label: GUIDE_LABELS[guide.id],
+}));
 
 const CLAUDE_CONFIG = JSON.stringify(
   {
@@ -194,7 +218,7 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
   <div class="shell">
     <div class="section-header">
       <div>
-        <div class="eyebrow">{t.config.eyebrow}</div>
+        <div class="eyebrow">{t.config.eyebrow} / {sectionNumber("config")}</div>
         <h2>{t.config.title}</h2>
       </div>
       <p class="section-desc">{t.config.subtitle}</p>
@@ -202,45 +226,117 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
 
     <div class="config-box">
       <!-- Category Switcher: Web Assistants vs IDEs vs Code SDKs -->
-      <div class="group-switcher">
-        <button class="group-btn active" data-group="web">
+      <div class="group-switcher" role="tablist" aria-label={t.config.group_switcher_label}>
+        <button
+          id="group-tab-web"
+          class="group-btn active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="web-guide-panel"
+          data-group="web"
+        >
           <span class="group-dot"></span>
           {t.config.group_web}
         </button>
-        <button class="group-btn" data-group="ide">
+        <button
+          id="group-tab-ide"
+          class="group-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          aria-controls="ide-code-panel"
+          data-group="ide"
+        >
           <span class="group-dot"></span>
           {t.config.group_ide}
         </button>
-        <button class="group-btn" data-group="code">
+        <button
+          id="group-tab-code"
+          class="group-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          aria-controls="code-snippet-panel"
+          data-group="code"
+        >
           <span class="group-dot"></span>
           {t.config.group_code}
         </button>
       </div>
 
       <!-- Web Assistants Tabs -->
-      <div id="web-tabs" class="tab-bar">
-        <button class="tab-btn active" data-tab="claude_web">{t.config.tab_claude_web}</button>
-        <button class="tab-btn" data-tab="chatgpt_web">{t.config.tab_chatgpt_web}</button>
-        <button class="tab-btn" data-tab="gemini_web">{t.config.tab_gemini_web}</button>
+      <div id="web-tabs" class="tab-bar" role="tablist" aria-controls="web-guide-panel">
+        <button
+          id="web-tab-claude_web"
+          class="tab-btn active"
+          role="tab"
+          aria-selected="true"
+          data-tab="claude_web">{t.config.tab_claude_web}</button>
+        <button
+          id="web-tab-chatgpt_web"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="chatgpt_web">{t.config.tab_chatgpt_web}</button>
+        <button
+          id="web-tab-gemini_web"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="gemini_web">{t.config.tab_gemini_web}</button>
       </div>
 
       <!-- IDEs Tabs -->
-      <div id="ide-tabs" class="tab-bar hidden">
-        <button class="tab-btn active" data-tab="claude">{t.config.tab_claude}</button>
-        <button class="tab-btn" data-tab="cursor">{t.config.tab_cursor}</button>
-        <button class="tab-btn" data-tab="antigravity">{t.config.tab_antigravity}</button>
-        <button class="tab-btn" data-tab="cline">{t.config.tab_cline}</button>
+      <div id="ide-tabs" class="tab-bar hidden" role="tablist" aria-controls="ide-code-panel">
+        <button id="ide-tab-claude" class="tab-btn active" role="tab" aria-selected="true" data-tab="claude"
+          >{t.config.tab_claude}</button>
+        <button
+          id="ide-tab-cursor"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="cursor">{t.config.tab_cursor}</button>
+        <button
+          id="ide-tab-antigravity"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="antigravity">{t.config.tab_antigravity}</button>
+        <button
+          id="ide-tab-cline"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="cline">{t.config.tab_cline}</button>
       </div>
 
       <!-- Code SDKs Tabs -->
-      <div id="code-tabs" class="tab-bar hidden">
-        <button class="tab-btn active" data-tab="python">{t.config.tab_python}</button>
-        <button class="tab-btn" data-tab="typescript">{t.config.tab_typescript}</button>
-        <button class="tab-btn" data-tab="curl">{t.config.tab_curl}</button>
+      <div id="code-tabs" class="tab-bar hidden" role="tablist" aria-controls="code-snippet-panel">
+        <button id="code-tab-python" class="tab-btn active" role="tab" aria-selected="true" data-tab="python"
+          >{t.config.tab_python}</button>
+        <button
+          id="code-tab-typescript"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="typescript">{t.config.tab_typescript}</button>
+        <button
+          id="code-tab-curl"
+          class="tab-btn"
+          role="tab"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="curl">{t.config.tab_curl}</button>
       </div>
 
       <!-- Web Assistants Step-by-Step Panel -->
-      <div id="web-guide-panel" class="web-guide-panel">
+      <div id="web-guide-panel" class="web-guide-panel" role="tabpanel" aria-labelledby="group-tab-web">
         <div class="endpoint-url-bar">
           <div class="url-meta">
             <span class="url-label">{t.config.server_url_label}:</span>
@@ -249,16 +345,18 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
           <div class="url-actions">
             <a
               id="open-setup-link"
-              href="https://claude.ai/new#customize/connectors"
+              href={WEB_SETUP_URLS.claude_web}
               target="_blank"
               rel="noopener noreferrer"
               class="open-setup-btn"
             >
               {t.config.open_setup_page}
             </a>
-            <button id="copy-url-btn" class="copy-url-btn" data-copied-text={t.config.copied_button}>
-              <span id="copy-url-text">{t.config.copy_url_button}</span>
-            </button>
+            <CopyButton
+              value={MCP_URL}
+              label={t.config.copy_url_button}
+              copiedLabel={t.config.copied_button}
+            />
           </div>
         </div>
 
@@ -272,19 +370,24 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
               <li>{step}</li>
             ))}
           </ol>
+          <p id="web-caveat" class="tab-caveat">{WEB_CAVEATS.claude_web}</p>
         </div>
       </div>
 
       <!-- Desktop/IDE JSON Code Panel -->
-      <div id="ide-code-panel" class="code-container hidden" dir="ltr">
+      <div id="ide-code-panel" class="code-container hidden" dir="ltr" role="tabpanel" aria-labelledby="group-tab-ide">
         <pre dir="ltr"><code id="config-code" dir="ltr">{CLAUDE_CONFIG}</code></pre>
-        <button id="copy-btn" class="copy-action-btn" data-copied-text={t.config.copied_button}>
-          <span id="copy-text">{t.config.copy_button}</span>
-        </button>
+        <div class="copy-slot">
+          <CopyButton
+            target="#config-code"
+            label={t.config.copy_button}
+            copiedLabel={t.config.copied_button}
+          />
+        </div>
       </div>
 
       <!-- Developer Code Snippet Panel -->
-      <div id="code-snippet-panel" class="code-panel-wrapper hidden">
+      <div id="code-snippet-panel" class="code-panel-wrapper hidden" role="tabpanel" aria-labelledby="group-tab-code">
         <div class="bot-notice-box">
           <div class="bot-notice-icon">🛡️</div>
           <div>
@@ -294,10 +397,23 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
         </div>
         <div class="code-container" dir="ltr">
           <pre dir="ltr"><code id="dev-code" dir="ltr">{PYTHON_SNIPPET}</code></pre>
-          <button id="dev-copy-btn" class="copy-action-btn" data-copied-text={t.config.copied_button}>
-            <span id="dev-copy-text">{t.config.copy_button}</span>
-          </button>
+          <div class="copy-slot">
+            <CopyButton
+              target="#dev-code"
+              label={t.config.copy_button}
+              copiedLabel={t.config.copied_button}
+            />
+          </div>
         </div>
+      </div>
+
+      <div class="official-guides">
+        <span class="guides-title">{t.config.guides_title}</span>
+        {CLIENT_GUIDES.map((guide) => (
+          <a href={guide.href} target="_blank" rel="noopener noreferrer" class="guide-link">
+            {guide.label} ↗
+          </a>
+        ))}
       </div>
 
       <div class="config-footer">
@@ -308,18 +424,48 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
   </div>
 </section>
 
-<script is:inline define:vars={{ CLAUDE_CONFIG, CURSOR_CONFIG, ANTIGRAVITY_CONFIG, CLINE_CONFIG, CLAUDE_WEB_STEPS, CHATGPT_WEB_STEPS, GEMINI_WEB_STEPS, MCP_URL, PYTHON_SNIPPET, TYPESCRIPT_SNIPPET, CURL_SNIPPET }}>
+<script is:inline define:vars={{ CLAUDE_CONFIG, CURSOR_CONFIG, ANTIGRAVITY_CONFIG, CLINE_CONFIG, CLAUDE_WEB_STEPS, CHATGPT_WEB_STEPS, GEMINI_WEB_STEPS, WEB_SETUP_URLS, WEB_CAVEATS, PYTHON_SNIPPET, TYPESCRIPT_SNIPPET, CURL_SNIPPET }}>
   const webSteps = {
     claude_web: CLAUDE_WEB_STEPS,
     chatgpt_web: CHATGPT_WEB_STEPS,
     gemini_web: GEMINI_WEB_STEPS,
   };
 
-  const webSetupUrls = {
-    claude_web: "https://claude.ai/new#customize/connectors",
-    chatgpt_web: "https://chatgpt.com/plugins",
-    gemini_web: "https://gemini.google.com/apps",
-  };
+  const webSetupUrls = WEB_SETUP_URLS;
+  const webCaveats = WEB_CAVEATS;
+
+  // Accessible tabs: keep aria-selected/tabindex in sync and support arrow keys (mirrored in RTL).
+  function syncTabState(container) {
+    const tabs = Array.from(container.querySelectorAll('[role="tab"]'));
+    tabs.forEach((tab) => {
+      const isActive = tab.classList.contains("active");
+      tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+  }
+
+  function enableArrowKeys(container) {
+    container.addEventListener("keydown", (event) => {
+      const tabs = Array.from(container.querySelectorAll('[role="tab"]'));
+      const current = tabs.indexOf(document.activeElement);
+      if (current === -1) return;
+
+      const rtl = document.documentElement.dir === "rtl";
+      const forward = rtl ? (current - 1 + tabs.length) % tabs.length : (current + 1) % tabs.length;
+      const backward = rtl ? (current + 1) % tabs.length : (current - 1 + tabs.length) % tabs.length;
+
+      let nextIndex = null;
+      if (event.key === "ArrowRight") nextIndex = forward;
+      else if (event.key === "ArrowLeft") nextIndex = backward;
+      else if (event.key === "Home") nextIndex = 0;
+      else if (event.key === "End") nextIndex = tabs.length - 1;
+      if (nextIndex === null) return;
+
+      event.preventDefault();
+      tabs[nextIndex].focus();
+      tabs[nextIndex].click();
+    });
+  }
 
   const ideConfigs = {
     claude: CLAUDE_CONFIG,
@@ -371,11 +517,15 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
         if (ideCodePanel) ideCodePanel.classList.add("hidden");
         if (codeSnippetPanel) codeSnippetPanel.classList.remove("hidden");
       }
+
+      const groupSwitcher = btn.closest('[role="tablist"]');
+      if (groupSwitcher) syncTabState(groupSwitcher);
     });
   });
 
   // Handle Web Assistant Tab switching
   const stepsList = document.getElementById("steps-list");
+  const webCaveat = document.getElementById("web-caveat");
   if (webTabs) {
     webTabs.querySelectorAll(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -397,6 +547,12 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
             stepsList.appendChild(li);
           });
         }
+
+        if (webCaveat && webCaveats[tab]) {
+          webCaveat.textContent = webCaveats[tab];
+        }
+
+        syncTabState(webTabs);
       });
     });
   }
@@ -412,6 +568,7 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
         if (codeEl && ideConfigs[tab]) {
           codeEl.textContent = ideConfigs[tab];
         }
+        syncTabState(ideTabs);
       });
     });
   }
@@ -427,75 +584,17 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
         if (devCodeEl && codeSnippets[tab]) {
           devCodeEl.textContent = codeSnippets[tab];
         }
+        syncTabState(codeTabs);
       });
     });
   }
 
-  // Copy Remote URL button
-  const copyUrlBtn = document.getElementById("copy-url-btn");
-  const copyUrlText = document.getElementById("copy-url-text");
-  const origUrlBtnText = copyUrlText ? copyUrlText.textContent : "Copy URL";
-  const copiedUrlText = copyUrlBtn ? copyUrlBtn.getAttribute("data-copied-text") : "Copied!";
-
-  if (copyUrlBtn) {
-    copyUrlBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(MCP_URL);
-        if (copyUrlText) copyUrlText.textContent = copiedUrlText;
-        copyUrlBtn.classList.add("copied");
-        setTimeout(() => {
-          if (copyUrlText) copyUrlText.textContent = origUrlBtnText;
-          copyUrlBtn.classList.remove("copied");
-        }, 2000);
-      } catch (err) {
-        console.error("Clipboard write error:", err);
-      }
-    });
-  }
-
-  // Copy IDE Config button
-  const copyBtn = document.getElementById("copy-btn");
-  const copyText = document.getElementById("copy-text");
-  const originalText = copyText ? copyText.textContent : "Copy";
-  const copiedText = copyBtn ? copyBtn.getAttribute("data-copied-text") : "Copied!";
-
-  if (copyBtn && codeEl) {
-    copyBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(codeEl.textContent);
-        if (copyText) copyText.textContent = copiedText;
-        copyBtn.classList.add("copied");
-        setTimeout(() => {
-          if (copyText) copyText.textContent = originalText;
-          copyBtn.classList.remove("copied");
-        }, 2000);
-      } catch (err) {
-        console.error("Clipboard write error:", err);
-      }
-    });
-  }
-
-  // Copy Dev Code Snippet button
-  const devCopyBtn = document.getElementById("dev-copy-btn");
-  const devCopyText = document.getElementById("dev-copy-text");
-  const origDevCopyText = devCopyText ? devCopyText.textContent : "Copy";
-  const copiedDevText = devCopyBtn ? devCopyBtn.getAttribute("data-copied-text") : "Copied!";
-
-  if (devCopyBtn && devCodeEl) {
-    devCopyBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(devCodeEl.textContent);
-        if (devCopyText) devCopyText.textContent = copiedDevText;
-        devCopyBtn.classList.add("copied");
-        setTimeout(() => {
-          if (devCopyText) devCopyText.textContent = origDevCopyText;
-          devCopyBtn.classList.remove("copied");
-        }, 2000);
-      } catch (err) {
-        console.error("Clipboard write error:", err);
-      }
-    });
-  }
+  // Initialise tab state and keyboard support
+  [document.querySelector(".group-switcher"), webTabs, ideTabs, codeTabs].forEach((container) => {
+    if (!container) return;
+    syncTabState(container);
+    enableArrowKeys(container);
+  });
 </script>
 
 <style>
@@ -539,6 +638,7 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
   /* Group Switcher */
   .group-switcher {
     display: flex;
+    flex-wrap: wrap;
     background: #05141c;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   }
@@ -628,6 +728,10 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    /* Take the whole row and allow shrinking below max-content, otherwise the
+       unified URL pushes past the panel edge on narrow viewports. */
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .url-label {
@@ -645,6 +749,11 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     border: 1px solid rgba(255, 255, 255, 0.1);
     direction: ltr !important;
     unicode-bidi: isolate;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    /* The component-wide `code { white-space: pre }` rule would forbid wrapping;
+       this URL must break on narrow viewports. */
+    white-space: pre-wrap;
   }
 
   .url-actions {
@@ -655,6 +764,7 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
   }
 
   .open-setup-btn {
+    position: relative;
     background: transparent;
     color: var(--lime);
     border: 1px solid var(--lime);
@@ -667,29 +777,73 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     transition: background 0.15s, color 0.15s, transform 0.15s;
   }
 
+  /* 37px visual height, 45px hit area for touch */
+  .open-setup-btn::before {
+    content: "";
+    position: absolute;
+    inset-block: -4px;
+    inset-inline: 0;
+  }
+
   .open-setup-btn:hover {
     background: rgba(198, 238, 103, 0.15);
     transform: translateY(-2px);
     color: var(--white);
   }
 
-  .copy-url-btn {
-    background: var(--lime);
-    color: var(--ink);
-    border: 1px solid var(--ink);
-    padding: 8px 16px;
-    font: 700 13px "Tajawal", sans-serif;
-    box-shadow: 2px 2px 0 var(--tide);
-    transition: transform 0.15s;
+  .copy-slot {
+    position: absolute;
+    top: 20px;
+    inset-inline-end: 20px;
+    z-index: 10;
   }
 
-  .copy-url-btn:hover {
-    transform: translateY(-2px);
+  .tab-caveat {
+    margin: 16px 0 0;
+    padding: 10px 14px;
+    background: rgba(230, 163, 122, 0.1);
+    border-inline-start: 3px solid var(--clay);
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9dbd6;
   }
 
-  .copy-url-btn.copied {
-    background: var(--tide);
+  .official-guides {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .guides-title {
+    font: 700 11px var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9cb5af;
+  }
+
+  .guide-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lime);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .guide-link:hover {
     color: var(--white);
+    border-bottom-color: var(--lime);
+  }
+
+  .guide-link:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px;
   }
 
   .steps-wrapper {
@@ -724,6 +878,9 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
 
   .steps-list li {
     padding-inline-start: 4px;
+    /* Setup steps contain long unbreakable URLs; without this they overflow the
+       panel and get clipped by the viewport at narrow widths. */
+    overflow-wrap: anywhere;
   }
 
   /* IDE Code Panel */
@@ -751,29 +908,6 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     unicode-bidi: isolate;
     display: block;
     white-space: pre;
-  }
-
-  .copy-action-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--lime);
-    color: var(--ink);
-    border: 1px solid var(--ink);
-    padding: 8px 16px;
-    font: 700 13px "Tajawal", sans-serif;
-    box-shadow: 3px 3px 0 var(--tide);
-    transition: transform 0.15s;
-    z-index: 10;
-  }
-
-  .copy-action-btn:hover {
-    transform: translateY(-2px);
-  }
-
-  .copy-action-btn.copied {
-    background: var(--tide);
-    color: var(--white);
   }
 
   /* Developer Code Snippet & Bot Notice */
@@ -832,6 +966,15 @@ curl -s -X POST "https://mcp.waqf.dev/mcp" \\
     .endpoint-url-bar {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    /* In column layout the cross axis decides width, so the metadata row must
+       be given an explicit full width; otherwise the unbreakable unified URL
+       keeps its max-content width and overhangs the panel. */
+    .url-meta {
+      align-self: stretch;
+      width: 100%;
+      max-width: 100%;
     }
   }
 </style>

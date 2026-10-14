@@ -1,0 +1,230 @@
+---
+import { GATEWAY_MCP_URL, GATEWAY_TRANSPORT_LABEL, sectionNumber } from "@waqf/types";
+import type { getTranslations } from "../lib/i18n";
+import CopyButton from "./CopyButton.astro";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+
+const BEATS = [
+  { title: t.connect.beat1_title, desc: t.connect.beat1_desc },
+  { title: t.connect.beat2_title, desc: t.connect.beat2_desc },
+  { title: t.connect.beat3_title, desc: t.connect.beat3_desc },
+];
+---
+
+<section id="connect" class="connect-section">
+  <div class="shell">
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">{t.connect.eyebrow} / {sectionNumber("connect")}</div>
+        <h2>{t.connect.title}</h2>
+      </div>
+      <p class="section-desc">{t.connect.subtitle}</p>
+    </div>
+
+    <div class="connect-grid">
+      <div class="connection-card">
+        <span class="card-label">{t.connect.url_label}</span>
+        <code class="connect-url" dir="ltr">{GATEWAY_MCP_URL}</code>
+        <CopyButton
+          value={GATEWAY_MCP_URL}
+          label={t.connect.copy_url}
+          copiedLabel={t.common.copied}
+        />
+        <dl class="connection-meta">
+          <div class="meta-row">
+            <dt>{t.connect.meta_connection_label}</dt>
+            <dd dir="ltr">{GATEWAY_TRANSPORT_LABEL}</dd>
+          </div>
+          <div class="meta-row">
+            <dt>{t.connect.meta_auth_label}</dt>
+            <dd>{t.connect.auth_value}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <ol class="beats">
+        {BEATS.map((beat, index) => (
+          <li class="beat">
+            <div class="beat-num">{String(index + 1).padStart(2, "0")}</div>
+            <div class="beat-body">
+              <b>{beat.title}</b>
+              <span>{beat.desc}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .connect-section {
+    padding: 70px 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    max-width: 440px;
+    color: var(--soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  /* Grid items must be allowed to shrink below their content's min-content
+     width, otherwise the card and beat rows overflow a 320px viewport. */
+  .connect-grid > * {
+    min-width: 0;
+  }
+
+  .connection-card {
+    background: #081d28;
+    border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .card-label {
+    font: 700 11px var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9cb5af;
+  }
+
+  .connect-url {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--lime);
+    background: #06161f;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 10px 12px;
+    width: 100%;
+    direction: ltr !important;
+    unicode-bidi: isolate;
+    text-align: left;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .connection-meta {
+    margin: 6px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .meta-row dt {
+    font-size: 13px;
+    font-weight: 700;
+    color: #9cb5af;
+  }
+
+  .meta-row dd {
+    margin: 0;
+    font: 700 13px var(--mono);
+    color: var(--white);
+    unicode-bidi: isolate;
+  }
+
+  .beats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .beat {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 18px;
+    background: var(--white);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .beat:first-child {
+    border-inline-start: 5px solid var(--tide);
+  }
+
+  .beat:last-child {
+    border-inline-start: 5px solid var(--lime);
+  }
+
+  .beat-num {
+    font: 800 15px var(--mono);
+    color: var(--tide);
+    line-height: 1.4;
+  }
+
+  .beat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .beat-body b {
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .beat-body span {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--soft);
+  }
+
+  @media (max-width: 960px) {
+    .connect-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,172 @@
+---
+import { GATEWAY_USAGE_LIMITS, USAGE_LIMITS_UPSTREAM_PROVIDER, sectionNumber } from "@waqf/types";
+import { usageLimitLabel, type getTranslations } from "../lib/i18n";
+
+interface Props {
+  t: ReturnType<typeof getTranslations>;
+}
+
+const { t } = Astro.props;
+
+const gatewayRows = GATEWAY_USAGE_LIMITS.filter((row) => row.source === "gateway" && row.value !== null);
+const upstreamRows = GATEWAY_USAGE_LIMITS.filter((row) => row.source === "upstream" && row.value !== null);
+const upstreamName = t.servers.cards[USAGE_LIMITS_UPSTREAM_PROVIDER].title;
+---
+
+<section id="limits" class="limits-section">
+  <div class="shell">
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">{t.limits.eyebrow} / {sectionNumber("limits")}</div>
+        <h2>{t.limits.title}</h2>
+      </div>
+      <p class="section-desc">{t.limits.subtitle}</p>
+    </div>
+
+    <div class="limits-grid">
+      <div class="limits-panel">
+        <h3>{t.limits.gateway_heading}</h3>
+        <dl class="limits-list">
+          {gatewayRows.map((row) => (
+            <div class="limit-row">
+              <dt>{usageLimitLabel(t, row.key)}</dt>
+              <dd dir="ltr">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="panel-note">{t.limits.rate_limit_note}</p>
+      </div>
+
+      <div class="limits-panel is-upstream">
+        <h3>{t.limits.upstream_heading}</h3>
+        <dl class="limits-list">
+          {upstreamRows.map((row) => (
+            <div class="limit-row">
+              <dt>{usageLimitLabel(t, row.key)}</dt>
+              <dd dir="ltr">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="panel-note">{t.limits.languages_note}</p>
+        <p class="panel-attribution">
+          {t.limits.upstream_note.replace("{provider}", upstreamName)}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .limits-section {
+    padding: 70px 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    color: var(--ink);
+  }
+
+  .section-desc {
+    max-width: 440px;
+    color: var(--soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .limits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .limits-panel {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 24px;
+  }
+
+  .limits-panel.is-upstream {
+    border-block-start: 5px solid var(--tide);
+  }
+
+  .limits-panel h3 {
+    font-size: 18px;
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .limits-list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .limit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    padding: 9px 0;
+    border-block-end: 1px dashed var(--line);
+    flex-wrap: wrap;
+  }
+
+  .limit-row:last-child {
+    border-block-end: none;
+  }
+
+  .limit-row dt {
+    font-size: 14px;
+    color: var(--soft);
+    line-height: 1.5;
+  }
+
+  .limit-row dd {
+    margin: 0;
+    font: 700 14px var(--mono);
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    padding: 1px 8px;
+    unicode-bidi: isolate;
+    white-space: nowrap;
+  }
+
+  .panel-note {
+    margin: 14px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--soft);
+  }
+
+  .panel-attribution {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--tide);
+    font-weight: 700;
+  }
+
+  @media (max-width: 860px) {
+    .limits-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

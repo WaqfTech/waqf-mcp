@@ -1,11 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import HeroSection from "../../components/HeroSection.astro";
-import ServersSection from "../../components/ServersSection.astro";
-import ConfigSection from "../../components/ConfigSection.astro";
-import SubmitForm from "../../components/SubmitForm.astro";
-import FaqSection from "../../components/FaqSection.astro";
-import { getTranslations, LOCALES, type SupportedLocale } from "../../lib/i18n";
+import HomeSections from "../../components/HomeSections.astro";
+import { LOCALES, type SupportedLocale } from "../../lib/i18n";
 
 export const prerender = true;
 
@@ -20,13 +16,8 @@ export function getStaticPaths() {
 
 const { lang = "en" } = Astro.params;
 const validLang = (lang && lang in LOCALES ? lang : "en") as SupportedLocale;
-const t = getTranslations(validLang);
 ---
 
 <BaseLayout lang={validLang}>
-  <HeroSection t={t} />
-  <ServersSection t={t} lang={validLang} />
-  <ConfigSection t={t} />
-  <SubmitForm t={t} />
-  <FaqSection t={t} />
+  <HomeSections lang={validLang} />
 </BaseLayout>

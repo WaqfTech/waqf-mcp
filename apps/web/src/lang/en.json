@@ -8,25 +8,31 @@
     "brand": "Islamic Sources",
     "servers": "Connected Servers",
     "setup": "Configuration",
+    "limits": "Usage Limits",
     "submit": "Submit Server",
+    "faq": "FAQ",
     "docs": "Documentation",
     "lang_label": "Language"
+  },
+  "common": {
+    "copied": "Copied!",
+    "announcement_label": "Announcement"
   },
   "announcement": {
     "text": "@IslamicSources — Unified Islamic Model Context Protocol (MCP) Gateway"
   },
   "hero": {
-    "eyebrow": "@ISLAMICSOURCES / 01",
+    "eyebrow": "@ISLAMICSOURCES",
     "title_html": "All Islamic Knowledge Sources, in <em>One Interface.</em>",
     "lede": "Stop juggling dozens of independent MCP servers. Connect @IslamicSources once to Gemini, Claude Desktop, Cursor, or Antigravity and access Quran, Hadith, Tafsir, and Islamic heritage books. As a neutral aggregator, we relay upstream responses verbatim without alteration, provided 'as is'.",
     "cta_copy": "Copy Server Config ←",
     "cta_explore": "Explore Tools",
     "note_badge": "EDGE NATIVE",
     "note_text": "Powered by Cloudflare Workers with zero local installation",
-    "stats_tools": "38+ Tools",
-    "stats_resources": "4 Catalogs",
-    "stats_prompts": "5 Study Prompts",
-    "stats_servers": "5 Federated Servers",
+    "stats_tools": "Specialized Tools",
+    "stats_resources": "Catalogs",
+    "stats_prompts": "Study Prompts",
+    "stats_servers": "Federated Servers",
     "disclaimer_badge": "UNALTERED AGGREGATOR",
     "disclaimer_text": "@IslamicSources operates strictly as an aggregator. We do not add, edit, or alter responses from upstream Islamic sources; all data is transmitted verbatim and provided 'as is'."
   },
@@ -42,8 +48,24 @@
     "footer_left": "PROTOCOL: MCP STREAMABLE HTTP",
     "footer_right": "Enduring Digital Waqf"
   },
+  "connect": {
+    "eyebrow": "One Link to Connect",
+    "title": "Connect Once, Then Ask in Your Own Words.",
+    "subtitle": "A single URL for every federated server. Read-only, and no account or API key is needed for the upstream sources.",
+    "url_label": "Connection URL",
+    "copy_url": "Copy URL",
+    "meta_connection_label": "Connection type",
+    "meta_auth_label": "Authentication",
+    "auth_value": "Not required",
+    "beat1_title": "Find the source",
+    "beat1_desc": "Search titles, full texts, an author's works or a subject, then pick what is worth reading.",
+    "beat2_title": "Read it in context",
+    "beat2_desc": "Ask your assistant to read the passage and its surrounding pages before explaining, not just the excerpt.",
+    "beat3_title": "Keep the reference",
+    "beat3_desc": "Get the book, author, page number and a direct source link, so every sentence stays checkable."
+  },
   "servers": {
-    "eyebrow": "Federated Servers / 02",
+    "eyebrow": "Federated Servers",
     "title": "Authentic Sources in a Single Portfolio.",
     "subtitle": "Connecting leading Islamic software initiatives under one interoperable namespace.",
     "filter_all": "All Servers",
@@ -86,13 +108,19 @@
         "title": "Fihris Islamic Web Search",
         "subtitle": "Indexed Scholarly Portals",
         "desc": "Custom search engine indexing over 38 verified scholarly portals and official jurisprudential bodies."
+      },
+      "aljam3": {
+        "title": "Aljam3 Islamic Books Library",
+        "subtitle": "Reading Sources in Context",
+        "desc": "Read-only access to a wide digital library of Islamic books: search the corpus, open a book and its files, and read a page in context with its author, source library and a direct link to the source."
       }
     }
   },
   "config": {
-    "eyebrow": "Quickstart / 03",
+    "eyebrow": "Quickstart",
     "title": "Configure Your AI Assistant in One Minute.",
     "subtitle": "Select your AI client or web assistant and follow the simple setup steps.",
+    "group_switcher_label": "Setup method",
     "group_web": "Web Assistants",
     "group_ide": "Desktop & IDEs",
     "group_code": "Developer SDK & API",
@@ -114,6 +142,14 @@
     "server_url_label": "Remote Server URL",
     "web_guide_title": "Setup Instructions",
     "open_setup_page": "Open Setup Page ↗",
+    "guides_title": "Official Guides",
+    "guide_claude": "Add a custom connector in Claude",
+    "guide_chatgpt": "ChatGPT plugins guide",
+    "guide_gemini": "Gemini connected apps page",
+    "caveats_title": "Before You Connect",
+    "caveat_claude": "A free account allows one custom connector; on Team and Enterprise plans an owner adds it first.",
+    "caveat_chatgpt": "Plugin availability depends on your account and workspace permissions.",
+    "caveat_gemini": "Custom apps are added from your account's connected apps page.",
     "claude_web_steps": [
       "Open https://claude.ai/new#customize/connectors (or go to Settings → Connectors).",
       "Click 'Add custom connector'.",
@@ -137,8 +173,43 @@
     ],
     "config_note": "Tip: Use '?suite=core' to expose only canonical tools and conserve token budget."
   },
+  "limits": {
+    "eyebrow": "Usage Limits",
+    "title": "Clear Limits Before You Start.",
+    "subtitle": "Published figures from the gateway and its connected sources, so you can size requests without surprises.",
+    "gateway_heading": "Gateway",
+    "upstream_heading": "Federated Source Policy",
+    "rate_limit_note": "Published fair-use ceiling for the gateway, applied through Cloudflare protection.",
+    "languages_note": "Applies to the returned links only; book text is not translated.",
+    "upstream_note": "The figures above are {provider}'s published policy and may change at the source.",
+    "row_gateway_rate_limit": "Requests per IP (requests/min)",
+    "row_gateway_body_cap": "Maximum request body (MB)",
+    "row_upstream_query_chars": "Maximum search query (characters)",
+    "row_upstream_list_page": "List results per page (default / maximum)",
+    "row_upstream_excerpt_chars": "Maximum excerpt length (characters)",
+    "row_upstream_page_text_chars": "Page text returned (default / maximum, characters)",
+    "row_upstream_rate_limit": "Requests per IP (requests/min)",
+    "row_upstream_retry": "Wait before retrying once limited (seconds)",
+    "row_upstream_languages": "Supported link languages"
+  },
+  "prompts": {
+    "eyebrow": "Ready-Made Prompts",
+    "title": "Start With a Question, Let the Assistant Read the Source.",
+    "subtitle": "Paste one into your chat, and name the gateway before your question.",
+    "tools_hint": "Tools used",
+    "copy_prompt": "Copy Prompt",
+    "card1_title": "Study a passage on intention",
+    "card1_body": "Search Aljam3 for passages about intention (niyyah) in worship. Read the surrounding pages, explain the text simply, and cite the book, author and page number with a source link.",
+    "card2_title": "Choose a book to study",
+    "card2_body": "Find books on the principles of Islamic jurisprudence (usul al-fiqh) in Aljam3. Show their authors and source libraries, then help me choose a passage to study with its references.",
+    "card3_title": "Verify a quotation",
+    "card3_body": "Check important quotations against the PDF. Extracted text may contain errors, and file page numbers can differ from printed page numbers. Keep your explanation distinct from the author's words.",
+    "caveat_ocr": "Automatically extracted text may contain errors; verify important quotations against the original PDF.",
+    "caveat_pagination": "Page numbers refer to the digitized file and can differ from the printed edition.",
+    "caveat_attribution": "Keep the assistant's explanation distinct from the author's words, and cite the book, author, page and source link."
+  },
   "submit": {
-    "eyebrow": "Community Initiative / 04",
+    "eyebrow": "Community Initiative",
     "title": "Built an Islamic MCP Server?",
     "subtitle": "Submit your server to make it accessible to developers and AI models worldwide.",
     "form_name": "Your Name / Organization",
@@ -159,7 +230,7 @@
     "form_error": "An error occurred while submitting. Please check your inputs and try again."
   },
   "faq": {
-    "eyebrow": "FAQ / 05",
+    "eyebrow": "FAQ",
     "title": "Frequently Asked Questions",
     "q1": "Why use mcp.waqf.dev instead of individual MCP servers?",
     "a1": "A single configuration eliminates managing 10+ server endpoints, prevents tool name collisions, caches authentic texts at the edge, and provides canonical tools that save context window tokens.",
@@ -170,7 +241,7 @@
     "q4": "Does @IslamicSources add, edit, or alter responses from the sources?",
     "a4": "No. @IslamicSources operates strictly as an aggregator and neutral edge gateway. We do not author, add to, edit, or alter any response or text received from connected Islamic providers. All content is relayed verbatim and the service is provided strictly on an 'as is' basis without warranties.",
     "q5": "Does the gateway support MCP Resources and Prompts in addition to Tools?",
-    "a5": "Yes. The gateway provides 100% MCP protocol coverage. Alongside 38+ specialized tools, it federates direct catalog resources (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) and 5 standardized prompt templates (study_ayah, compare_tafsirs, root_study, surah_overview, tajweed_lesson) with Cloudflare D1 edge caching."
+    "a5": "Yes. The gateway provides full MCP protocol coverage. Alongside the federated specialized tools, it exposes direct catalog resources (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) for browsing Quran and tafsir data, plus standardized prompt templates for studying, comparing and explaining verses, with Cloudflare D1 edge caching."
   },
   "footer": {
     "brand_desc": "A digital waqf building open technical assets and maintaining them for enduring benefit.",

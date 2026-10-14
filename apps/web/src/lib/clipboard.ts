@@ -8,6 +8,7 @@
  */
 
 const REVERT_MS = 2000;
+const FAILED_REVERT_MS = 3000;
 const BOUND_FLAG = "copyBound";
 
 async function writeClipboard(text: string): Promise<boolean> {
@@ -63,29 +64,49 @@ function initCopyButtons(): void {
 
     const label = button.querySelector<HTMLElement>(".copy-label");
     const status = button.querySelector<HTMLElement>('[role="status"]');
-    const originalLabel = label?.textContent ?? "";
+    // Capture the resting label once: a later click may happen while the failure
+    // (or success) label is still displayed, and the revert must not adopt it.
+    if (!button.dataset.copyOriginalLabel) {
+      button.dataset.copyOriginalLabel = label?.textContent ?? "";
+    }
+    const originalLabel = button.dataset.copyOriginalLabel ?? "";
     const doneLabel = button.dataset.copyDoneLabel ?? originalLabel;
+    const failedLabel = button.dataset.copyFailedLabel ?? "";
 
     void writeClipboard(resolveValue(button)).then((ok) => {
-      if (!ok) {
-        return;
+      // A denied clipboard must not leave a dead-looking button: both outcomes
+      // swap the label and announce through the status region. Only the most
+      // recent click owns the state, so drop the opposite class and any pending
+      // revert — otherwise a retry inside the revert window shows both states.
+      const stateClass = ok ? "copied" : "copy-failed";
+      const nextLabel = ok ? doneLabel : failedLabel;
+      const pendingRevert = Number(button.dataset.copyRevert ?? 0);
+
+      if (pendingRevert) {
+        window.clearTimeout(pendingRevert);
       }
-      button.classList.add("copied");
-      if (label) {
-        label.textContent = doneLabel;
+
+      button.classList.remove(ok ? "copy-failed" : "copied");
+      button.classList.add(stateClass);
+      if (label && nextLabel) {
+        label.textContent = nextLabel;
       }
       if (status) {
-        status.textContent = doneLabel;
+        status.textContent = nextLabel || originalLabel;
       }
-      window.setTimeout(() => {
-        button.classList.remove("copied");
+
+      const revert = window.setTimeout(() => {
+        button.classList.remove(stateClass);
+        button.removeAttribute("data-copy-revert");
         if (label) {
           label.textContent = originalLabel;
         }
         if (status) {
           status.textContent = "";
         }
-      }, REVERT_MS);
+      }, ok ? REVERT_MS : FAILED_REVERT_MS);
+
+      button.dataset.copyRevert = String(revert);
     });
   });
 }

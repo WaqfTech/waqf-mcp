@@ -16,6 +16,7 @@
   },
   "common": {
     "copied": "Disalin!",
+    "copy_failed": "Gagal menyalin",
     "announcement_label": "Pengumuman"
   },
   "announcement": {
@@ -179,7 +180,7 @@
     "subtitle": "Angka yang diterbitkan oleh gerbang dan sumber bersambung, supaya anda boleh mengukur permintaan tanpa kejutan.",
     "gateway_heading": "Gerbang",
     "upstream_heading": "Dasar Sumber Bersambung",
-    "rate_limit_note": "Had penggunaan wajar yang diterbitkan untuk gerbang, dilaksanakan melalui perlindungan Cloudflare.",
+    "rate_limit_note": "Had penggunaan wajar yang diterbitkan untuk gerbang: dasar terdokumentasi, tidak dikuatkuasakan dalam kod.",
     "languages_note": "Hanya untuk pautan yang dikembalikan; teks kitab tidak diterjemah.",
     "upstream_note": "Angka di atas ialah dasar yang diterbitkan oleh {provider} dan boleh berubah di sumbernya.",
     "row_gateway_rate_limit": "Permintaan setiap IP (permintaan/minit)",

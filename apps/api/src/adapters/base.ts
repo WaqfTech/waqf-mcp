@@ -12,6 +12,7 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
   public readonly baseUrl: string;
   public readonly description: string;
   public readonly transport: TransportProtocol;
+  public readonly cacheTtlSeconds?: number;
   protected readonly timeoutMs: number;
   protected readonly defaultHeaders: Record<string, string>;
 
@@ -22,6 +23,7 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
     this.baseUrl = config.baseUrl.replace(/\/+$/, "");
     this.description = config.description;
     this.transport = config.transport;
+    this.cacheTtlSeconds = config.cacheTtlSeconds;
     this.timeoutMs = config.timeoutMs ?? 8000;
     this.defaultHeaders = {
       "Content-Type": "application/json",

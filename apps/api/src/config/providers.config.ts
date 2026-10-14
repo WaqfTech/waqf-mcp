@@ -1,49 +1,23 @@
+import { PROVIDER_CATALOG } from "@waqf/types";
 import type { ProviderConfig } from "@waqf/types";
 
-export const UPSTREAM_PROVIDERS: ProviderConfig[] = [
-  {
-    id: "bahouth",
-    name: "Bahouth Quran & Tafsir",
-    baseUrl: "https://bahouth.tafsir.net/mcp",
-    transport: "json-rpc",
-    description: "Quranic text analysis, roots, morphology, and verse topics.",
-    timeoutMs: 8000,
-    enabled: true,
-  },
-  {
-    id: "tafsir_net",
-    name: "Tafsir.net Specialized Suite",
-    baseUrl: "https://mcp.tafsir.net/mcp",
-    transport: "sse",
-    description: "Authentic Quran Tafsir sources, Qira'at variants, and Nuzool context.",
-    timeoutMs: 8000,
-    enabled: true,
-  },
-  {
-    id: "turath",
-    name: "Turath Islamic Heritage Library",
-    baseUrl: "https://mcp.turath.io/mcp/",
-    transport: "json-rpc",
-    description: "Full-text search and pages across thousands of classical Islamic books.",
-    timeoutMs: 8000,
-    enabled: true,
-  },
-  {
-    id: "maheralfahel",
-    name: "Sheikh Maher Al-Fahel Scholarly Library",
-    baseUrl: "https://maheralfahel.net/mcp/",
-    transport: "sse",
-    description: "Specialized Hadith critique, books, media, and scholarly publications.",
-    timeoutMs: 8000,
-    enabled: true,
-  },
-  {
-    id: "fihris",
-    name: "Fihris Islamic Web Search",
-    baseUrl: "https://search.waqf.app/api/mcp",
-    transport: "json-rpc",
-    description: "Curated Google Custom Search across 38+ authentic Islamic scholarship portals.",
-    timeoutMs: 10000,
-    enabled: true,
-  },
-];
+/**
+ * Upstream MCP servers the gateway federates.
+ *
+ * Derived from PROVIDER_CATALOG in @waqf/types so the gateway, the landing page
+ * and the published llms artifacts cannot drift apart. To federate a new server,
+ * add it to that catalog (and use scripts/probe-provider.mjs to capture its real
+ * tools/list surface first).
+ */
+export const UPSTREAM_PROVIDERS: ProviderConfig[] = PROVIDER_CATALOG.filter(
+  (entry) => entry.enabled
+).map((entry) => ({
+  id: entry.id,
+  name: entry.displayName,
+  baseUrl: entry.upstreamUrl,
+  transport: entry.upstreamTransport,
+  description: entry.summary,
+  timeoutMs: entry.timeoutMs,
+  cacheTtlSeconds: entry.cacheTtlSeconds,
+  enabled: entry.enabled,
+}));

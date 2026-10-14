@@ -8,25 +8,31 @@
     "brand": "Islamic Sources",
     "servers": "Pelayan Tersambung",
     "setup": "Panduan Konfigurasi",
+    "limits": "Had Penggunaan",
     "submit": "Hantar Pelayan",
+    "faq": "Soalan Lazim",
     "docs": "Dokumentasi",
     "lang_label": "Bahasa"
+  },
+  "common": {
+    "copied": "Disalin!",
+    "announcement_label": "Pengumuman"
   },
   "announcement": {
     "text": "@IslamicSources — Gerbang Model Context Protocol (MCP) Islam Bersepadu"
   },
   "hero": {
-    "eyebrow": "@ISLAMICSOURCES / 01",
+    "eyebrow": "@ISLAMICSOURCES",
     "title_html": "Semua Sumber Ilmu Islam, dalam <em>Satu Antara Muka.</em>",
     "lede": "Hentikan kerumitan menguruskan puluhan pelayan berasingan. Sambungkan @IslamicSources sekali sahaja ke Gemini, Claude Desktop, Cursor, atau Antigravity. Sebagai agregator neutral, kami menyampaikan maklum balas secara verbatim tanpa ubah suai, disediakan 'seadanya' (as is).",
     "cta_copy": "Salin Konfigurasi Pelayan ←",
     "cta_explore": "Terokai Alatan",
     "note_badge": "EDGE NATIVE",
     "note_text": "Dikuasakan oleh Cloudflare Workers tanpa pemasangan tempatan",
-    "stats_tools": "38+ Alatan",
-    "stats_resources": "4 Katalog",
-    "stats_prompts": "5 Templat Kajian",
-    "stats_servers": "5 Pelayan Disahkan",
+    "stats_tools": "Alatan",
+    "stats_resources": "Katalog",
+    "stats_prompts": "Templat Kajian",
+    "stats_servers": "Pelayan Disahkan",
     "disclaimer_badge": "AGREGATOR TULIN",
     "disclaimer_text": "@IslamicSources beroperasi semata-mata sebagai agregator. Kami tidak menambah, menyunting, atau mengubah maklum balas daripada sumber Islam asal; perkhidmatan ini disediakan seadanya ('as is')."
   },
@@ -42,8 +48,24 @@
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
     "footer_right": "Wakaf Digital Berkekalan"
   },
+  "connect": {
+    "eyebrow": "Satu Pautan untuk Bersambung",
+    "title": "Sambung Sekali, Kemudian Bertanya dengan Cara Anda.",
+    "subtitle": "Satu URL untuk semua pelayan tersambung. Baca-sahaja, dan tiada akaun atau kunci API diperlukan pada sumbernya.",
+    "url_label": "URL Sambungan",
+    "copy_url": "Salin URL",
+    "meta_connection_label": "Jenis sambungan",
+    "meta_auth_label": "Pengesahan",
+    "auth_value": "Tidak diperlukan",
+    "beat1_title": "Cari sumbernya",
+    "beat1_desc": "Cari judul, matan, karya seorang penulis, atau topik, kemudian pilih yang wajar dibaca.",
+    "beat2_title": "Baca dalam konteksnya",
+    "beat2_desc": "Minta pembantu membaca petikan itu bersama halaman sekelilingnya sebelum menjelaskan, bukan petikannya sahaja.",
+    "beat3_title": "Simpan rujukannya",
+    "beat3_desc": "Dapatkan kitab, penulis, nombor halaman dan pautan sumber terus, supaya setiap ayat kekal boleh diperiksa."
+  },
   "servers": {
-    "eyebrow": "Pelayan Tersambung / 02",
+    "eyebrow": "Pelayan Tersambung",
     "title": "Sumber Sahih dalam Satu Portfolio.",
     "subtitle": "Menghubungkan inisiatif perisian Islam terkemuka di bawah satu ruang nama yang serasi.",
     "filter_all": "Semua Pelayan",
@@ -86,13 +108,19 @@
         "title": "Carian Web Islam Fihris",
         "subtitle": "Portal Ilmiah Terindeks",
         "desc": "Enjin carian khusus yang mengindeks lebih 38 portal ilmiah disahkan dan institusi fiqah rasmi."
+      },
+      "aljam3": {
+        "title": "Perpustakaan Kitab Islam Aljam3",
+        "subtitle": "Membaca Sumber dalam Konteks",
+        "desc": "Akses baca-sahaja ke perpustakaan digital kitab Islam yang luas: cari dalam matan, buka kitab dan failnya, lalu baca halaman dalam konteks bersama penulis, perpustakaan sumber dan pautan terus ke sumber."
       }
     }
   },
   "config": {
-    "eyebrow": "Panduan Pantas / 03",
+    "eyebrow": "Panduan Pantas",
     "title": "Sediakan Pembantu AI Anda dalam Satu Minit.",
     "subtitle": "Pilih aplikasi AI atau pembantu web pilihan anda dan ikuti langkah mudah berikut.",
+    "group_switcher_label": "Kaedah penyediaan",
     "group_web": "Pembantu Web",
     "group_ide": "Desktop & IDE",
     "group_code": "SDK & API Pembangun",
@@ -114,6 +142,14 @@
     "server_url_label": "URL Pelayan Remote",
     "web_guide_title": "Langkah Penyediaan",
     "open_setup_page": "Buka Halaman Penyediaan ↗",
+    "guides_title": "Panduan Rasmi",
+    "guide_claude": "Menambah penyambung tersuai dalam Claude",
+    "guide_chatgpt": "Panduan plugin ChatGPT",
+    "guide_gemini": "Halaman aplikasi bersambung Gemini",
+    "caveats_title": "Sebelum Menyambung",
+    "caveat_claude": "Akaun percuma membenarkan satu penyambung tersuai; pada pelan Team dan Enterprise, pemilik menambahnya dahulu.",
+    "caveat_chatgpt": "Ketersediaan plugin bergantung pada akaun dan kebenaran ruang kerja anda.",
+    "caveat_gemini": "Aplikasi tersuai ditambah dari halaman aplikasi bersambung pada akaun anda.",
     "claude_web_steps": [
       "Buka https://claude.ai/new#customize/connectors (atau navigasi ke Settings → Connectors).",
       "Klik butang 'Add custom connector'.",
@@ -137,8 +173,43 @@
     ],
     "config_note": "Petua: Gunakan '?suite=core' untuk memaparkan alatan asas sahaja dan menjimatkan token konteks."
   },
+  "limits": {
+    "eyebrow": "Had Penggunaan",
+    "title": "Had Jelas Sebelum Anda Bermula.",
+    "subtitle": "Angka yang diterbitkan oleh gerbang dan sumber bersambung, supaya anda boleh mengukur permintaan tanpa kejutan.",
+    "gateway_heading": "Gerbang",
+    "upstream_heading": "Dasar Sumber Bersambung",
+    "rate_limit_note": "Had penggunaan wajar yang diterbitkan untuk gerbang, dilaksanakan melalui perlindungan Cloudflare.",
+    "languages_note": "Hanya untuk pautan yang dikembalikan; teks kitab tidak diterjemah.",
+    "upstream_note": "Angka di atas ialah dasar yang diterbitkan oleh {provider} dan boleh berubah di sumbernya.",
+    "row_gateway_rate_limit": "Permintaan setiap IP (permintaan/minit)",
+    "row_gateway_body_cap": "Saiz maksimum badan permintaan (MB)",
+    "row_upstream_query_chars": "Panjang maksimum carian (aksara)",
+    "row_upstream_list_page": "Hasil senarai setiap halaman (lalai / maksimum)",
+    "row_upstream_excerpt_chars": "Panjang maksimum petikan (aksara)",
+    "row_upstream_page_text_chars": "Teks halaman yang dikembalikan (lalai / maksimum, aksara)",
+    "row_upstream_rate_limit": "Permintaan setiap IP (permintaan/minit)",
+    "row_upstream_retry": "Masa menunggu selepas had dicapai (saat)",
+    "row_upstream_languages": "Bahasa pautan yang disokong"
+  },
+  "prompts": {
+    "eyebrow": "Soalan Sedia Ada",
+    "title": "Mulakan dengan Soalan, Biar Pembantu Membaca Sumbernya.",
+    "subtitle": "Tampal salah satu ke dalam sembang anda, dan sebut gerbang sebelum soalan.",
+    "tools_hint": "Alatan digunakan",
+    "copy_prompt": "Salin Soalan",
+    "card1_title": "Mengkaji teks tentang niat",
+    "card1_body": "Cari di Aljam3 teks tentang niat dalam ibadah. Baca halaman sekeliling, jelaskan teks dengan mudah, dan sebut kitab, penulis dan nombor halaman bersama pautan sumber.",
+    "card2_title": "Memilih kitab untuk dikaji",
+    "card2_body": "Cari kitab usul fiqh di Aljam3. Tunjukkan penulis dan perpustakaan sumbernya, kemudian bantu saya memilih bahagian untuk dikaji bersama rujukannya.",
+    "card3_title": "Mengesahkan petikan",
+    "card3_body": "Periksa petikan penting terhadap PDF. Teks hasil ekstraksi mungkin mengandungi kesilapan, dan nombor halaman fail boleh berbeza daripada nombor cetakan. Pisahkan penjelasan anda daripada kata-kata penulis.",
+    "caveat_ocr": "Teks hasil ekstraksi automatik mungkin mengandungi kesilapan; sahkan petikan penting pada PDF asal.",
+    "caveat_pagination": "Nombor halaman merujuk fail digital dan boleh berbeza daripada edisi cetakan.",
+    "caveat_attribution": "Pisahkan penjelasan pembantu daripada kata-kata penulis, dan sebut kitab, penulis, halaman serta pautan sumber."
+  },
   "submit": {
-    "eyebrow": "Inisiatif Komuniti / 04",
+    "eyebrow": "Inisiatif Komuniti",
     "title": "Membangunkan Pelayan MCP Islam?",
     "subtitle": "Hantarkan pelayan anda agar dapat dimanfaatkan oleh pembangun dan model AI seluruh dunia sebagai wakaf digital.",
     "form_name": "Nama Anda atau Organisasi",
@@ -159,7 +230,7 @@
     "form_error": "Ralat berlaku semasa menghantar. Sila semak maklumat anda dan cuba lagi."
   },
   "faq": {
-    "eyebrow": "Soalan Lazim / 05",
+    "eyebrow": "Soalan Lazim",
     "title": "Soalan Kerap Ditanya",
     "q1": "Mengapa menggunakan mcp.waqf.dev berbanding menambah setiap pelayan secara individu?",
     "a1": "Satu konfigurasi mengelakkan pengurusan lebih 10 pelayan, mencegah pertembungan nama alatan, menyimpan teks sahih dalam cache pinggir, dan menjimatkan token prompt AI anda.",
@@ -170,7 +241,7 @@
     "q4": "Adakah @IslamicSources menambah, menyunting, atau mengubah maklum balas daripada sumber Islam?",
     "a4": "Sama sekali tidak. @IslamicSources berfungsi semata-mata sebagai agregator dan gerbang neutral. Kami tidak menambah, menyunting, menapis, atau mengubah maklum balas yang diterima daripada penyedia sumber Islam; semua teks disampaikan secara verbatim dan perkhidmatan ini disediakan 'seadanya' (as is) tanpa jaminan.",
     "q5": "Adakah gerbang menyokong MCP Resources dan Prompts selain Tools?",
-    "a5": "Ya. Gerbang menyediakan liputan protokol MCP 100% lengkap. Selain 38+ alatan khusus, ia menggabungkan sumber katalog langsung (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) dan 5 templat prompt piawai untuk kajian ayat dengan caching tepi Cloudflare D1."
+    "a5": "Ya. Gerbang menyediakan liputan protokol MCP secara lengkap. Selain alatan khusus yang bersambung, ia menggabungkan sumber katalog langsung (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) dan templat prompt piawai untuk kajian ayat dengan caching tepi Cloudflare D1."
   },
   "footer": {
     "brand_desc": "Wakaf digital yang membina aset teknikal terbuka dan menyelenggarakannya untuk manfaat berterusan.",

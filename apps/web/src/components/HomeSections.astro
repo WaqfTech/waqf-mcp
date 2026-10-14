@@ -1,0 +1,28 @@
+---
+import { getTranslations } from "../lib/i18n";
+import HeroSection from "./HeroSection.astro";
+import ConnectSection from "./ConnectSection.astro";
+import ServersSection from "./ServersSection.astro";
+import ConfigSection from "./ConfigSection.astro";
+import LimitsSection from "./LimitsSection.astro";
+import PromptsSection from "./PromptsSection.astro";
+import SubmitForm from "./SubmitForm.astro";
+import FaqSection from "./FaqSection.astro";
+
+interface Props {
+  lang?: string;
+}
+
+const { lang = "ar" } = Astro.props;
+const t = getTranslations(lang);
+---
+
+<!-- Section order mirrors SECTION_SEQUENCE in @waqf/types; each section prints its own ordinal. -->
+<HeroSection t={t} />
+<ConnectSection t={t} />
+<ServersSection t={t} lang={lang} />
+<ConfigSection t={t} />
+<LimitsSection t={t} />
+<PromptsSection t={t} />
+<SubmitForm t={t} />
+<FaqSection t={t} />

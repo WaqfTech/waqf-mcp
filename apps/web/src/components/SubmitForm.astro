@@ -1,4 +1,5 @@
 ---
+import { sectionNumber } from "@waqf/types";
 import type { getTranslations } from "../lib/i18n";
 
 interface Props {
@@ -12,7 +13,7 @@ const { t } = Astro.props;
   <div class="shell">
     <div class="section-header">
       <div>
-        <div class="eyebrow">{t.submit.eyebrow}</div>
+        <div class="eyebrow">{t.submit.eyebrow} / {sectionNumber("submit")}</div>
         <h2>{t.submit.title}</h2>
       </div>
       <p class="section-desc">{t.submit.subtitle}</p>

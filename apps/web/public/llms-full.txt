@@ -42,11 +42,13 @@ User-Agent: MyAgentName/1.0 (+https://example.com)
 To prevent prompt context window exhaustion, append the `?suite=` parameter to the MCP endpoint:
 
 ### A. `?suite=core` (Recommended for AI Agents)
-Exposes only the 4 canonical, high-level normalized tools. Context overhead: ~1,200 tokens.
+Exposes only the 6 canonical, high-level normalized tools. Context overhead: ~1,400 tokens.
 - `waqf_quran_get_ayah`
 - `waqf_hadith_search`
 - `waqf_turath_search_books`
 - `waqf_search_scholarship`
+- `waqf_books_search`
+- `waqf_books_read_page`
 
 ### B. `?suite=quran`
 Exposes Quranic, Tafsir, linguistic, and morphological tools from **Bahouth** and **Tafsir.net**.
@@ -55,10 +57,11 @@ Exposes Quranic, Tafsir, linguistic, and morphological tools from **Bahouth** an
 - Tafsir.net: `tafsir_net__*` (17 tools)
 
 ### C. `?suite=turath`
-Exposes classical Hadith collections, Islamic heritage libraries, and scholarly verification tools from **Turath** and **Sheikh Maher Al-Fahel**.
-- Canonical: `waqf_hadith_search`, `waqf_turath_search_books`
+Exposes classical Hadith collections, Islamic heritage libraries, the Aljam3 books corpus, and scholarly verification tools from **Turath**, **Sheikh Maher Al-Fahel** and **Aljam3**.
+- Canonical: `waqf_hadith_search`, `waqf_turath_search_books`, `waqf_books_search`, `waqf_books_read_page`
 - Turath: `turath__*` (5 tools)
 - Maher Al-Fahel: `maheralfahel__*` (5 tools)
+- Aljam3: `aljam3__*` (7 tools)
 
 ### D. `?suite=search`
 Exposes verified academic web search across 38+ authentic Islamic portals from **Fihris**.
@@ -66,7 +69,7 @@ Exposes verified academic web search across 38+ authentic Islamic portals from *
 - Fihris: `fihris__*` (2 tools)
 
 ### E. Default (`?suite=all` or omitted)
-Exposes all 42 tools across all 5 federated providers.
+Exposes all 51 tools across all 6 federated providers.
 
 ---
 
@@ -183,6 +186,52 @@ Search across 38+ authentic Islamic scholarship portals (fatwas, research, class
   }
   ```
 
+#### `waqf_books_search`
+Search inside the full text of classical Islamic books (the Aljam3 corpus) and return short matching passages with book, author, file and page metadata plus a direct link to the source.
+- **Input Schema**:
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Search terms, usually in Arabic; a quoted phrase searches for that exact phrase"
+      },
+      "page": {
+        "type": "number",
+        "description": "Result page to return (default: 1, max: 100)"
+      },
+      "limit": {
+        "type": "number",
+        "description": "Number of passages per result page (default: 10, max: 20)"
+      },
+      "bookId": { "type": "number", "description": "Restrict to one book" },
+      "authorId": { "type": "number", "description": "Restrict to one author" },
+      "categoryId": { "type": "number", "description": "Restrict to one subject" },
+      "libraryId": { "type": "number", "description": "Restrict to one source collection" },
+      "locale": { "type": "string", "enum": ["ar", "ur", "en"], "description": "Language of the returned links" }
+    },
+    "required": ["query"]
+  }
+  ```
+
+#### `waqf_books_read_page`
+Read one exact page of a digitized book in context, with citation metadata, a PDF link and neighbouring page numbers. Long pages are chunked: repeat with the returned next offset to continue.
+- **Input Schema**:
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "fileId": { "type": "number", "description": "Book file ID, from waqf_books_search" },
+      "pageNumber": { "type": "number", "description": "Page number within that file" },
+      "offset": { "type": "number", "description": "Character offset to continue from (default: 0)" },
+      "maxChars": { "type": "number", "description": "Maximum characters of page text (default: 6000, max: 12000)" },
+      "locale": { "type": "string", "enum": ["ar", "ur", "en"], "description": "Language of the returned links" }
+    },
+    "required": ["fileId", "pageNumber"]
+  }
+  ```
+
 ---
 
 ### Group 2: Tafsir Center for Quranic Studies (`tafsir_net__*`)
@@ -265,6 +314,21 @@ Upstream: `https://search.waqf.app/api/mcp` (JSON-RPC)
 
 1. `fihris__search_islamic_sources`: Search across 38+ vetted Islamic scholarship portals (e.g. Alukah, Dorar, IslamQA, Bin Baz, Ibn Uthaymeen, Majallat al-Buhuth).
 2. `fihris__list_indexed_sources`: List all 38+ indexed scholar websites, institutions, and portals.
+
+---
+
+### Group 7: Aljam3 Islamic Books Library (`aljam3__*`)
+Upstream: `https://aljam3.com/mcp` (JSON-RPC, read-only, no authentication)
+
+1. `aljam3__search`: Search the text of public books by topic, phrase or quotation; combines book, author, subject and library filters and returns excerpts with source metadata and exact page URLs.
+2. `aljam3__list_books`: Browse public books or search their titles, filtered by author, subject or source library.
+3. `aljam3__get_book`: Book metadata plus a paginated list of its files in reading order with PDF/TXT/DOCX downloads and first page numbers.
+4. `aljam3__get_page`: Read the stored text of an exact page (`file_id`, `page_number`) with citation metadata, a PDF page link and adjacent page numbers; long text is chunked, repeat with `offset` to continue.
+5. `aljam3__list_authors`: Browse or search authors and their IDs.
+6. `aljam3__list_categories`: Browse or search subject categories.
+7. `aljam3__list_libraries`: List the source collections available in Aljam3.
+
+Notes: page numbers refer to the digitized file, not necessarily the printed edition; extracted text may contain OCR errors, so verify important quotations against the PDF. Canonical entry points: `waqf_books_search` and `waqf_books_read_page`.
 
 ---
 

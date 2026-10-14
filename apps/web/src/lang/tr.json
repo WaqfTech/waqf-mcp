@@ -8,25 +8,31 @@
     "brand": "Islamic Sources",
     "servers": "Bağlı Sunucular",
     "setup": "Kurulum",
+    "limits": "Kullanım Sınırları",
     "submit": "Sunucu Ekle",
+    "faq": "SSS",
     "docs": "Belgeler",
     "lang_label": "Dil"
+  },
+  "common": {
+    "copied": "Kopyalandı!",
+    "announcement_label": "Duyuru"
   },
   "announcement": {
     "text": "@IslamicSources — Birleşik İslami Model Context Protocol (MCP) Ağ Geçidi"
   },
   "hero": {
-    "eyebrow": "@ISLAMICSOURCES / 01",
+    "eyebrow": "@ISLAMICSOURCES",
     "title_html": "Tüm İslami Bilgi Kaynakları, <em>Tek Bir Arayüzde.</em>",
     "lede": "Onlarca farklı sunucuyu ayrı ayrı eklemekle uğraşmayın. @IslamicSources bağlantısını Gemini, Claude, Cursor veya Antigravity'ye bir kez bağlayın. Tarafsız bir toplayıcı olarak kaynaklardan gelen yanıtları hiçbir değişiklik yapmadan kelimesi kelimesine aktarırız ve hizmet olduğu gibi ('as is') sağlanır.",
     "cta_copy": "Sunucu Ayarını Kopyala ←",
     "cta_explore": "Araçları İncele",
     "note_badge": "EDGE NATIVE",
     "note_text": "Cloudflare Workers ile yerel kuruluma gerek olmadan çalışır",
-    "stats_tools": "38+ Araç",
-    "stats_resources": "4 Katalog",
-    "stats_prompts": "5 Çalışma Şablonu",
-    "stats_servers": "5 Doğrulanmış Sunucu",
+    "stats_tools": "Araç",
+    "stats_resources": "Katalog",
+    "stats_prompts": "Çalışma Şablonu",
+    "stats_servers": "Doğrulanmış Sunucu",
     "disclaimer_badge": "MÜDAHALESİZ TOPLAYICI",
     "disclaimer_text": "@IslamicSources yalnızca bir toplayıcı olarak çalışır. Kaynaklardan gelen yanıtları asla eklemez, düzenlemez veya değiştirmeyiz; tüm içerik olduğu gibi ('as is') aktarılır."
   },
@@ -42,8 +48,24 @@
     "footer_left": "PROTOKOL: MCP STREAMABLE HTTP",
     "footer_right": "Kalıcı Dijital Vakıf"
   },
+  "connect": {
+    "eyebrow": "Bağlanmak İçin Tek Bağlantı",
+    "title": "Bir Kez Bağlanın, Sonra Kendi Üslubunuzla Sorun.",
+    "subtitle": "Tüm bağlı sunucular için tek URL. Salt okunur; kaynaklarda hesap veya API anahtarı gerekmez.",
+    "url_label": "Bağlantı URL'si",
+    "copy_url": "URL'yi Kopyala",
+    "meta_connection_label": "Bağlantı türü",
+    "meta_auth_label": "Kimlik doğrulama",
+    "auth_value": "Gerekmiyor",
+    "beat1_title": "Kaynağı bulun",
+    "beat1_desc": "Başlıklarda, metinlerde, bir yazarın eserlerinde veya bir konuda arama yapın; okumaya değer olanı seçin.",
+    "beat2_title": "Metni bağlamında okuyun",
+    "beat2_desc": "Asistandan yalnızca alıntıyı değil, pasajı ve çevresindeki sayfaları okumasını isteyin.",
+    "beat3_title": "Referansı koruyun",
+    "beat3_desc": "Kitap, yazar, sayfa numarası ve doğrudan kaynak bağlantısı; böylece her cümle denetlenebilir kalır."
+  },
   "servers": {
-    "eyebrow": "Bağlı Sunucular / 02",
+    "eyebrow": "Bağlı Sunucular",
     "title": "Tek Bir Portföyde Güvenilir Kaynaklar.",
     "subtitle": "Önde gelen İslami yazılım girişimlerini tek bir ad alanında birleştiriyoruz.",
     "filter_all": "Tüm Sunucular",
@@ -86,13 +108,19 @@
         "title": "Fihris İslami Web Arama",
         "subtitle": "İndekslenmiş İlim Portalları",
         "desc": "38'den fazla doğrulanmış ilim portalını ve resmi fıkıh kurumunu indeksleyen özel arama motoru."
+      },
+      "aljam3": {
+        "title": "Aljam3 İslami Kitap Kütüphanesi",
+        "subtitle": "Kaynağı Bağlamında Okuma",
+        "desc": "Geniş bir dijital İslami kitap kütüphanesine salt okunur erişim: metinlerde arama yapın, kitabı ve dosyalarını açın, sayfayı yazarı, kaynak kütüphanesi ve doğrudan kaynak bağlantısıyla bağlamında okuyun."
       }
     }
   },
   "config": {
-    "eyebrow": "Kurulum / 03",
+    "eyebrow": "Kurulum",
     "title": "Yapay Zeka Asistanınızı Bir Dakikada Yapılandırın.",
     "subtitle": "Kullandığınız aracı veya web asistanını seçin ve kolay kurulum adımlarını izleyin.",
+    "group_switcher_label": "Kurulum yöntemi",
     "group_web": "Web Asistanları",
     "group_ide": "Geliştirici IDE'leri",
     "group_code": "Geliştirici SDK & API",
@@ -114,6 +142,14 @@
     "server_url_label": "Uzak Sunucu URL'si",
     "web_guide_title": "Kurulum Adımları",
     "open_setup_page": "Doğrudan Kurulum Sayfasını Aç ↗",
+    "guides_title": "Resmî Kılavuzlar",
+    "guide_claude": "Claude'da özel bağlayıcı ekleme",
+    "guide_chatgpt": "ChatGPT eklenti kılavuzu",
+    "guide_gemini": "Gemini bağlı uygulamalar sayfası",
+    "caveats_title": "Bağlanmadan Önce",
+    "caveat_claude": "Ücretsiz hesap tek bir özel bağlayıcıya izin verir; Team ve Enterprise planlarında önce bir yönetici ekler.",
+    "caveat_chatgpt": "Eklenti kullanılabilirliği hesabınıza ve çalışma alanı izinlerinize bağlıdır.",
+    "caveat_gemini": "Özel uygulamalar, hesabınızın bağlı uygulamalar sayfasından eklenir.",
     "claude_web_steps": [
       "https://claude.ai/new#customize/connectors bağlantısını açın (veya Ayarlar → Connectors bölümüne gidin).",
       "'Add custom connector' butonuna tıklayın.",
@@ -137,8 +173,43 @@
     ],
     "config_note": "İpucu: Yalnızca temel birleşik araçları görmek ve token tasarrufu sağlamak için '?suite=core' kullanabilirsiniz."
   },
+  "limits": {
+    "eyebrow": "Kullanım Sınırları",
+    "title": "Başlamadan Önce Net Sınırlar.",
+    "subtitle": "Ağ geçidinden ve bağlı kaynaklardan yayımlanmış değerler; isteklerinizi buna göre ölçekleyin.",
+    "gateway_heading": "Ağ Geçidi",
+    "upstream_heading": "Bağlı Kaynak Politikası",
+    "rate_limit_note": "Ağ geçidi için yayımlanmış adil kullanım sınırı; Cloudflare korumasıyla uygulanır.",
+    "languages_note": "Yalnızca döndürülen bağlantılar için geçerlidir; kitap metni çevrilmez.",
+    "upstream_note": "Yukarıdaki değerler {provider} tarafından yayımlanan politikadır ve kaynağında değişebilir.",
+    "row_gateway_rate_limit": "IP başına istek (istek/dk)",
+    "row_gateway_body_cap": "En büyük istek gövdesi (MB)",
+    "row_upstream_query_chars": "En uzun arama sorgusu (karakter)",
+    "row_upstream_list_page": "Sayfa başına liste sonucu (varsayılan / en çok)",
+    "row_upstream_excerpt_chars": "En uzun alıntı (karakter)",
+    "row_upstream_page_text_chars": "Dönen sayfa metni (varsayılan / en çok, karakter)",
+    "row_upstream_rate_limit": "IP başına istek (istek/dk)",
+    "row_upstream_retry": "Sınır aşılınca bekleme (saniye)",
+    "row_upstream_languages": "Desteklenen bağlantı dilleri"
+  },
+  "prompts": {
+    "eyebrow": "Hazır Sorular",
+    "title": "Bir Soruyla Başlayın, Kaynağı Asistan Okusun.",
+    "subtitle": "Birini sohbetinize yapıştırın ve sorunuzdan önce ağ geçidini adıyla anın.",
+    "tools_hint": "Kullanılan araçlar",
+    "copy_prompt": "Soruyu Kopyala",
+    "card1_title": "Niyet konusunda bir metin çalışması",
+    "card1_body": "Aljam3'te ibadette niyet hakkındaki metinleri arayın. Çevre sayfaları okuyun, metni sade biçimde açıklayın ve kitap, yazar, sayfa numarası ile kaynak bağlantısını belirtin.",
+    "card2_title": "Çalışmak için kitap seçimi",
+    "card2_body": "Aljam3'te fıkıh usulü kitaplarını arayın. Yazarlarını ve kaynak kütüphanelerini gösterin, sonra referanslarıyla birlikte çalışacak bir bölüm seçmeme yardım edin.",
+    "card3_title": "Alıntıyı doğrulama",
+    "card3_body": "Önemli alıntıları PDF ile karşılaştırın. Çıkarılan metin hatalar içerebilir ve dosya sayfa numaraları basılı numaralardan farklı olabilir. Açıklamanızı yazarın sözlerinden ayrı tutun.",
+    "caveat_ocr": "Otomatik çıkarılan metin hatalar içerebilir; önemli alıntıları özgün PDF'ten doğrulayın.",
+    "caveat_pagination": "Sayfa numaraları dijital dosyaya aittir ve basılı baskıdan farklı olabilir.",
+    "caveat_attribution": "Asistanın açıklamasını yazarın sözlerinden ayırın; kitap, yazar, sayfa ve kaynak bağlantısını belirtin."
+  },
   "submit": {
-    "eyebrow": "Topluluk Girişimi / 04",
+    "eyebrow": "Topluluk Girişimi",
     "title": "İslami bir MCP Sunucusu mu Geliştirdiniz?",
     "subtitle": "Sunucunuzu ekleyin; dünya çapındaki geliştiricilerin ve yapay zeka modellerinin kullanımına açılsın.",
     "form_name": "Adınız veya Kuruluşunuz",
@@ -159,7 +230,7 @@
     "form_error": "Gönderim sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin."
   },
   "faq": {
-    "eyebrow": "SSS / 05",
+    "eyebrow": "SSS",
     "title": "Sıkça Sorulan Sorular",
     "q1": "Neden her sunucuyu ayrı eklemek yerine mcp.waqf.dev kullanmalıyım?",
     "a1": "Tek bir yapılandırma ile 10'dan fazla sunucuyu yönetme zahmetinden kurtulur, araç adı çakışmalarını önler ve hızlı uç önbellekten yararlanırsınız.",
@@ -170,7 +241,7 @@
     "q4": "İslami kaynaklardan gelen yanıtlara ekleme, düzenleme veya değişiklik yapıyor musunuz?",
     "a4": "Kesinlikle hayır. @IslamicSources yalnızca bir toplayıcı ve tarafsız ağ geçididir. Bağlı İslami sağlayıcılardan gelen hiçbir metni veya cevabı değiştirmez, ekleme yapmaz ve düzenlemeyiz; tüm veriler kelimesi kelimesine aktarılır ve hizmet olduğu gibi ('as is') sağlanır.",
     "q5": "Ağ geçidi Araçlara (Tools) ek olarak MCP Kaynaklarını (Resources) ve İstek Şablonlarını (Prompts) destekliyor mu?",
-    "a5": "Evet. Ağ geçidi %100 tam MCP protokol uyumu sunar. 38'den fazla araca ek olarak doğrudan katalog kaynaklarını (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) ve Cloudflare D1 önbelleklemesiyle ayet inceleme için 5 hazır şablonu (study_ayah, compare_tafsirs vb.) birleştirir."
+    "a5": "Evet. Ağ geçidi tam MCP protokol uyumu sunar. Bağlı uzmanlaşmış araçların yanı sıra doğrudan katalog kaynaklarını (quran://surahs, quran://tafsirs, quran://sciences, quran://schema) ve Cloudflare D1 önbelleklemesiyle ayet inceleme için hazır istek şablonlarını birleştirir."
   },
   "footer": {
     "brand_desc": "Açık teknik varlıklar inşa eden ve bunları kalıcı fayda için koruyan dijital bir vakıf.",

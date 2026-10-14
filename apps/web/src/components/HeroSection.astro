@@ -1,4 +1,11 @@
 ---
+import {
+  CATALOG_PROMPT_COUNT,
+  CATALOG_RESOURCE_COUNT,
+  PROVIDER_COUNT,
+  TOTAL_PROVIDER_TOOL_COUNT,
+  sectionNumber,
+} from "@waqf/types";
 import type { getTranslations } from "../lib/i18n";
 
 interface Props {
@@ -11,7 +18,7 @@ const { t } = Astro.props;
 <section class="hero-section">
   <div class="shell hero-grid">
     <div class="hero-copy">
-      <div class="eyebrow">{t.hero.eyebrow}</div>
+      <div class="eyebrow">{t.hero.eyebrow} / {sectionNumber("hero")}</div>
       <h1 set:html={t.hero.title_html} />
       <p class="hero-lede">{t.hero.lede}</p>
 
@@ -22,19 +29,19 @@ const { t } = Astro.props;
 
       <div class="hero-stats-row">
         <div class="stat-pill">
-          <span class="stat-num">38+</span>
+          <span class="stat-num">{TOTAL_PROVIDER_TOOL_COUNT}</span>
           <span class="stat-text">{t.hero.stats_tools}</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-num">4</span>
+          <span class="stat-num">{CATALOG_RESOURCE_COUNT}</span>
           <span class="stat-text">{t.hero.stats_resources}</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-num">5</span>
+          <span class="stat-num">{CATALOG_PROMPT_COUNT}</span>
           <span class="stat-text">{t.hero.stats_prompts}</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-num">5</span>
+          <span class="stat-num">{PROVIDER_COUNT}</span>
           <span class="stat-text">{t.hero.stats_servers}</span>
         </div>
       </div>

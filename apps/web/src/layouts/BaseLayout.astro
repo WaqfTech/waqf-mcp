@@ -103,7 +103,7 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
         --paper: #eef5f2;
         --mist: #dbe9e4;
         --line: #b9cec7;
-        --tide: #2e7d76;
+        --tide: #2b746c;
         --lime: #c6ee67;
         --clay: #e6a37a;
         --white: #fbfdfc;
@@ -116,6 +116,20 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
 
       html {
         scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
 
       body {
@@ -249,6 +263,24 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
         color: var(--lime);
       }
 
+      /* Touch targets: header controls keep their visual size but get a 44px
+         hit area, per the mobile accessibility floor. Vertical-only expansion
+         so neighbouring targets never overlap. */
+      .brand,
+      nav a,
+      .lang-switcher a {
+        position: relative;
+      }
+
+      .brand::before,
+      nav a::before,
+      .lang-switcher a::before {
+        content: "";
+        position: absolute;
+        inset-block: -10px;
+        inset-inline: 0;
+      }
+
       /* Brutalist Buttons & Elements */
       .btn {
         display: inline-flex;
@@ -315,6 +347,14 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
         border-bottom: 1px solid rgba(238, 245, 242, 0.15);
       }
 
+      /* Footer links meet the 44px touch minimum without changing type size. */
+      .footer-grid a,
+      .footer-bottom a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+      }
+
       .footer-disclaimer {
         padding: 16px 0;
         border-bottom: 1px solid rgba(238, 245, 242, 0.15);
@@ -362,7 +402,7 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
     </style>
   </head>
   <body>
-    <div class="announcement">
+    <div class="announcement" role="region" aria-label={t.common.announcement_label}>
       <div class="shell">{t.announcement.text}</div>
     </div>
 
@@ -381,8 +421,9 @@ const siteName = lang === "ar" ? "المصادر الإسلامية (@IslamicSou
         <nav>
           <a href="#servers">{t.nav.servers}</a>
           <a href="#setup">{t.nav.setup}</a>
+          <a href="#limits">{t.nav.limits}</a>
           <a href="#submit">{t.nav.submit}</a>
-          <a href="#faq">FAQ</a>
+          <a href="#faq">{t.nav.faq}</a>
           <a class="nav-cta" href="#setup">{t.hero.cta_copy}</a>
 
           <div class="lang-switcher">

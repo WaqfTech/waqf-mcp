@@ -1,0 +1,88 @@
+---
+interface Props {
+  /** Literal text to copy. Ignored when `target` is set. */
+  value?: string;
+  /** CSS selector whose live text is copied on click (for panels that change). */
+  target?: string;
+  label: string;
+  copiedLabel: string;
+  variant?: "accent" | "outline";
+}
+
+const { value, target, label, copiedLabel, variant = "accent" } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={["copy-btn", `is-${variant}`]}
+  data-copy-value={target ? undefined : value}
+  data-copy-target={target}
+  data-copy-done-label={copiedLabel}
+>
+  <span class="copy-label">{label}</span>
+  <span class="copy-status" role="status" aria-live="polite"></span>
+</button>
+
+<script>
+  import "../lib/clipboard";
+</script>
+
+<style>
+  .copy-btn {
+    position: relative;
+    background: var(--lime);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 8px 16px;
+    font: 700 13px "Tajawal", sans-serif;
+    box-shadow: 3px 3px 0 var(--tide);
+    transition: transform 0.15s, background 0.15s, color 0.15s;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .copy-btn:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px;
+  }
+
+  /* 34px visual height, 46px hit area for touch */
+  .copy-btn::before {
+    content: "";
+    position: absolute;
+    inset-block: -6px;
+    inset-inline: 0;
+  }
+
+  .copy-btn.copied {
+    background: var(--tide);
+    color: var(--white);
+  }
+
+  .copy-btn.is-outline {
+    background: transparent;
+    color: var(--tide);
+    border-color: var(--tide);
+    box-shadow: none;
+  }
+
+  .copy-btn.is-outline.copied {
+    background: var(--tide);
+    color: var(--white);
+  }
+
+  .copy-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

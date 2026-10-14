@@ -1,3 +1,4 @@
+import type { UsageLimitKey } from "@waqf/types";
 import ar from "../lang/ar.json";
 import en from "../lang/en.json";
 import tr from "../lang/tr.json";
@@ -30,6 +31,23 @@ export function getTranslations(lang: string): typeof ar {
 export function getDir(lang: string): "rtl" | "ltr" {
   const normalized = (lang in LOCALES ? lang : "ar") as SupportedLocale;
   return LOCALES[normalized].dir;
+}
+
+/** Maps each published usage limit onto its localized label. */
+const USAGE_LIMIT_LABELS: Record<UsageLimitKey, keyof typeof ar["limits"]> = {
+  gateway_rate_limit: "row_gateway_rate_limit",
+  gateway_body_cap: "row_gateway_body_cap",
+  upstream_query_chars: "row_upstream_query_chars",
+  upstream_list_page: "row_upstream_list_page",
+  upstream_excerpt_chars: "row_upstream_excerpt_chars",
+  upstream_page_text_chars: "row_upstream_page_text_chars",
+  upstream_rate_limit: "row_upstream_rate_limit",
+  upstream_retry: "row_upstream_retry",
+  upstream_languages: "row_upstream_languages",
+};
+
+export function usageLimitLabel(t: typeof ar, key: UsageLimitKey): string {
+  return t.limits[USAGE_LIMIT_LABELS[key]];
 }
 
 export function formatToolsCount(count: number, lang: string, t: typeof ar): string {

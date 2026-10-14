@@ -31,13 +31,13 @@ Islamic Sources (@IslamicSources) federates independent Islamic MCP servers into
 
 ## Query Profiles (Agent Context Optimization)
 
-Loading 40+ tools into an LLM's system prompt consumes excessive context tokens. Waqf MCP supports targeted suites via the `?suite=` query parameter:
+Loading 50+ tools into an LLM's system prompt consumes excessive context tokens. Waqf MCP supports targeted suites via the `?suite=` query parameter:
 
-- `https://mcp.waqf.dev/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,200 tokens total).
+- `https://mcp.waqf.dev/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,400 tokens total).
 - `https://mcp.waqf.dev/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
-- `https://mcp.waqf.dev/mcp?suite=turath`: Exposes classical Islamic heritage books, Hadith critique, and scholarly libraries.
+- `https://mcp.waqf.dev/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, Hadith critique, and scholarly libraries.
 - `https://mcp.waqf.dev/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
-- `https://mcp.waqf.dev/mcp` (or `?suite=all`): Full federation suite with all 42 tools across all 5 providers.
+- `https://mcp.waqf.dev/mcp` (or `?suite=all`): Full federation suite with all 51 tools across all 6 providers.
 
 ## Federated Providers
 
@@ -58,6 +58,9 @@ Loading 40+ tools into an LLM's system prompt consumes excessive context tokens.
 5. **Fihris Islamic Web Search** (`fihris`):
    - Host: `https://search.waqf.app/api/mcp` (JSON-RPC)
    - Scope: Curated Google Custom Search across 38+ authentic Islamic scholarship portals, academic research journals, and verified fatwa councils.
+6. **Aljam3 Islamic Books Library** (`aljam3`):
+   - Host: `https://aljam3.com/mcp` (JSON-RPC, read-only, no authentication)
+   - Scope: Search the full text of public Islamic books, browse books and their files, and read exact pages with book, author, file and page citations plus direct source and PDF links.
 
 ## Canonical Tools Reference (`?suite=core`)
 
@@ -92,6 +95,24 @@ Search across 38+ authentic Islamic scholarship portals (fatwas, research journa
   - `fileType` (string, optional): `"pdf" | "doc" | "docx" | "txt"`.
   - `dateRestrict` (string, optional): `"d1" | "w1" | "m1" | "y1"` (past day, week, month, year).
   - `page` (number, optional): Page number for pagination (default: `1`).
+
+### 5. `waqf_books_search`
+Search inside the full text of classical Islamic books (the Aljam3 corpus) and get short passages with book, author, file and page metadata plus a source link.
+- **Parameters**:
+  - `query` (string, required): Search terms, usually in Arabic; quote a phrase for an exact-phrase search.
+  - `page` (number, optional): Result page to return (default: `1`, max: `100`).
+  - `limit` (number, optional): Passages per result page (default: `10`, max: `20`).
+  - `bookId` | `authorId` | `categoryId` | `libraryId` (number, optional): Restrict the search to one book, author, subject or source library.
+  - `locale` (string, optional): `"ar" | "ur" | "en"` — language of the returned links only.
+
+### 6. `waqf_books_read_page`
+Read one exact page of a digitized book in context, with citation metadata, a PDF page link and the neighbouring page numbers.
+- **Parameters**:
+  - `fileId` (number, required): Book file ID, from `waqf_books_search` or `aljam3__get_book`.
+  - `pageNumber` (number, required): Page number within that file.
+  - `offset` (number, optional): Character offset to continue reading from, using the next offset returned by the previous call.
+  - `maxChars` (number, optional): Maximum characters of page text (default: `6000`, max: `12000`).
+  - `locale` (string, optional): `"ar" | "ur" | "en"` — language of the returned links only.
 
 ## Client Configurations
 

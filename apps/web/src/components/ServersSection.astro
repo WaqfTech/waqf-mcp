@@ -1,4 +1,5 @@
 ---
+import { PROVIDER_CATALOG, providerToolsCount, sectionNumber } from "@waqf/types";
 import { formatToolsCount, type getTranslations } from "../lib/i18n";
 
 interface Props {
@@ -8,96 +9,24 @@ interface Props {
 
 const { t, lang = "ar" } = Astro.props;
 
-const SERVERS = [
-  {
-    id: "tafsir_net" as const,
-    url: "https://mcp.tafsir.net/mcp",
-    toolsCount: 17,
-    category: "quran",
-    featured: true,
-    tools: [
-      "fetch_ayah",
-      "fetch_tafsir",
-      "list_tafsir_sources",
-      "get_qeraat_variants",
-      "analyze_word",
-      "find_root_occurrences",
-      "get_root_stats",
-      "fetch_nuzool_reason",
-      "fetch_surah_info",
-      "search_quran_text",
-      "search_in_tafsir",
-      "get_quran_overview",
-      "get_page_fawaed",
-      "get_surah_statistics",
-      "list_science_sources",
-      "list_all_sources",
-      "list_sources_for_ayah",
-    ],
-    resources: [
-      "quran://surahs",
-      "quran://tafsirs",
-      "quran://sciences",
-      "quran://schema",
-    ],
-    prompts: [
-      "study_ayah",
-      "compare_tafsirs",
-      "root_study",
-      "surah_overview",
-      "tajweed_lesson",
-    ],
-  },
-  {
-    id: "bahouth" as const,
-    url: "https://bahouth.tafsir.net/mcp",
-    toolsCount: 9,
-    category: "quran",
-    featured: false,
-    tools: [
-      "get_verse",
-      "list_surah_verses",
-      "find_root",
-      "list_verse_words",
-      "list_verse_topics",
-      "search_roots",
-      "get_word_morphology",
-      "get_surah_info",
-      "search_verses",
-    ],
-  },
-  {
-    id: "turath" as const,
-    url: "https://mcp.turath.io/mcp/",
-    toolsCount: 5,
-    category: "turath",
-    featured: false,
-    tools: ["discover_turath", "search_turath", "get_book", "get_page", "get_author"],
-  },
-  {
-    id: "maheralfahel" as const,
-    url: "https://maheralfahel.net/mcp/",
-    toolsCount: 5,
-    category: "turath",
-    featured: false,
-    tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
-  },
-  {
-    id: "fihris" as const,
-    url: "https://search.waqf.app/",
-    toolsCount: 2,
-    category: "tools",
-    featured: false,
-    tools: ["search_islamic_sources", "list_indexed_sources"],
-  },
-];
+// Sourced from the shared provider catalog so the cards cannot drift from the gateway.
+const SERVERS = PROVIDER_CATALOG.map((entry) => ({
+  id: entry.id,
+  url: entry.siteUrl,
+  toolsCount: providerToolsCount(entry),
+  category: entry.category,
+  featured: entry.featured,
+  tools: entry.tools,
+  resources: entry.resources,
+  prompts: entry.prompts,
+}));
 ---
 
 <section id="servers" class="servers-section">
   <div class="shell">
     <div class="section-header">
       <div>
-        <div class="eyebrow">{t.servers.eyebrow}</div>
+        <div class="eyebrow">{t.servers.eyebrow} / {sectionNumber("servers")}</div>
         <h2>{t.servers.title}</h2>
       </div>
       <p class="section-desc">{t.servers.subtitle}</p>
@@ -465,12 +394,21 @@ const SERVERS = [
   }
 
   .source-link {
+    position: relative;
     font-weight: 800;
     color: var(--tide);
     text-decoration: none;
     padding: 2px 4px;
     border-radius: 2px;
     transition: color 0.15s;
+  }
+
+  /* 26px visual height, 44px hit area for touch */
+  .source-link::before {
+    content: "";
+    position: absolute;
+    inset-block: -9px;
+    inset-inline: 0;
   }
 
   .source-link:hover {
@@ -493,6 +431,13 @@ const SERVERS = [
   @media (max-width: 768px) {
     .servers-grid {
       grid-template-columns: 1fr;
+    }
+
+    /* Long badge labels must wrap instead of forcing the card wider than the
+       viewport (measured 54px of horizontal overflow at 320px). */
+    .status-badge,
+    .parity-badge {
+      white-space: normal;
     }
 
     .server-card {

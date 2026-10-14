@@ -46,13 +46,17 @@ cd waqf-mcp
 # 2. Install workspace dependencies
 aube install
 
-# 3. Run the automated Vitest test suite
+# 3. Apply the D1 schema to the local database (edge caching + telemetry)
+#    Without this the Worker starts fine but caches nothing and logs nothing.
+aube run db:migrate:local
+
+# 4. Run the automated Vitest test suite
 aube test
 
-# 4. Run TypeScript checks across all packages
+# 5. Run TypeScript checks across all packages
 aube run typecheck
 
-# 5. Start local API and Astro Web dev servers concurrently
+# 6. Start local API and Astro Web dev servers concurrently
 aube run dev
 ```
 
@@ -62,11 +66,13 @@ aube run dev
 
 To federate a new authentic Islamic MCP server:
 
-1. Create or use an existing adapter (`JsonRpcMcpAdapter` or `SseMcpAdapter`) implementing `IMcpProvider`.
-2. Register the upstream provider in `apps/api/src/core/registry.ts` with its server URL, transport, and metadata.
-3. If the server provides foundational tools, map them to canonical tools in `apps/api/src/canonical/`.
-4. Add unit and E2E tests in `apps/api/test/`.
-5. Run `aube test` and `aube run typecheck` to verify your addition.
+1. Capture its real surface first: `node scripts/probe-provider.mjs <mcp-url>` prints the initialize handshake, the exact tool schemas, and whether the server requires an MCP session. Tool lists must come from the live server, never from documentation.
+2. Add the provider to `PROVIDER_CATALOG` in `packages/types/src/catalog.ts` (id, upstream URL, transport, and the tools verified in step 1). `apps/api/src/config/providers.config.ts` and the landing page cards derive from that catalog, so the provider list lives in exactly one place.
+3. If the server provides foundational tools, map them to canonical tools in `apps/api/src/core/normalizer.ts` and route them in `apps/api/src/core/router.ts` (plus the relevant `?suite=` filter).
+4. Add the localized card copy under `servers.cards.<id>` in all five `apps/web/src/lang/*.json` files. The types require every locale to carry the same keys.
+5. Mirror the provider into `apps/web/public/llms.txt` and `apps/web/public/llms-full.txt`, then run `node scripts/generate-llms-constants.mjs` so the Worker serves the same text. `aube test` fails whenever catalog, config or llms artifacts disagree.
+6. Add unit and E2E tests in `apps/api/test/`.
+7. Run `aube test`, `aube run typecheck` and `aube run build` to verify your addition.
 
 ---
 

@@ -1,5 +1,23 @@
 import { createDb, mcpLogs, type NewMcpLog } from "@waqf/db";
 
+/**
+ * Telemetry writes are fire-and-forget (ctx.waitUntil), so a failing D1 would
+ * otherwise drop every log without a trace. Warn once per isolate, naming the
+ * command that fixes a missing local schema.
+ */
+let warnedTelemetryUnavailable = false;
+
+function warnTelemetryUnavailable(error: unknown): void {
+  if (warnedTelemetryUnavailable) {
+    return;
+  }
+  warnedTelemetryUnavailable = true;
+  const detail = error instanceof Error ? error.message : String(error);
+  console.warn(
+    `[telemetry] D1 log write failed — is the local schema applied? Run "aube run db:migrate:local". (${detail})`
+  );
+}
+
 export interface AggregatedMetrics {
   timeWindowHours: number;
   since: string;
@@ -47,7 +65,7 @@ export class D1TelemetryService {
       const db = createDb(this.d1);
       await db.insert(mcpLogs).values(record);
     } catch (err) {
-      console.warn("Failed to write MCP telemetry log to D1:", err);
+      warnTelemetryUnavailable(err);
     }
   }
 

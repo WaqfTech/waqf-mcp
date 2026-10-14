@@ -28,6 +28,30 @@ export interface GetPromptResponse {
   result: GetPromptResult;
 }
 
+/**
+ * A provider that fails while listing silently shrinks the advertised tool set —
+ * Fihris did exactly that in production, and nothing recorded it. Warn once per
+ * isolate per provider so a dropped upstream is visible in `aube run tail`
+ * instead of only in a smaller list.
+ */
+const warnedProviders = new Set<string>();
+
+export function resetProviderWarnings(): void {
+  warnedProviders.clear();
+}
+
+function warnProviderUnavailable(scope: string, providerId: string, error: unknown): void {
+  const key = `${scope}:${providerId}`;
+  if (warnedProviders.has(key)) {
+    return;
+  }
+  warnedProviders.add(key);
+  const detail = error instanceof Error ? error.message : String(error);
+  console.warn(
+    `[router] provider '${providerId}' failed during ${scope}; its entries are omitted from this response. (${detail})`
+  );
+}
+
 export class FederationRouter {
   public readonly normalizer: SchemaNormalizer;
 
@@ -59,11 +83,13 @@ export class FederationRouter {
     );
 
     const namespaced: ToolDefinition[] = [];
-    for (const result of settled) {
+    settled.forEach((result, index) => {
       if (result.status === "fulfilled") {
         namespaced.push(...result.value);
+        return;
       }
-    }
+      warnProviderUnavailable("tools/list", providers[index].id, result.reason);
+    });
 
     if (suite === "raw") {
       return namespaced;
@@ -498,11 +524,13 @@ export class FederationRouter {
     );
 
     const allResources: ResourceDefinition[] = [];
-    for (const result of settled) {
+    settled.forEach((result, index) => {
       if (result.status === "fulfilled") {
         allResources.push(...result.value);
+        return;
       }
-    }
+      warnProviderUnavailable("resources/list", providers[index].id, result.reason);
+    });
 
     return allResources;
   }
@@ -596,11 +624,13 @@ export class FederationRouter {
     );
 
     const allPrompts: PromptDefinition[] = [];
-    for (const result of settled) {
+    settled.forEach((result, index) => {
       if (result.status === "fulfilled") {
         allPrompts.push(...result.value);
+        return;
       }
-    }
+      warnProviderUnavailable("prompts/list", providers[index].id, result.reason);
+    });
 
     return allPrompts;
   }

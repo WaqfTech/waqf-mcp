@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { SchemaNormalizer } from "../src/core/normalizer";
-import { FederationRouter } from "../src/core/router";
+import { FederationRouter, resetProviderWarnings } from "../src/core/router";
 import { ProviderRegistry } from "../src/core/registry";
 import { JsonRpcMcpAdapter } from "../src/adapters/jsonrpc";
 import { SseMcpAdapter } from "../src/adapters/sse";
@@ -32,6 +32,45 @@ describe("Canonical Tools & Schema Normalization", () => {
     const coreTools = await router.listAllTools("core");
     expect(coreTools.length).toBeGreaterThanOrEqual(3);
     expect(coreTools.every((t) => t.name.startsWith("waqf_"))).toBe(true);
+  });
+
+  it("warns once per provider when a suite listing drops an upstream, instead of shrinking silently", async () => {
+    const registry = new ProviderRegistry([]);
+    const healthy = new JsonRpcMcpAdapter({
+      id: "bahouth",
+      name: "Bahouth",
+      baseUrl: "https://bahouth.tafsir.net/mcp",
+      transport: "json-rpc",
+      description: "Bahouth",
+    });
+    vi.spyOn(healthy, "listTools").mockResolvedValue([
+      { name: "get_verse", description: "verse", inputSchema: { type: "object" } },
+    ]);
+    const blocked = new JsonRpcMcpAdapter({
+      id: "fihris",
+      name: "Fihris Islamic Web Search",
+      baseUrl: "https://search.waqf.app/api/mcp",
+      transport: "json-rpc",
+      description: "Fihris Search",
+    });
+    vi.spyOn(blocked, "listTools").mockRejectedValue(new Error("zone challenge"));
+
+    registry.register(healthy);
+    registry.register(blocked);
+    resetProviderWarnings();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const router = new FederationRouter(registry, normalizer);
+
+    const tools = await router.listAllTools("all");
+
+    expect(tools.some((t) => t.name === "bahouth__get_verse")).toBe(true);
+    expect(tools.some((t) => t.name.startsWith("fihris__"))).toBe(false);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain("fihris");
+
+    await router.listAllTools("all");
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
   });
 
   it("executes canonical waqf_quran_get_ayah routing through available provider", async () => {

@@ -80,9 +80,17 @@ export class FederationRouter {
 
     if (suite === "turath") {
       return [
-        ...canonicalTools.filter((t) => t.name.startsWith("waqf_turath") || t.name.startsWith("waqf_hadith")),
+        ...canonicalTools.filter(
+          (t) =>
+            t.name.startsWith("waqf_turath") ||
+            t.name.startsWith("waqf_hadith") ||
+            t.name.startsWith("waqf_books")
+        ),
         ...namespaced.filter(
-          (t) => t.name.startsWith("turath__") || t.name.startsWith("maheralfahel__")
+          (t) =>
+            t.name.startsWith("turath__") ||
+            t.name.startsWith("maheralfahel__") ||
+            t.name.startsWith("aljam3__")
         ),
       ];
     }
@@ -150,9 +158,9 @@ export class FederationRouter {
     // Save to cache asynchronously if valid and non-empty
     if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
       if (ctx) {
-        ctx.waitUntil(cacheService.set(cacheKey, providerId, originalToolName, result));
+        ctx.waitUntil(cacheService.set(cacheKey, providerId, originalToolName, result, provider.cacheTtlSeconds));
       } else {
-        cacheService.set(cacheKey, providerId, originalToolName, result).catch(() => {});
+        cacheService.set(cacheKey, providerId, originalToolName, result, provider.cacheTtlSeconds).catch(() => {});
       }
     }
 
@@ -172,7 +180,16 @@ export class FederationRouter {
   ): Promise<CallToolResponse> {
     let cacheKey: string | null = null;
     if (cacheService) {
-      cacheKey = await cacheService.computeKey("canonical", toolName, args);
+      // Books calls are keyed on their sanitized upstream arguments so that
+      // equivalent spellings ({query, limit} vs {query, per_page}) share one
+      // cache entry instead of calling upstream twice.
+      const keyArgs =
+        toolName === "waqf_books_search"
+          ? this.normalizer.toAljam3Args("search", args)
+          : toolName === "waqf_books_read_page"
+            ? this.normalizer.toAljam3Args("get_page", args)
+            : args;
+      cacheKey = await cacheService.computeKey("canonical", toolName, keyArgs);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
         if (ctx) {
@@ -308,15 +325,71 @@ export class FederationRouter {
         break;
       }
 
+      case "waqf_books_search": {
+        const aljam3Provider = this.registry.get("aljam3");
+        const turathProvider = this.registry.get("turath");
+        let fetched = false;
+
+        // Primary: Aljam3 books corpus (passages with citations and source links)
+        if (aljam3Provider) {
+          try {
+            targetProvider = "aljam3";
+            const raw = await aljam3Provider.callTool(
+              "search",
+              this.normalizer.toAljam3Args("search", args)
+            );
+            if (!raw.isError) {
+              result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
+              fetched = true;
+            }
+          } catch {
+            // Fall through to Turath fallback
+          }
+        }
+
+        // Resilient fallback: Turath heritage library full-text search
+        if (!fetched && turathProvider) {
+          try {
+            targetProvider = "turath";
+            const query = String(args.query ?? args.q ?? "");
+            const raw = await turathProvider.callTool("search_turath", { q: query });
+            result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Books Fallback)");
+            fetched = true;
+          } catch {
+            // Fall through
+          }
+        }
+
+        if (!fetched) {
+          throw new Error("No books search provider available or all upstreams failed");
+        }
+        break;
+      }
+
+      case "waqf_books_read_page": {
+        const aljam3Provider = this.registry.get("aljam3");
+        if (!aljam3Provider) {
+          throw new Error("Aljam3 books provider not configured");
+        }
+        targetProvider = "aljam3";
+        const raw = await aljam3Provider.callTool(
+          "get_page",
+          this.normalizer.toAljam3Args("get_page", args)
+        );
+        result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
+        break;
+      }
+
       default:
         throw new Error(`Unhandled canonical tool: '${toolName}'`);
     }
 
     if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
+      const ttl = this.registry.get(targetProvider)?.cacheTtlSeconds;
       if (ctx) {
-        ctx.waitUntil(cacheService.set(cacheKey, "canonical", toolName, result));
+        ctx.waitUntil(cacheService.set(cacheKey, "canonical", toolName, result, ttl));
       } else {
-        cacheService.set(cacheKey, "canonical", toolName, result).catch(() => {});
+        cacheService.set(cacheKey, "canonical", toolName, result, ttl).catch(() => {});
       }
     }
 

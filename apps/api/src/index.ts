@@ -84,7 +84,8 @@ function checkAdminAuth(request: Request, env: Env): Response | null {
   return null;
 }
 
-export const AGENT_DISCOVERY_LINK_HEADER = [
+// Not exported: the Worker entry module may only export handlers.
+const AGENT_DISCOVERY_LINK_HEADER = [
   '</.well-known/api-catalog>; rel="api-catalog"',
   '</llms.txt>; rel="service-doc"; type="text/markdown"',
   '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
@@ -359,9 +360,9 @@ export default {
             usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
             suites: {
               all: "All available upstream tools across federated Islamic servers",
-              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship)",
+              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page)",
               quran: "Quran & Tafsir specialized suite",
-              turath: "Hadith & Islamic Heritage library suite",
+              turath: "Hadith, Islamic heritage and classical books suite (Turath, Maher Al-Fahel, Aljam3)",
               search: "Scholarly web search across 38+ verified Islamic portals (Fihris)",
             },
             stats: {

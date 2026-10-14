@@ -6,10 +6,12 @@ interface Props {
   target?: string;
   label: string;
   copiedLabel: string;
+  /** Shown when the clipboard is unavailable, so the button never looks dead. */
+  failedLabel: string;
   variant?: "accent" | "outline";
 }
 
-const { value, target, label, copiedLabel, variant = "accent" } = Astro.props;
+const { value, target, label, copiedLabel, failedLabel, variant = "accent" } = Astro.props;
 ---
 
 <button
@@ -18,6 +20,7 @@ const { value, target, label, copiedLabel, variant = "accent" } = Astro.props;
   data-copy-value={target ? undefined : value}
   data-copy-target={target}
   data-copy-done-label={copiedLabel}
+  data-copy-failed-label={failedLabel}
 >
   <span class="copy-label">{label}</span>
   <span class="copy-status" role="status" aria-live="polite"></span>
@@ -60,6 +63,11 @@ const { value, target, label, copiedLabel, variant = "accent" } = Astro.props;
   .copy-btn.copied {
     background: var(--tide);
     color: var(--white);
+  }
+
+  .copy-btn.copy-failed {
+    background: var(--clay);
+    color: var(--ink);
   }
 
   .copy-btn.is-outline {

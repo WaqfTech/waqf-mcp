@@ -16,6 +16,7 @@
   },
   "common": {
     "copied": "Kopyalandı!",
+    "copy_failed": "Kopyalanamadı",
     "announcement_label": "Duyuru"
   },
   "announcement": {
@@ -179,7 +180,7 @@
     "subtitle": "Ağ geçidinden ve bağlı kaynaklardan yayımlanmış değerler; isteklerinizi buna göre ölçekleyin.",
     "gateway_heading": "Ağ Geçidi",
     "upstream_heading": "Bağlı Kaynak Politikası",
-    "rate_limit_note": "Ağ geçidi için yayımlanmış adil kullanım sınırı; Cloudflare korumasıyla uygulanır.",
+    "rate_limit_note": "Ağ geçidi için yayımlanmış adil kullanım sınırı: belgelenmiş politika, kodda uygulanmaz.",
     "languages_note": "Yalnızca döndürülen bağlantılar için geçerlidir; kitap metni çevrilmez.",
     "upstream_note": "Yukarıdaki değerler {provider} tarafından yayımlanan politikadır ve kaynağında değişebilir.",
     "row_gateway_rate_limit": "IP başına istek (istek/dk)",

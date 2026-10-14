@@ -16,6 +16,7 @@
   },
   "common": {
     "copied": "Tersalin!",
+    "copy_failed": "Gagal menyalin",
     "announcement_label": "Pengumuman"
   },
   "announcement": {
@@ -179,7 +180,7 @@
     "subtitle": "Angka yang dipublikasikan gateway dan sumber terhubung, agar Anda dapat mengukur permintaan tanpa kejutan.",
     "gateway_heading": "Gateway",
     "upstream_heading": "Kebijakan Sumber Terhubung",
-    "rate_limit_note": "Batas penggunaan wajar yang dipublikasikan untuk gateway, diterapkan melalui perlindungan Cloudflare.",
+    "rate_limit_note": "Batas penggunaan wajar yang dipublikasikan untuk gateway: kebijakan terdokumentasi, tidak ditegakkan dalam kode.",
     "languages_note": "Hanya berlaku untuk tautan yang dikembalikan; teks kitab tidak diterjemahkan.",
     "upstream_note": "Angka di atas adalah kebijakan yang dipublikasikan {provider} dan dapat berubah di sumbernya.",
     "row_gateway_rate_limit": "Permintaan per IP (permintaan/menit)",

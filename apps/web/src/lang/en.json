@@ -16,6 +16,7 @@
   },
   "common": {
     "copied": "Copied!",
+    "copy_failed": "Copy failed",
     "announcement_label": "Announcement"
   },
   "announcement": {
@@ -179,7 +180,7 @@
     "subtitle": "Published figures from the gateway and its connected sources, so you can size requests without surprises.",
     "gateway_heading": "Gateway",
     "upstream_heading": "Federated Source Policy",
-    "rate_limit_note": "Published fair-use ceiling for the gateway, applied through Cloudflare protection.",
+    "rate_limit_note": "Published fair-use ceiling for the gateway: documented policy, not enforced in code.",
     "languages_note": "Applies to the returned links only; book text is not translated.",
     "upstream_note": "The figures above are {provider}'s published policy and may change at the source.",
     "row_gateway_rate_limit": "Requests per IP (requests/min)",

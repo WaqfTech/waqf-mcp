@@ -84,6 +84,7 @@ export interface ProviderConfig {
   timeoutMs?: number;
   headers?: Record<string, string>;
   enabled?: boolean;
+  cacheTtlSeconds?: number;
 }
 
 export interface IMcpProvider {
@@ -92,6 +93,7 @@ export interface IMcpProvider {
   readonly baseUrl: string;
   readonly description: string;
   readonly transport: TransportProtocol;
+  readonly cacheTtlSeconds?: number;
 
   listTools(): Promise<ToolDefinition[]>;
   callTool(toolName: string, args: Record<string, unknown>): Promise<ToolResult>;

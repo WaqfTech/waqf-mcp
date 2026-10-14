@@ -97,6 +97,9 @@ const { t } = Astro.props;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* The padding lives on the parent details element, so the activating summary
+       must carry the full 44px target itself. */
+    min-height: 44px;
     gap: 16px;
     cursor: pointer;
     font-size: 18px;

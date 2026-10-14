@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   CANONICAL_TOOL_NAMES,
+  GATEWAY_MCP_URL,
+  GATEWAY_SITE_URL,
   PROVIDER_CATALOG,
   PROVIDER_COUNT,
   TOTAL_GATEWAY_TOOL_COUNT,
@@ -11,6 +13,8 @@ import {
 import { UPSTREAM_PROVIDERS } from "../src/config/providers.config";
 import { SchemaNormalizer } from "../src/core/normalizer";
 import { LLMS_FULL_TXT, LLMS_TXT } from "../src/llms";
+import { ROBOTS_TXT } from "../src/robots";
+import { SITEMAP_XML } from "../src/sitemap";
 
 /**
  * The provider catalog, the API provider config, the landing page and the two
@@ -96,5 +100,56 @@ describe("llms artifacts match the catalog", () => {
       `all ${TOTAL_GATEWAY_TOOL_COUNT} tools across all ${PROVIDER_COUNT} federated providers.`
     );
     expect(LLMS_FULL_TXT).toContain("the Aljam3 books corpus");
+  });
+});
+
+describe("published host split", () => {
+  const publicServerCard = readFileSync(
+    new URL("../../web/public/.well-known/mcp/server-card.json", import.meta.url),
+    "utf8"
+  );
+  const publicAuthMd = readFileSync(new URL("../../web/public/auth.md", import.meta.url), "utf8");
+  const publicAiCatalog = readFileSync(
+    new URL("../../web/public/.well-known/ai-catalog.json", import.meta.url),
+    "utf8"
+  );
+
+  it("sends agents to the protocol host and readers to the site host", () => {
+    expect(GATEWAY_MCP_URL).toBe("https://mcp.waqf.app/mcp");
+    expect(GATEWAY_SITE_URL).toBe("https://mcp.waqf.dev");
+  });
+
+  it("never publishes the human-facing host as the MCP endpoint", () => {
+    // mcp.waqf.dev sits behind a bot challenge, so an endpoint URL on that host
+    // would hand agents an address they cannot use.
+    for (const artifact of [LLMS_TXT, LLMS_FULL_TXT, publicServerCard, publicAuthMd, publicAiCatalog]) {
+      expect(artifact).not.toContain(`${GATEWAY_SITE_URL}/mcp`);
+    }
+  });
+
+  it("publishes the protocol endpoint in every agent artifact", () => {
+    for (const artifact of [LLMS_TXT, LLMS_FULL_TXT, publicServerCard]) {
+      expect(artifact).toContain(GATEWAY_MCP_URL);
+    }
+    // auth.md documents the endpoint as a Host header plus path, not an absolute URL.
+    expect(publicAuthMd).toContain(`Host: ${new URL(GATEWAY_MCP_URL).host}`);
+  });
+});
+
+describe("published file mirrors", () => {
+  const publicSitemap = readFileSync(new URL("../../web/public/sitemap.xml", import.meta.url), "utf8");
+  const publicRobots = readFileSync(new URL("../../web/public/robots.txt", import.meta.url), "utf8");
+
+  it("keeps the served sitemap byte-identical to the published file", () => {
+    expect(SITEMAP_XML).toBe(publicSitemap);
+  });
+
+  it("keeps the served robots.txt byte-identical to the published file", () => {
+    expect(ROBOTS_TXT).toBe(publicRobots);
+  });
+
+  it("never advertises the absent /ar/ URL", () => {
+    // Arabic is served at the root; a sitemap entry for /ar/ points crawlers at a 404.
+    expect(SITEMAP_XML).not.toContain("/ar/");
   });
 });

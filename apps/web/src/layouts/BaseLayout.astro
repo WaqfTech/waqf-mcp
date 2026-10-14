@@ -1,4 +1,5 @@
 ---
+import { GATEWAY_SITE_URL } from "@waqf/types";
 import { getTranslations, getDir, LOCALES, type SupportedLocale } from "../lib/i18n";
 
 interface Props {
@@ -9,8 +10,9 @@ const { lang = "ar" } = Astro.props;
 const t = getTranslations(lang);
 const dir = getDir(lang);
 
+const siteUrl = GATEWAY_SITE_URL;
+
 const currentPath = Astro.url.pathname;
-const siteUrl = "https://mcp.waqf.dev";
 const canonicalUrl = `${siteUrl}${currentPath.endsWith("/") && currentPath !== "/" ? currentPath.slice(0, -1) : currentPath}`;
 
 // Pick language-specific social preview image

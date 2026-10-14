@@ -1,6 +1,6 @@
 export const AUTH_MD = `# Agent Authentication & Registration Guide (auth.md)
 
-Welcome to the **Waqf Islamic Model Context Protocol (MCP) Federation Gateway** (\`mcp.waqf.dev\`).
+Welcome to the **Waqf Islamic Model Context Protocol (MCP) Federation Gateway** (\`mcp.waqf.app\`).
 
 This guide outlines authentication policies, programmatic agent registration, credential management, and access tiers for autonomous AI agents, crawlers, and developer applications.
 
@@ -24,7 +24,7 @@ While no token is required to query tools, agents should identify themselves wit
 
 \`\`\`http
 POST /mcp?suite=core HTTP/1.1
-Host: mcp.waqf.dev
+Host: mcp.waqf.app
 User-Agent: MyIslamicResearchAgent/1.0 (contact: info@example.com)
 Content-Type: application/json
 \`\`\`
@@ -36,13 +36,13 @@ Content-Type: application/json
 AI agents can verify OAuth and Protected Resource declarations via IETF standard discovery paths:
 
 - **OAuth 2.0 Authorization Server Metadata (RFC 8414)**:
-  [\`https://mcp.waqf.dev/.well-known/oauth-authorization-server\`](https://mcp.waqf.dev/.well-known/oauth-authorization-server)
+  [\`https://mcp.waqf.app/.well-known/oauth-authorization-server\`](https://mcp.waqf.app/.well-known/oauth-authorization-server)
 - **OAuth Protected Resource Metadata (RFC 9728)**:
-  [\`https://mcp.waqf.dev/.well-known/oauth-protected-resource\`](https://mcp.waqf.dev/.well-known/oauth-protected-resource)
+  [\`https://mcp.waqf.app/.well-known/oauth-protected-resource\`](https://mcp.waqf.app/.well-known/oauth-protected-resource)
 - **MCP Server Card (SEP-1649)**:
-  [\`https://mcp.waqf.dev/.well-known/mcp/server-card.json\`](https://mcp.waqf.dev/.well-known/mcp/server-card.json)
+  [\`https://mcp.waqf.app/.well-known/mcp/server-card.json\`](https://mcp.waqf.app/.well-known/mcp/server-card.json)
 - **Agent Skills Discovery Index (RFC v0.2.0)**:
-  [\`https://mcp.waqf.dev/.well-known/agent-skills/index.json\`](https://mcp.waqf.dev/.well-known/agent-skills/index.json)
+  [\`https://mcp.waqf.app/.well-known/agent-skills/index.json\`](https://mcp.waqf.app/.well-known/agent-skills/index.json)
 
 ---
 
@@ -52,7 +52,7 @@ To access gateway health analytics and D1 request logs:
 
 \`\`\`http
 GET /api/stats?hours=24 HTTP/1.1
-Host: mcp.waqf.dev
+Host: mcp.waqf.app
 Authorization: Bearer <ADMIN_API_KEY>
 Accept: application/json
 \`\`\`

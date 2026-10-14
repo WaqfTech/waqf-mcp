@@ -115,6 +115,12 @@ export default {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
+    // Arabic is served at the root; /ar/ is an advertised-but-absent URL and must
+    // not 404 for links, hreflang consumers or bookmarks.
+    if ((request.method === "GET" || request.method === "HEAD") && pathname === "/ar") {
+      return Response.redirect(`${url.origin}/`, 301);
+    }
+
     // Standard LLM / AI Agent Discovery Endpoints
     if (request.method === "GET" && pathname === "/llms.txt") {
       return new Response(LLMS_TXT, {
@@ -336,8 +342,8 @@ export default {
             links: {
               portal: "https://mcp.waqf.dev/",
               documentation: "https://mcp.waqf.dev/#setup",
-              llms: "https://mcp.waqf.dev/llms.txt",
-              llmsFull: "https://mcp.waqf.dev/llms-full.txt",
+              llms: "https://mcp.waqf.app/llms.txt",
+              llmsFull: "https://mcp.waqf.app/llms-full.txt",
               submitMcp: "https://mcp.waqf.dev/#submit",
               repository: "https://github.com/waqftech/waqf-mcp",
               license: "https://github.com/WaqfTech/waqf-license-draft",

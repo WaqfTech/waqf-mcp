@@ -15,8 +15,8 @@
   },
   "transport": {
     "type": "streamable-http",
-    "endpoint": "https://mcp.waqf.dev/mcp",
-    "sseEndpoint": "https://mcp.waqf.dev/sse"
+    "endpoint": "https://mcp.waqf.app/mcp",
+    "sseEndpoint": "https://mcp.waqf.app/sse"
   },
   "capabilities": {
     "tools": {
@@ -35,8 +35,8 @@
     "description": "Public read access for all core Islamic scholarship tools without API keys."
   },
   "links": {
-    "documentation": "https://mcp.waqf.dev/llms.txt",
-    "technicalCatalog": "https://mcp.waqf.dev/llms-full.txt",
+    "documentation": "https://mcp.waqf.app/llms.txt",
+    "technicalCatalog": "https://mcp.waqf.app/llms-full.txt",
     "repository": "https://github.com/waqftech/waqf-mcp"
   }
 }

@@ -154,21 +154,21 @@
     "claude_web_steps": [
       "Buka https://claude.ai/new#customize/connectors (atau buka Settings → Connectors).",
       "Klik 'Add custom connector'.",
-      "Isi Nama: 'Islamic Sources (@IslamicSources)' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Isi Nama: 'Islamic Sources (@IslamicSources)' dan URL: 'https://mcp.waqf.app/mcp'.",
       "Klik 'Add' untuk menyimpan (titik akhir wakaf terbuka publik, tanpa perlu OAuth).",
       "Dalam percakapan apa pun, klik tombol '+' di samping kolom pesan, pilih 'Connectors', dan aktifkan Islamic Sources."
     ],
     "chatgpt_web_steps": [
       "Aktifkan Mode Pengembang: Buka chatgpt.com, klik profil Anda di kiri bawah, pilih Settings → Security and login, dan aktifkan 'Developer mode'.",
       "Buka Plugin: Kunjungi chatgpt.com/plugins (atau Settings → Plugins), klik Browse plugins, lalu klik ikon '+' (tambah) di kanan atas.",
-      "Masukkan Detail Server: Nama: 'Islamic Sources (@IslamicSources)', Metode: 'Server URL', Server URL: 'https://mcp.waqf.dev/mcp', dan Autentikasi: 'None'.",
+      "Masukkan Detail Server: Nama: 'Islamic Sources (@IslamicSources)', Metode: 'Server URL', Server URL: 'https://mcp.waqf.app/mcp', dan Autentikasi: 'None'.",
       "Otorisasi: Centang kotak 'I understand and want to continue' lalu klik 'Create'.",
       "Gunakan di Obrolan: Mulai obrolan baru, pilih sumber Islamic Sources atau ketik 'What tools do you have available?' untuk mulai mengakses Al-Qur'an, Hadis, dan kitab klasik."
     ],
     "gemini_web_steps": [
       "Buka https://gemini.google.com/apps di peramban Anda.",
       "Di bagian 'Connected Apps', klik 'Add a custom app'.",
-      "Atur Nama: 'IslamicSources' dan URL: 'https://mcp.waqf.dev/mcp'.",
+      "Atur Nama: 'IslamicSources' dan URL: 'https://mcp.waqf.app/mcp'.",
       "Simpan dan otorisasi aplikasi kustom yang terhubung.",
       "Di obrolan Gemini, panggil alat langsung dengan mengetik @IslamicSources (contoh: '@IslamicSources tafsir Ayat Kursi')."
     ],

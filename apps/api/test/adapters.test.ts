@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { JsonRpcMcpAdapter } from "../src/adapters/jsonrpc";
 import { SseMcpAdapter } from "../src/adapters/sse";
+import { clearRequestFetchers, setRequestFetcher } from "../src/adapters/base";
 import { ProviderRegistry } from "../src/core/registry";
 import { FederationRouter } from "../src/core/router";
 
@@ -221,6 +222,40 @@ describe("MCP Adapters & Federation Router", () => {
 
     const prompt = await adapter.getPrompt("search_author", { author: "Bukhari" });
     expect(prompt.messages[0].content).toEqual({ type: "text", text: "Find Bukhari" });
+  });
+
+  it("routes a provider through its registered service binding instead of the public edge", async () => {
+    const publicFetch = vi.fn();
+    globalThis.fetch = publicFetch;
+
+    const boundFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        result: { tools: [{ name: "search_islamic_sources", description: "search", inputSchema: {} }] },
+      }),
+    });
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "fihris",
+      name: "Fihris",
+      baseUrl: "https://search.waqf.app/api/mcp",
+      transport: "json-rpc",
+      description: "Fihris Islamic Web Search",
+    });
+
+    setRequestFetcher("fihris", { fetch: boundFetch } as unknown as Fetcher);
+    try {
+      const tools = await adapter.listTools();
+
+      expect(tools[0].name).toBe("search_islamic_sources");
+      expect(boundFetch).toHaveBeenCalledTimes(1);
+      // The bound request keeps the public URL so the target Worker routes identically.
+      expect(boundFetch.mock.calls[0][0]).toBe("https://search.waqf.app/api/mcp");
+      expect(publicFetch).not.toHaveBeenCalled();
+    } finally {
+      clearRequestFetchers();
+    }
   });
 
   it("FederationRouter federates and routes resources and prompts", async () => {

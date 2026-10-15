@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Setup DNS for AI Discovery (DNS-AID) Records for mcp.waqf.dev
+# Setup DNS for AI Discovery (DNS-AID) Records for mcp.waqf.app
 # Conforms to RFC 9460 & draft-mozleywilliams-dnsop-dnsaid
 # ==============================================================================
 
@@ -15,19 +15,19 @@ echo "Subdomain: ${SUBDOMAIN}.${ZONE_NAME}"
 echo ""
 
 echo "1. Required HTTPS (SVCB) Records:"
-echo "   _index._agents.mcp.${ZONE_NAME}. 300 IN HTTPS 1 mcp.waqf.dev. alpn=\"h2,h3\" port=\"443\""
-echo "   _mcp._agents.mcp.${ZONE_NAME}.   300 IN HTTPS 1 mcp.waqf.dev. alpn=\"h2,h3\" port=\"443\""
+echo "   _index._agents.mcp.${ZONE_NAME}. 300 IN HTTPS 1 mcp.waqf.app. alpn=\"h2,h3\" port=\"443\""
+echo "   _mcp._agents.mcp.${ZONE_NAME}.   300 IN HTTPS 1 mcp.waqf.app. alpn=\"h2,h3\" port=\"443\""
 echo ""
 
 echo "2. Required Fallback Discovery TXT Records:"
-echo "   _index._agents.mcp.${ZONE_NAME}. 300 IN TXT \"v=aid1; uri=https://mcp.waqf.dev/.well-known/ai-catalog.json; skills=https://mcp.waqf.dev/.well-known/agent-skills/index.json\""
-echo "   _mcp._agents.mcp.${ZONE_NAME}.   300 IN TXT \"v=aid1; uri=https://mcp.waqf.dev/mcp; card=https://mcp.waqf.dev/.well-known/mcp/server-card.json; proto=streamable-http\""
+echo "   _index._agents.mcp.${ZONE_NAME}. 300 IN TXT \"v=aid1; uri=https://mcp.waqf.app/.well-known/ai-catalog.json; skills=https://mcp.waqf.app/.well-known/agent-skills/index.json\""
+echo "   _mcp._agents.mcp.${ZONE_NAME}.   300 IN TXT \"v=aid1; uri=https://mcp.waqf.app/mcp; card=https://mcp.waqf.app/.well-known/mcp/server-card.json; proto=streamable-http\""
 echo ""
 
 echo "3. DNSSEC Status Check:"
 echo "   Querying DNSSEC validation for waqf.dev via Cloudflare DNS:"
 if command -v dig >/dev/null 2>&1; then
-  dig +dnssec +multiline mcp.waqf.dev A @1.1.1.1 | grep -E "flags:|RRSIG" || true
+  dig +dnssec +multiline mcp.waqf.app A @1.1.1.1 | grep -E "flags:|RRSIG" || true
 else
   echo "   [dig not available, skipping live DNSSEC lookup]"
 fi

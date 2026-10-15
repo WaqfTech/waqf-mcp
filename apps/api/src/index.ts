@@ -1,5 +1,6 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
+import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
 import { createDb, mcpSubmissions } from "@waqf/db";
@@ -24,6 +25,7 @@ export interface Env {
   DB: D1Database;
   TELEMETRY_SALT?: string;
   WEB?: Fetcher;
+  SEARCHER?: Fetcher;
   ADMIN_API_KEY?: string;
 }
 
@@ -109,6 +111,13 @@ export default {
     const startTime = performance.now();
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, "") || "/";
+
+    // Same-account upstream: reach the searcher Worker over the internal network
+    // rather than the public edge. Registering is idempotent and cheap, so it is
+    // re-applied per request and stays correct if the isolate predates the binding.
+    if (env.SEARCHER) {
+      setRequestFetcher("fihris", env.SEARCHER);
+    }
 
     // Handle CORS preflight
     if (request.method === "OPTIONS") {

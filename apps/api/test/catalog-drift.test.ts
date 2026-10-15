@@ -153,3 +153,14 @@ describe("published file mirrors", () => {
     expect(SITEMAP_XML).not.toContain("/ar/");
   });
 });
+
+describe("same-account worker bindings", () => {
+  const wranglerConfig = readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
+
+  it("declares the service bindings the gateway routes through", () => {
+    // Fihris is reached through its Worker binding rather than the public edge;
+    // losing either declaration silently returns the gateway to the flaky path.
+    expect(wranglerConfig).toMatch(/"binding":\s*"WEB",\s*"service":\s*"waqf-mcp-web"/);
+    expect(wranglerConfig).toMatch(/"binding":\s*"SEARCHER",\s*"service":\s*"searcher"/);
+  });
+});

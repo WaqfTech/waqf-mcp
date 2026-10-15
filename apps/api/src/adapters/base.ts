@@ -6,6 +6,23 @@ import type {
   TransportProtocol,
 } from "@waqf/types";
 
+/**
+ * Service bindings registered per provider id. A provider whose service lives in
+ * this same Cloudflare account is better reached over the internal network than
+ * through the public edge, which re-enters the zone and is subject to its rules —
+ * the gateway received HTTP 522 that way while the same request succeeded from a
+ * normal network. Absent a binding, providers keep using the public fetch.
+ */
+const requestFetchers = new Map<string, Fetcher>();
+
+export function setRequestFetcher(providerId: string, fetcher: Fetcher): void {
+  requestFetchers.set(providerId, fetcher);
+}
+
+export function clearRequestFetchers(): void {
+  requestFetchers.clear();
+}
+
 export abstract class BaseMcpAdapter implements IMcpProvider {
   public readonly id: string;
   public readonly name: string;
@@ -64,12 +81,11 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
   protected async fetchWithTimeout(url: string, init: RequestInit, timeoutMs = this.timeoutMs): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const request = { ...init, signal: controller.signal };
+    const bound = requestFetchers.get(this.id);
 
     try {
-      return await fetch(url, {
-        ...init,
-        signal: controller.signal,
-      });
+      return bound ? await bound.fetch(url, request) : await fetch(url, request);
     } finally {
       clearTimeout(timer);
     }

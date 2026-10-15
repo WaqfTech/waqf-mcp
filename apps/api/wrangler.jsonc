@@ -19,6 +19,10 @@
     {
       "binding": "WEB",
       "service": "waqf-mcp-web"
+    },
+    {
+      "binding": "SEARCHER",
+      "service": "searcher"
     }
   ]
 }

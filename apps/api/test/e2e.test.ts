@@ -120,8 +120,12 @@ describe("Waqf MCP Gateway Worker E2E", () => {
 
     const res = await worker.fetch(req, mockEnv, mockCtx);
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { result: { serverInfo: { name: string } } };
+    const body = (await res.json()) as {
+      result: { serverInfo: { name: string; title: string; websiteUrl: string } };
+    };
     expect(body.result.serverInfo.name).toBe("IslamicSources");
+    expect(body.result.serverInfo.title).toBe("WaqfTech-MCP");
+    expect(body.result.serverInfo.websiteUrl).toBe("https://waqftech.org");
   });
 
   it("POST /mcp handles 'ping' method", async () => {
@@ -389,8 +393,14 @@ describe("Waqf MCP Gateway Worker E2E", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("application/json");
-    const data = (await res.json()) as { serverInfo: { name: string; version: string }; transport: { endpoint: string }; capabilities: Record<string, unknown> };
+    const data = (await res.json()) as {
+      serverInfo: { name: string; title: string; version: string; websiteUrl: string };
+      transport: { endpoint: string };
+      capabilities: Record<string, unknown>;
+    };
     expect(data.serverInfo.name).toBe("IslamicSources");
+    expect(data.serverInfo.title).toBe("WaqfTech-MCP");
+    expect(data.serverInfo.websiteUrl).toBe("https://waqftech.org");
     expect(data.transport.endpoint).toBe("https://mcp.waqf.app/mcp");
     expect(data.capabilities.tools).toBeDefined();
   });

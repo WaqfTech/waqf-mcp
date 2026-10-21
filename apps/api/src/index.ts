@@ -750,7 +750,9 @@ export default {
                 },
                 serverInfo: {
                   name: "IslamicSources",
+                  title: "WaqfTech-MCP",
                   version: "1.0.0",
+                  websiteUrl: "https://waqftech.org",
                 },
               },
             });

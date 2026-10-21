@@ -3,11 +3,11 @@ export const MCP_SERVER_CARD_JSON = JSON.stringify(
     $schema: "https://modelcontextprotocol.io/schemas/server-card/v1.json",
     serverInfo: {
       name: "IslamicSources",
-      title: "Islamic Sources (@IslamicSources)",
+      title: "WaqfTech-MCP",
       version: "1.0.0",
       description:
         "Edge-native Islamic knowledge aggregator for AI assistants (@IslamicSources). Relays responses from authentic Quran, Tafsir, Hadith, and Turath sources verbatim without modification or alteration. Provided 'as is'.",
-      websiteUrl: "https://mcp.waqf.dev",
+      websiteUrl: "https://waqftech.org",
     },
     disclaimer: {
       role: "Aggregator",

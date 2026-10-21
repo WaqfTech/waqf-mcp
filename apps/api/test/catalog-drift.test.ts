@@ -14,6 +14,7 @@ import { UPSTREAM_PROVIDERS } from "../src/config/providers.config";
 import { SchemaNormalizer } from "../src/core/normalizer";
 import { LLMS_FULL_TXT, LLMS_TXT } from "../src/llms";
 import { ROBOTS_TXT } from "../src/robots";
+import { MCP_SERVER_CARD_JSON } from "../src/server-card";
 import { SITEMAP_XML } from "../src/sitemap";
 
 /**
@@ -133,6 +134,15 @@ describe("published host split", () => {
     }
     // auth.md documents the endpoint as a Host header plus path, not an absolute URL.
     expect(publicAuthMd).toContain(`Host: ${new URL(GATEWAY_MCP_URL).host}`);
+  });
+
+  it("publishes the WaqfTech display identity and keeps the web mirror in sync", () => {
+    const card = JSON.parse(publicServerCard) as {
+      serverInfo: { title: string; websiteUrl: string };
+    };
+    expect(card.serverInfo.title).toBe("WaqfTech-MCP");
+    expect(card.serverInfo.websiteUrl).toBe("https://waqftech.org");
+    expect(card).toEqual(JSON.parse(MCP_SERVER_CARD_JSON));
   });
 });
 

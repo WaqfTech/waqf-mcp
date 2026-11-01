@@ -116,7 +116,8 @@ export class FederationRouter {
           (t) =>
             t.name.startsWith("turath__") ||
             t.name.startsWith("maheralfahel__") ||
-            t.name.startsWith("aljam3__")
+            t.name.startsWith("aljam3__") ||
+            t.name.startsWith("shamela__")
         ),
       ];
     }

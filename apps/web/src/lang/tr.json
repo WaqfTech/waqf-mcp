@@ -114,6 +114,11 @@
         "title": "Aljam3 İslami Kitap Kütüphanesi",
         "subtitle": "Kaynağı Bağlamında Okuma",
         "desc": "Geniş bir dijital İslami kitap kütüphanesine salt okunur erişim: metinlerde arama yapın, kitabı ve dosyalarını açın, sayfayı yazarı, kaynak kütüphanesi ve doğrudan kaynak bağlantısıyla bağlamında okuyun."
+      },
+      "shamela": {
+        "title": "Al-Maktaba Al-Shamela",
+        "subtitle": "Resmî Shamela Metin Araması",
+        "desc": "Resmî Shamela kütüphanesi: alıntılı önizlemelerle binlerce klasik kitapta sıralı arama, kapsamlı takip araması ve doğrudan alıntı bağlantılarıyla sayfa okuma."
       }
     }
   },

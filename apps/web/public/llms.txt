@@ -35,9 +35,9 @@ Loading 50+ tools into an LLM's system prompt consumes excessive context tokens.
 
 - `https://mcp.waqf.app/mcp?suite=core` **[RECOMMENDED FOR AGENTS]**: Exposes only high-level canonical tools (~1,400 tokens total).
 - `https://mcp.waqf.app/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
-- `https://mcp.waqf.app/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, Hadith critique, and scholarly libraries.
+- `https://mcp.waqf.app/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, the official Shamela corpus, Hadith critique, and scholarly libraries.
 - `https://mcp.waqf.app/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
-- `https://mcp.waqf.app/mcp` (or `?suite=all`): Full federation suite with all 51 tools across all 6 providers.
+- `https://mcp.waqf.app/mcp` (or `?suite=all`): Full federation suite with all 55 tools across all 7 providers.
 
 ## Federated Providers
 
@@ -61,6 +61,9 @@ Loading 50+ tools into an LLM's system prompt consumes excessive context tokens.
 6. **Aljam3 Islamic Books Library** (`aljam3`):
    - Host: `https://aljam3.com/mcp` (JSON-RPC, read-only, no authentication)
    - Scope: Search the full text of public Islamic books, browse books and their files, and read exact pages with book, author, file and page citations plus direct source and PDF links.
+7. **Al-Maktaba Al-Shamela** (`shamela`):
+   - Host: `https://mcp.shamela.ws` (JSON-RPC, read-only, no authentication)
+   - Scope: Official Shamela corpus — ranked book search with cited previews, scoped follow-up search within books, authors, categories and dates, and page reading with citation links.
 
 ## Canonical Tools Reference (`?suite=core`)
 

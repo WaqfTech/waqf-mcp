@@ -114,6 +114,11 @@
         "title": "Perpustakaan Kitab Islam Aljam3",
         "subtitle": "Membaca Sumber dalam Konteks",
         "desc": "Akses hanya-baca ke perpustakaan digital kitab Islam yang luas: telusuri matan, buka kitab dan berkasnya, lalu baca halaman dalam konteks beserta penulis, perpustakaan sumber, dan tautan langsung ke sumbernya."
+      },
+      "shamela": {
+        "title": "Al-Maktaba Al-Shamela",
+        "subtitle": "Pencarian Korpus Shamela Resmi",
+        "desc": "Perpustakaan Shamela resmi: pencarian berperingkat di ribuan kitab klasik dengan pratinjau bersitasi, pencarian lanjutan terlingkup, dan baca halaman dengan tautan sitasi langsung."
       }
     }
   },

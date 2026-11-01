@@ -57,11 +57,12 @@ Exposes Quranic, Tafsir, linguistic, and morphological tools from **Bahouth** an
 - Tafsir.net: `tafsir_net__*` (17 tools)
 
 ### C. `?suite=turath`
-Exposes classical Hadith collections, Islamic heritage libraries, the Aljam3 books corpus, and scholarly verification tools from **Turath**, **Sheikh Maher Al-Fahel** and **Aljam3**.
+Exposes classical Hadith collections, Islamic heritage libraries, the Aljam3 books corpus, the official Shamela corpus, and scholarly verification tools from **Turath**, **Sheikh Maher Al-Fahel**, **Aljam3** and **Shamela**.
 - Canonical: `waqf_hadith_search`, `waqf_turath_search_books`, `waqf_books_search`, `waqf_books_read_page`
 - Turath: `turath__*` (5 tools)
 - Maher Al-Fahel: `maheralfahel__*` (5 tools)
 - Aljam3: `aljam3__*` (7 tools)
+- Shamela: `shamela__*` (4 tools)
 
 ### D. `?suite=search`
 Exposes verified academic web search across 38+ authentic Islamic portals from **Fihris**.
@@ -69,7 +70,7 @@ Exposes verified academic web search across 38+ authentic Islamic portals from *
 - Fihris: `fihris__*` (2 tools)
 
 ### E. Default (`?suite=all` or omitted)
-Exposes all 51 tools across all 6 federated providers.
+Exposes all 55 tools across all 7 federated providers.
 
 ---
 
@@ -329,6 +330,18 @@ Upstream: `https://aljam3.com/mcp` (JSON-RPC, read-only, no authentication)
 7. `aljam3__list_libraries`: List the source collections available in Aljam3.
 
 Notes: page numbers refer to the digitized file, not necessarily the printed edition; extracted text may contain OCR errors, so verify important quotations against the PDF. Canonical entry points: `waqf_books_search` and `waqf_books_read_page`.
+
+---
+
+### Group 8: Al-Maktaba Al-Shamela (`shamela__*`)
+Upstream: `https://mcp.shamela.ws` (JSON-RPC, read-only, no authentication)
+
+1. `shamela__shamela_find`: Ranked search across the official Shamela corpus by intact Arabic phrases (`keywords`); returns main/secondary book layers with cited previews and opened evidence pages. Start every Shamela inquiry here.
+2. `shamela__shamela_find_scoped`: Follow-up search within explicit books, authors, categories, pages or Hijri date ranges; repeat identical inputs with `next_cursor` to continue.
+3. `shamela__shamela_open`: Read one source page (`book_id`, `page_id`) with its citation link and neighboring page IDs; continue long text with `next_cursor`.
+4. `shamela__shamela_open_many`: Open up to eight source pages within one text budget, with optional neighboring-page context.
+
+Notes: the gateway sanitizes loose input (`query` string, camelCase IDs) into Shamela's strict schemas; end every source-based paragraph with the returned `citation.markdown` page links.
 
 ---
 

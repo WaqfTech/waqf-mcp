@@ -18,7 +18,8 @@ export type ProviderId =
   | "turath"
   | "maheralfahel"
   | "fihris"
-  | "aljam3";
+  | "aljam3"
+  | "shamela";
 
 export type ProviderToolCategory = "quran" | "turath" | "tools";
 
@@ -180,6 +181,23 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
       "list_categories",
       "list_libraries",
     ],
+  },
+  {
+    id: "shamela",
+    displayName: "Al-Maktaba Al-Shamela",
+    summary:
+      "Official Shamela corpus: ranked book search with cited previews, scoped follow-up search, and page reader with citation links.",
+    upstreamUrl: "https://mcp.shamela.ws",
+    upstreamTransport: "json-rpc",
+    upstreamAuth: "none",
+    siteUrl: "https://shamela.ws",
+    category: "turath",
+    featured: false,
+    suites: ["turath", "all"],
+    timeoutMs: 10000,
+    enabled: true,
+    cacheTtlSeconds: 604800,
+    tools: ["shamela_find", "shamela_find_scoped", "shamela_open", "shamela_open_many"],
   },
 ];
 

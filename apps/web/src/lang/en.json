@@ -114,6 +114,11 @@
         "title": "Aljam3 Islamic Books Library",
         "subtitle": "Reading Sources in Context",
         "desc": "Read-only access to a wide digital library of Islamic books: search the corpus, open a book and its files, and read a page in context with its author, source library and a direct link to the source."
+      },
+      "shamela": {
+        "title": "Al-Maktaba Al-Shamela",
+        "subtitle": "Official Shamela Corpus Search",
+        "desc": "Official Shamela library: ranked search across thousands of classical books with cited previews, scoped follow-up search, and page reading with direct citation links."
       }
     }
   },

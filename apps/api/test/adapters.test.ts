@@ -258,6 +258,53 @@ describe("MCP Adapters & Federation Router", () => {
     }
   });
 
+  it("JsonRpcMcpAdapter posts root-mounted bases verbatim without appending /mcp/", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        result: {
+          tools: [{ name: "shamela_find", description: "Search", inputSchema: { type: "object" } }],
+        },
+      }),
+    });
+
+    globalThis.fetch = mockFetch;
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "shamela",
+      name: "Shamela",
+      baseUrl: "https://mcp.shamela.ws",
+      transport: "json-rpc",
+      description: "Shamela",
+    });
+
+    const tools = await adapter.listTools();
+    expect(tools).toHaveLength(1);
+    // The official Shamela endpoint answers at / and 404s at /mcp/.
+    expect(mockFetch.mock.calls[0][0]).toBe("https://mcp.shamela.ws/");
+  });
+
+  it("JsonRpcMcpAdapter keeps appending /mcp/ for path-based bases", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ jsonrpc: "2.0", result: { tools: [] } }),
+    });
+
+    globalThis.fetch = mockFetch;
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "custom",
+      name: "Custom",
+      baseUrl: "https://example.com/api",
+      transport: "json-rpc",
+      description: "Custom",
+    });
+
+    await adapter.listTools();
+    expect(mockFetch.mock.calls[0][0]).toBe("https://example.com/api/mcp/");
+  });
+
   it("FederationRouter federates and routes resources and prompts", async () => {
     const registry = new ProviderRegistry([]);
 

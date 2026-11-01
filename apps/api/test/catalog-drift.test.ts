@@ -8,6 +8,7 @@ import {
   PROVIDER_COUNT,
   TOTAL_GATEWAY_TOOL_COUNT,
   TOTAL_PROVIDER_TOOL_COUNT,
+  getProviderCatalogEntry,
   providersForSuite,
 } from "@waqf/types";
 import { UPSTREAM_PROVIDERS } from "../src/config/providers.config";
@@ -57,6 +58,17 @@ describe("Provider catalog consistency", () => {
   it("exposes Aljam3 in the heritage suite", () => {
     expect(providersForSuite("turath").map((entry) => entry.id)).toContain("aljam3");
     expect(providersForSuite("quran").map((entry) => entry.id)).not.toContain("aljam3");
+  });
+
+  it("exposes Shamela in the heritage suite", () => {
+    expect(providersForSuite("turath").map((entry) => entry.id)).toContain("shamela");
+    expect(providersForSuite("quran").map((entry) => entry.id)).not.toContain("shamela");
+    expect(getProviderCatalogEntry("shamela").tools).toEqual([
+      "shamela_find",
+      "shamela_find_scoped",
+      "shamela_open",
+      "shamela_open_many",
+    ]);
   });
 
   it("binds the catalog's canonical names to the normalizer's real definitions", () => {

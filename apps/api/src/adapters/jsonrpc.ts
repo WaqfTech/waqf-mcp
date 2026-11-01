@@ -10,8 +10,19 @@ import type {
 
 export class JsonRpcMcpAdapter extends BaseMcpAdapter {
   private endpointUrl(): string {
-    // If the base URL ends with a known resource, keep it, otherwise append slash if needed
-    return this.baseUrl.endsWith("/mcp") ? this.baseUrl : `${this.baseUrl}/mcp/`;
+    // Root-mounted servers (e.g. https://mcp.shamela.ws answers at / and 404s
+    // at /mcp/) are used verbatim; otherwise keep a /mcp base or append it.
+    if (this.baseUrl.endsWith("/mcp")) {
+      return this.baseUrl;
+    }
+    try {
+      if (new URL(this.baseUrl).pathname.replace(/\/+$/, "") === "") {
+        return `${this.baseUrl}/`;
+      }
+    } catch {
+      // Fall through to the /mcp convention for unparseable bases.
+    }
+    return `${this.baseUrl}/mcp/`;
   }
 
   async listTools(): Promise<ToolDefinition[]> {

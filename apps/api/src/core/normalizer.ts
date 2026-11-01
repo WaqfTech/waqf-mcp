@@ -337,6 +337,233 @@ export class SchemaNormalizer {
     return mapped;
   }
 
+  // Maps loose model input onto Shamela's exact tool arguments.
+  // All four Shamela tools declare additionalProperties: false, so unknown keys
+  // are hard errors upstream (same contract as Aljam3).
+  public toShamelaArgs(toolName: string, args: Record<string, unknown>): Record<string, unknown> {
+    const allowed: Record<string, Set<string>> = {
+      shamela_find: new Set([
+        "keywords",
+        "difficulty",
+        "field",
+        "category_ids",
+        "book_queries",
+        "author_queries",
+        "cursor",
+      ]),
+      shamela_find_scoped: new Set([
+        "query",
+        "queries",
+        "book_ids",
+        "book_names",
+        "author_ids",
+        "author_names",
+        "category_ids",
+        "within_pages",
+        "date_from",
+        "date_to",
+        "exclude_phrases",
+        "sort",
+        "limit",
+        "map_limit",
+        "difficulty",
+        "field",
+        "cursor",
+      ]),
+      shamela_open: new Set(["book_id", "page_id", "max_chars", "field", "cursor"]),
+      shamela_open_many: new Set(["pages", "context", "max_total_chars"]),
+    };
+
+    const target = allowed[toolName] ?? new Set<string>();
+    const mapped: Record<string, unknown> = {};
+
+    const nonEmpty = (value: unknown): string | null => {
+      if (typeof value !== "string") return null;
+      const trimmed = value.trim();
+      return trimmed === "" ? null : trimmed;
+    };
+
+    const phraseList = (value: unknown, maxItems: number, maxLength: number): string[] | null => {
+      const items = Array.isArray(value) ? value : [value];
+      const phrases: string[] = [];
+      for (const item of items) {
+        const phrase = nonEmpty(item);
+        if (phrase) phrases.push(phrase.slice(0, maxLength));
+        if (phrases.length >= maxItems) break;
+      }
+      return phrases.length > 0 ? phrases : null;
+    };
+
+    const idList = (value: unknown, maxItems: number): number[] | null => {
+      const items = Array.isArray(value) ? value : [value];
+      const ids: number[] = [];
+      for (const item of items) {
+        const num = typeof item === "number" ? item : Number(String(item ?? "").trim());
+        if (Number.isInteger(num) && num >= 1) ids.push(num);
+        if (ids.length >= maxItems) break;
+      }
+      return ids.length > 0 ? ids : null;
+    };
+
+    // Search phrases: models send query/q/keywords as a string or list; the find
+    // tools need arrays of intact non-empty phrases.
+    const phraseInput = args.keywords ?? args.query ?? args.q;
+    if (target.has("keywords")) {
+      const keywords = phraseList(phraseInput, 64, 1000);
+      if (keywords) mapped.keywords = keywords;
+    }
+    if (target.has("queries") || target.has("query")) {
+      if (Array.isArray(phraseInput)) {
+        const queries = phraseList(phraseInput, 64, 1000);
+        if (queries) mapped.queries = queries;
+      } else {
+        const query = nonEmpty(phraseInput);
+        if (query) mapped.query = query.slice(0, 1000);
+      }
+    }
+
+    // Singular camelCase aliases onto snake_case upstream keys.
+    const idAliases: Record<string, string> = {
+      bookId: "book_id",
+      book_id: "book_id",
+      pageId: "page_id",
+      page_id: "page_id",
+      pageNumber: "page_id",
+      page_number: "page_id",
+      authorId: "author_id",
+    };
+    for (const [from, to] of Object.entries(idAliases)) {
+      if (args[from] === undefined) continue;
+      const num = typeof args[from] === "number" ? args[from] : Number(String(args[from]).trim());
+      if (!Number.isInteger(num as number) || (num as number) < 1) continue;
+      if (to === "author_id" && target.has("author_ids")) {
+        mapped.author_ids = [num];
+      } else if (target.has(to)) {
+        mapped[to] = num;
+      } else if (to === "book_id" && target.has("book_ids")) {
+        mapped.book_ids = [num];
+      }
+    }
+
+    const listAliases: Record<string, { key: string; max: number }> = {
+      book_ids: { key: "book_ids", max: 20 },
+      books: { key: "book_ids", max: 20 },
+      author_ids: { key: "author_ids", max: 20 },
+      authors: { key: "author_ids", max: 20 },
+      category_ids: { key: "category_ids", max: 20 },
+      categoryIds: { key: "category_ids", max: 20 },
+      categories: { key: "category_ids", max: 20 },
+    };
+    for (const [from, { key, max }] of Object.entries(listAliases)) {
+      if (args[from] === undefined || !target.has(key) || mapped[key] !== undefined) continue;
+      const ids = idList(args[from], max);
+      if (ids) mapped[key] = ids;
+    }
+
+    const nameAliases: Record<string, { key: string; max: number }> = {
+      book_queries: { key: "book_queries", max: 20 },
+      bookQueries: { key: "book_queries", max: 20 },
+      book_names: { key: "book_names", max: 5 },
+      bookNames: { key: "book_names", max: 5 },
+      author_queries: { key: "author_queries", max: 20 },
+      authorQueries: { key: "author_queries", max: 20 },
+      author_names: { key: "author_names", max: 5 },
+      authorNames: { key: "author_names", max: 5 },
+      exclude_phrases: { key: "exclude_phrases", max: 5 },
+      excludePhrases: { key: "exclude_phrases", max: 5 },
+    };
+    for (const [from, { key, max }] of Object.entries(nameAliases)) {
+      if (args[from] === undefined || !target.has(key)) continue;
+      const names = phraseList(args[from], max, 200);
+      if (names) mapped[key] = names;
+    }
+
+    // open_many page entries: normalize each {bookId, pageId} object.
+    if (target.has("pages") && Array.isArray(args.pages)) {
+      const pages: Record<string, unknown>[] = [];
+      for (const entry of args.pages.slice(0, 8)) {
+        if (entry === null || typeof entry !== "object" || Array.isArray(entry)) continue;
+        const raw = entry as Record<string, unknown>;
+        const bookId = raw.book_id ?? raw.bookId;
+        const pageId = raw.page_id ?? raw.pageId ?? raw.page_number ?? raw.pageNumber;
+        const bookNum = typeof bookId === "number" ? bookId : Number(String(bookId ?? "").trim());
+        const pageNum = typeof pageId === "number" ? pageId : Number(String(pageId ?? "").trim());
+        if (!Number.isInteger(bookNum) || bookNum < 1 || !Number.isInteger(pageNum) || pageNum < 1) {
+          continue;
+        }
+        pages.push({ book_id: bookNum, page_id: pageNum });
+      }
+      if (pages.length > 0) mapped.pages = pages;
+    }
+
+    // Scoped within_pages entries share the same {book_id, page_id} shape.
+    if (target.has("within_pages") && Array.isArray(args.within_pages)) {
+      const locations: Record<string, unknown>[] = [];
+      for (const entry of (args.within_pages as unknown[]).slice(0, 20)) {
+        if (entry === null || typeof entry !== "object" || Array.isArray(entry)) continue;
+        const raw = entry as Record<string, unknown>;
+        const bookNum = Number(String(raw.book_id ?? raw.bookId ?? "").trim());
+        const pageNum = Number(String(raw.page_id ?? raw.pageId ?? "").trim());
+        if (!Number.isInteger(bookNum) || bookNum < 1 || !Number.isInteger(pageNum) || pageNum < 1) {
+          continue;
+        }
+        locations.push({ book_id: bookNum, page_id: pageNum });
+      }
+      if (locations.length > 0) mapped.within_pages = locations;
+    }
+
+    // Enum passthrough: only exact upstream values survive.
+    if (typeof args.difficulty === "string" && target.has("difficulty")) {
+      const difficulty = args.difficulty.trim();
+      if (difficulty === "easy" || difficulty === "medium" || difficulty === "hard") {
+        mapped.difficulty = difficulty;
+      }
+    }
+    if (typeof args.field === "string" && target.has("field")) {
+      const field = args.field.trim();
+      if (field === "body" || field === "footnotes") mapped.field = field;
+    }
+    if (typeof args.sort === "string" && target.has("sort")) {
+      const sort = args.sort.trim();
+      if (sort === "relevance" || sort === "date_asc" || sort === "date_desc") {
+        mapped.sort = sort;
+      }
+    }
+    if (typeof args.cursor === "string" && target.has("cursor")) {
+      const cursor = nonEmpty(args.cursor);
+      if (cursor) mapped.cursor = cursor.slice(0, 4096);
+    }
+
+    // Bounded numerics with upstream defaults left to apply when absent.
+    const boundedInt = (value: unknown, min: number, max: number): number | null => {
+      const num = typeof value === "number" ? value : Number(String(value ?? "").trim());
+      if (!Number.isFinite(num)) return null;
+      return Math.min(max, Math.max(min, Math.trunc(num)));
+    };
+    const bounds: Record<string, [number, number]> = {
+      max_chars: [500, 16000],
+      max_total_chars: [500, 64000],
+      limit: [1, 20],
+      map_limit: [0, 100],
+      context: [0, 3],
+      date_from: [-99999, 99999],
+      date_to: [-99999, 99999],
+    };
+    const boundAliases: Record<string, string> = {
+      maxChars: "max_chars",
+      maxTotalChars: "max_total_chars",
+    };
+    for (const [key, [min, max]] of Object.entries(bounds)) {
+      if (!target.has(key)) continue;
+      const value = args[key] ?? args[Object.keys(boundAliases).find((a) => boundAliases[a] === key) ?? ""];
+      if (value === undefined) continue;
+      const clamped = boundedInt(value, min, max);
+      if (clamped !== null) mapped[key] = clamped;
+    }
+
+    return mapped;
+  }
+
   // Translates canonical Quran input to Tafsir.net format
   public toTafsirNetAyahArgs(input: CanonicalQuranAyahInput): Record<string, unknown> {
     const includeSet = new Set<string>();
@@ -408,6 +635,10 @@ export class SchemaNormalizer {
 
     if (providerId === "aljam3") {
       return this.toAljam3Args(toolName, args);
+    }
+
+    if (providerId === "shamela") {
+      return this.toShamelaArgs(toolName, args);
     }
 
     return args;

@@ -51,6 +51,7 @@ CLAUDE.md
 GEMINI.md
 .cursor/
 .devin/
+.commandcode/
 
 
 # Ephemeral goal claim locks (managed by sila)

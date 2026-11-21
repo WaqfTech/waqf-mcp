@@ -95,6 +95,7 @@ const ALLOWED_REDIRECT_ORIGINS = new Set([
   "https://gemini.google.com",
   "https://oauth-redirect.googleusercontent.com",
   "https://oauth-redirect-sandbox.googleusercontent.com",
+  "https://oauth-redirect-test.googleusercontent.com",
   "https://cursor.com",
   "https://www.cursor.com",
   "https://vscode.dev",

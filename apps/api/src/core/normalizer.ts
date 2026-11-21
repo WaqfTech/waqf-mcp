@@ -15,100 +15,19 @@ export interface NormalizeToolContext {
   page?: number;
   hasMore?: boolean;
   warnings?: string[];
+  skipByteBound?: boolean;
 }
 
 export const CANONICAL_RESULT_OUTPUT_SCHEMA: Record<string, unknown> = {
   type: "object",
   required: ["schema_version", "status", "query", "results", "pagination", "warnings"],
   properties: {
-    schema_version: { type: "string", const: "1.0.0" },
-    trust_boundary: { type: "string", const: "external_untrusted_source" },
+    schema_version: { type: "string" },
+    trust_boundary: { type: "string" },
     status: { type: "string", enum: ["ok", "no_results", "partial_results", "error"] },
-    query: {
-      type: "object",
-      required: ["original", "mode", "limit"],
-      properties: {
-        original: { type: "string" },
-        mode: { type: "string" },
-        limit: { type: ["integer", "null"] },
-      },
-    },
-    results: {
-      type: "array",
-      items: {
-        type: "object",
-        required: ["result_id", "kind", "provider", "work", "location", "content", "citation", "provenance"],
-        properties: {
-          result_id: { type: "string" },
-          kind: {
-            type: "string",
-            enum: ["quran_ayah", "book_passage", "book_page", "catalog_entry", "web_result", "raw_text"],
-          },
-          provider: { type: "string" },
-          work: {
-            type: "object",
-            properties: {
-              id: { type: ["string", "null"] },
-              title: { type: ["string", "null"] },
-              author: { type: ["string", "null"] },
-              edition: { type: ["string", "null"] },
-            },
-          },
-          location: {
-            type: "object",
-            properties: {
-              volume_label: { type: ["string", "null"] },
-              printed_page_label: { type: ["string", "null"] },
-              digital_page_number: { type: ["integer", "null"] },
-              page_id: { type: ["string", "null"] },
-              file_id: { type: ["integer", "null"] },
-              offset: { type: ["integer", "null"] },
-              next_offset: { type: ["integer", "null"] },
-            },
-          },
-          content: {
-            type: "object",
-            required: ["verbatim", "is_excerpt", "language", "ocr_status"],
-            properties: {
-              verbatim: { type: "string" },
-              is_excerpt: { type: "boolean" },
-              language: { type: ["string", "null"] },
-              ocr_status: { type: "string", enum: ["unknown", "verified_clean", "possible_ocr_errors"] },
-            },
-          },
-          citation: {
-            type: "object",
-            required: ["source_url", "pdf_url", "citation_markdown", "verification_status"],
-            properties: {
-              source_url: { type: ["string", "null"] },
-              pdf_url: { type: ["string", "null"] },
-              citation_markdown: { type: ["string", "null"] },
-              verification_status: { type: "string", enum: ["unverified", "resolved", "broken", "ambiguous"] },
-            },
-          },
-          provenance: {
-            type: "object",
-            required: ["retrieved_at", "source_version", "content_hash"],
-            properties: {
-              retrieved_at: { type: "string" },
-              source_version: { type: ["string", "null"] },
-              content_hash: { type: ["string", "null"] },
-            },
-          },
-        },
-      },
-    },
-    pagination: {
-      type: "object",
-      required: ["page", "limit", "total", "has_more", "next_cursor"],
-      properties: {
-        page: { type: ["integer", "null"] },
-        limit: { type: ["integer", "null"] },
-        total: { type: ["integer", "null"] },
-        has_more: { type: "boolean" },
-        next_cursor: { type: ["string", "null"] },
-      },
-    },
+    query: { type: "object" },
+    results: { type: "array", items: { type: "object" } },
+    pagination: { type: "object" },
     warnings: { type: "array", items: { type: "string" } },
   },
 };
@@ -265,11 +184,12 @@ function buildCitationMarkdown(
 export class SchemaNormalizer {
   // Returns definitions for high-level Waqf Canonical tools
   public getCanonicalToolDefinitions(): ToolDefinition[] {
-    const definitions: ToolDefinition[] = [
+    const definitions: Array<ToolDefinition & { title: string }> = [
       {
         name: "waqf_quran_get_ayah",
+        title: "Get Quran Ayah & Tafsir",
         description:
-          "Lookup a verified Holy Quran Ayah by Surah and Ayah number, returning Uthmani text, English translation, and optional Tafsir explanations.",
+          "Look up a verified Holy Quran Ayah by Surah and Ayah number, returning Uthmani text and optional Tafsir or Quranic science annotations.",
         inputSchema: {
           type: "object",
           properties: {
@@ -307,9 +227,47 @@ export class SchemaNormalizer {
         outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
-        name: "waqf_hadith_search",
+        name: "waqf_quran_search",
+        title: "Search Quran & Roots",
         description:
-          "Search classical Hadith collections and scholarly Islamic literature using full-text search, prioritizing primary Hadith collections (كتب السنة) by default.",
+          "Search Holy Quran verses by Arabic text (FTS5, diacritics normalized) or by Arabic triliteral/quadriliteral morphological root.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              maxLength: 200,
+              description: "Arabic search text (for mode 'text') or Arabic root letters such as 'رحم' or 'كتب' (for mode 'root')",
+            },
+            mode: {
+              type: "string",
+              enum: ["text", "root"],
+              default: "text",
+              description: "Search mode: 'text' for full-text verse search, 'root' for root occurrences across the Quran",
+            },
+            surah: {
+              type: "integer",
+              minimum: 1,
+              maximum: 114,
+              description: "Optional Surah number (1 to 114) to filter results in 'text' mode",
+            },
+            limit: {
+              type: "integer",
+              minimum: 1,
+              maximum: 50,
+              default: 10,
+              description: "Maximum number of matching verses or occurrences to return",
+            },
+          },
+          required: ["query"],
+        },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
+      },
+      {
+        name: "waqf_hadith_search",
+        title: "Search Hadith Literature",
+        description:
+          "Search classical Hadith collections and scholarly Islamic literature using full-text search, prioritizing primary Hadith collections by default.",
         inputSchema: {
           type: "object",
           properties: {
@@ -322,7 +280,7 @@ export class SchemaNormalizer {
               enum: ["collections", "commentaries", "all"],
               default: "collections",
               description:
-                "Search scope: 'collections' filters primary Hadith collections (كتب السنة, cat_id 6); 'commentaries' adds Hadith commentaries (cat_id 6, 7); 'all' searches all Turath books.",
+                "Search scope: 'collections' filters primary Hadith collections (cat_id 6); 'commentaries' adds Hadith commentaries (cat_id 6, 7); 'all' searches all Turath books.",
             },
             limit: {
               type: "integer",
@@ -338,8 +296,9 @@ export class SchemaNormalizer {
       },
       {
         name: "waqf_turath_search_books",
+        title: "Search Turath Catalog",
         description:
-          "Search the vast Turath Islamic library catalog for classical books, authors, and encyclopedias.",
+          "Search the Turath Islamic library catalog for classical books, authors, and categories.",
         inputSchema: {
           type: "object",
           properties: {
@@ -360,14 +319,15 @@ export class SchemaNormalizer {
       },
       {
         name: "waqf_search_scholarship",
+        title: "Search Islamic Scholarship",
         description:
-          "Search across vetted Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.",
+          "Search vetted Islamic scholarship portals (fatwas, research articles, classical treatises) using Fihris Islamic Search.",
         inputSchema: {
           type: "object",
           properties: {
             query: {
               type: "string",
-              description: "Search keywords or question in Arabic or English (e.g. 'شروط الصلاة', 'صيام يوم عاشوراء')",
+              description: "Search keywords or question in Arabic or English",
             },
             fileType: {
               type: "string",
@@ -377,10 +337,11 @@ export class SchemaNormalizer {
             dateRestrict: {
               type: "string",
               enum: ["d1", "w1", "m1", "y1"],
-              description: "Optional date restriction (d1 = past 24h, w1 = past week, m1 = past month, y1 = past year)",
+              description: "Optional date restriction (d1, w1, m1, y1)",
             },
             page: {
-              type: "number",
+              type: "integer",
+              minimum: 1,
               description: "Page number for pagination (default: 1)",
             },
           },
@@ -390,15 +351,16 @@ export class SchemaNormalizer {
       },
       {
         name: "waqf_books_search",
+        title: "Search Classical Books",
         description:
-          "Search inside the full text of classical Islamic books and return short matching passages with their source metadata (book, author, file and page) and a direct link to Aljam3. Excerpts are discovery aids, not complete evidence: read the page with waqf_books_read_page before quoting or interpreting, and cite the returned source URL.",
+          "Search inside classical Islamic books and return matching passages with citation metadata and source links. Call waqf_books_read_page with the returned IDs to inspect full page context before quoting.",
         inputSchema: {
           type: "object",
           properties: {
             query: {
               type: "string",
               maxLength: 500,
-              description: "Search terms, usually in Arabic; a quoted phrase searches for that exact phrase",
+              description: "Search terms, usually in Arabic; quote a phrase for an exact-phrase match",
             },
             page: {
               type: "integer",
@@ -411,30 +373,30 @@ export class SchemaNormalizer {
               type: "integer",
               minimum: 1,
               maximum: 20,
-              default: 10,
+              default: 5,
               description: "Number of passages per result page",
             },
             bookId: {
               type: "integer",
-              description: "Restrict to one book (discover IDs with aljam3__list_books or aljam3__get_book)",
+              description: "Optional book ID to restrict the search",
             },
             authorId: {
               type: "integer",
-              description: "Restrict to one author (discover IDs with aljam3__list_authors)",
+              description: "Optional author ID to restrict the search",
             },
             categoryId: {
               type: "integer",
-              description: "Restrict to one subject (discover IDs with aljam3__list_categories)",
+              description: "Optional subject category ID to restrict the search",
             },
             libraryId: {
               type: "integer",
-              description: "Restrict to one source collection (discover IDs with aljam3__list_libraries)",
+              description: "Optional source collection ID to restrict the search",
             },
             locale: {
               type: "string",
               enum: ["ar", "ur", "en"],
               default: "ar",
-              description: "Language of the returned links; does not translate the source text",
+              description: "Language of the returned links only; does not translate book text",
             },
           },
           required: ["query"],
@@ -443,48 +405,77 @@ export class SchemaNormalizer {
       },
       {
         name: "waqf_books_read_page",
+        title: "Read Book Page",
         description:
-          "Read one exact page of a digitized book in context, with full citation metadata, a PDF link and the neighbouring page numbers. Long pages are chunked: repeat with the returned next offset to continue. Page numbers refer to the digitized file, not necessarily the printed edition, and the extracted text may contain OCR errors, so verify important quotations against the PDF.",
+          "Read one exact page of a book from Aljam3, Turath, or Shamela with citation metadata and continuation offsets or cursors. Pass fileId + pageNumber for Aljam3, or provider + bookId + pageId for Turath or Shamela.",
         inputSchema: {
           type: "object",
           properties: {
+            provider: {
+              type: "string",
+              enum: ["aljam3", "turath", "shamela"],
+              default: "aljam3",
+              description: "Target book corpus provider ('aljam3', 'turath', or 'shamela')",
+            },
             fileId: {
               type: "integer",
-              description: "Book file ID, from waqf_books_search or aljam3__get_book",
+              minimum: 1,
+              description: "Aljam3 book file ID returned by search results",
+            },
+            bookId: {
+              type: "integer",
+              minimum: 1,
+              description: "Turath or Shamela book ID returned by search results",
             },
             pageNumber: {
               type: "integer",
               minimum: 1,
-              description: "Page number within that file, from waqf_books_search",
+              description: "Digitized page number (used by Aljam3)",
+            },
+            pageId: {
+              type: "integer",
+              minimum: 1,
+              description: "Internal page ID (used by Turath and Shamela)",
             },
             offset: {
               type: "integer",
               minimum: 0,
               default: 0,
-              description: "Character offset to continue reading from (use the next offset returned by the previous call)",
+              description: "Character offset to continue reading from (Aljam3)",
+            },
+            cursor: {
+              type: "string",
+              description: "Continuation cursor returned by a previous Shamela page call",
+            },
+            field: {
+              type: "string",
+              enum: ["body", "footnotes"],
+              default: "body",
+              description: "Page section to read on Shamela ('body' or 'footnotes')",
             },
             maxChars: {
               type: "integer",
               minimum: 1,
               maximum: 12000,
-              default: 6000,
-              description: "Maximum characters of page text to return",
+              default: 3500,
+              description: "Maximum characters of page text to return (Aljam3 and Shamela)",
             },
             locale: {
               type: "string",
               enum: ["ar", "ur", "en"],
               default: "ar",
-              description: "Language of the returned links; does not translate the source text",
+              description: "Language of the returned Aljam3 links; does not translate source text",
             },
           },
-          required: ["fileId", "pageNumber"],
+          required: [],
         },
         outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_research_search",
+        title: "Federated Islamic Research",
         description:
-          "Run a concurrent federated research query across relevant Islamic providers by scholarly domain, returning attributed evidence, citation metadata, and partial-failure warnings without merging distinct editions or positions.",
+          "Run a concurrent federated research query across Islamic providers by scholarly domain, returning attributed evidence, citation metadata, and partial-failure warnings without merging distinct editions or positions.",
         inputSchema: {
           type: "object",
           properties: {
@@ -507,35 +498,29 @@ export class SchemaNormalizer {
                 "general",
               ],
               default: "general",
-              description: "Scholarly domain used to select candidate providers when providers is 'auto'",
+              description: "Scholarly domain used for automatic provider routing",
             },
             providers: {
-              oneOf: [
-                { type: "string", enum: ["auto"] },
-                {
-                  type: "array",
-                  items: {
-                    type: "string",
-                    enum: [
-                      "tafsir_net",
-                      "bahouth",
-                      "turath",
-                      "maheralfahel",
-                      "fihris",
-                      "aljam3",
-                      "shamela",
-                    ],
-                  },
-                },
-              ],
-              default: "auto",
-              description: "Provider selection: 'auto' for domain routing, or an explicit list of provider IDs",
+              type: "array",
+              items: {
+                type: "string",
+                enum: [
+                  "tafsir_net",
+                  "bahouth",
+                  "turath",
+                  "maheralfahel",
+                  "fihris",
+                  "aljam3",
+                  "shamela",
+                ],
+              },
+              description: "Optional list of provider IDs; omit or pass empty array for automatic domain routing",
             },
             max_results: {
               type: "integer",
               minimum: 1,
               maximum: 20,
-              default: 10,
+              default: 6,
               description: "Maximum total evidence items to return across providers",
             },
             language: {
@@ -552,6 +537,7 @@ export class SchemaNormalizer {
     return definitions.map((tool) => ({
       ...tool,
       annotations: {
+        title: tool.title,
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
@@ -954,9 +940,31 @@ export class SchemaNormalizer {
     raw: ToolResult,
     limit: number
   ): { result: ToolResult; hasMore: boolean; total: number | null } {
-    const safeLimit = Math.min(20, Math.max(1, Math.trunc(limit)));
+    const safeLimit = Math.min(50, Math.max(1, Math.trunc(limit)));
     if (raw.isError || !raw.content.length) {
       return { result: raw, hasMore: false, total: null };
+    }
+
+    if (raw.content.length > 1 && raw.content.every((b) => b.type === "text")) {
+      const total = raw.content.length;
+      const hasMore = total > safeLimit;
+      const scObj = asRecord(raw.structuredContent);
+      const scList = scObj && Array.isArray(scObj.result) ? scObj.result : null;
+      const nextSc =
+        scObj && scList
+          ? { ...scObj, result: scList.slice(0, safeLimit) }
+          : raw.structuredContent;
+      return {
+        hasMore,
+        total: scList ? Math.max(total, scList.length) : total,
+        result: hasMore
+          ? {
+              ...raw,
+              content: raw.content.slice(0, safeLimit),
+              ...(nextSc !== undefined ? { structuredContent: nextSc } : {}),
+            }
+          : raw,
+      };
     }
 
     const first = raw.content[0];
@@ -991,7 +999,7 @@ export class SchemaNormalizer {
       return { result: raw, hasMore: false, total: null };
     }
 
-    for (const key of ["results", "items", "hits", "data"] as const) {
+    for (const key of ["results", "result", "items", "hits", "data", "verses", "occurrences"] as const) {
       const list = obj[key];
       if (!Array.isArray(list)) continue;
       const total = asInt(obj.total) ?? asInt(obj.count) ?? list.length;
@@ -1018,12 +1026,88 @@ export class SchemaNormalizer {
     return { result: raw, hasMore: false, total: null };
   }
 
+  /**
+   * Trims multi-item canonical payloads to stay comfortably below strict host
+   * connector size caps (for example Grok's 20 KB truncation limit) while
+   * keeping content[0].text self-contained and valid JSON.
+   */
+  public boundResponseByBytes(result: ToolResult, maxBytes = 16500): ToolResult {
+    const encoder = new TextEncoder();
+    const byteSize = (candidate: ToolResult): number =>
+      encoder.encode(JSON.stringify(candidate)).length;
+
+    if (byteSize(result) <= maxBytes || !result.structuredContent) {
+      return result;
+    }
+
+    const envelope = asRecord(result.structuredContent);
+    if (!envelope || !Array.isArray(envelope.results) || envelope.results.length <= 1) {
+      return result;
+    }
+
+    const rawResults = envelope.results as CanonicalEvidenceItem[];
+    const baseWarnings = Array.isArray(envelope.warnings)
+      ? (envelope.warnings as string[]).slice()
+      : [];
+    const trimWarning =
+      "Result list trimmed to stay under the 18 KB connector payload budget; request fewer items or paginate.";
+    if (!baseWarnings.includes(trimWarning)) {
+      baseWarnings.push(trimWarning);
+    }
+
+    let keptCount = rawResults.length - 1;
+    let candidate = result;
+    while (keptCount >= 1) {
+      const kept = rawResults.slice(0, keptCount).map(({ raw: _raw, ...rest }) => rest);
+      const prevPagination = asRecord(envelope.pagination) ?? {};
+      const nextPagination = {
+        ...prevPagination,
+        limit: keptCount,
+        has_more: true,
+      };
+      const nextStructured: Record<string, unknown> = {
+        ...envelope,
+        results: kept,
+        pagination: nextPagination,
+        warnings: baseWarnings,
+      };
+      const compactText = JSON.stringify({
+        status: envelope.status,
+        results: kept.map((item) => ({
+          provider: item.provider,
+          title: item.work.title,
+          author: item.work.author,
+          page:
+            item.location.printed_page_label ??
+            item.location.digital_page_number ??
+            item.location.page_id,
+          verbatim: item.content.verbatim,
+          citation_markdown: item.citation.citation_markdown,
+        })),
+        pagination: nextPagination,
+        warnings: baseWarnings,
+      });
+      candidate = {
+        ...result,
+        content: [{ type: "text", text: compactText }],
+        structuredContent: nextStructured,
+      };
+      if (byteSize(candidate) <= maxBytes || keptCount === 1) {
+        return candidate;
+      }
+      keptCount -= 1;
+    }
+
+    return candidate;
+  }
+
   private mapRecordToEvidenceItem(
     entry: unknown,
     index: number,
     providerId: string,
     retrievedAt: string,
-    rawFallbackText: string
+    rawFallbackText: string,
+    contextMode?: string
   ): CanonicalEvidenceItem {
     const rec = asRecord(entry);
     if (!rec) {
@@ -1064,6 +1148,12 @@ export class SchemaNormalizer {
 
     const workObj = asRecord(rec.book) ?? asRecord(rec.work) ?? asRecord(rec.meta);
     const citationObj = asRecord(rec.citation);
+    const citationMdRaw =
+      asString(citationObj?.markdown) ?? asString(rec.citation_markdown);
+    const mdLinkMatch = citationMdRaw?.match(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
+    const mdTitleHint = mdLinkMatch
+      ? mdLinkMatch[1].replace(/\s*\([^)]*\)\s*$/, "").trim() || null
+      : null;
     const title =
       asString(rec.book_title) ??
       asString(rec.book_name) ??
@@ -1071,7 +1161,8 @@ export class SchemaNormalizer {
       asString(rec.name) ??
       asString(workObj?.book_name) ??
       asString(workObj?.title) ??
-      asString(workObj?.name);
+      asString(workObj?.name) ??
+      mdTitleHint;
     const author =
       asString(rec.author_name) ??
       asString(rec.author) ??
@@ -1083,11 +1174,18 @@ export class SchemaNormalizer {
       asString(rec.book_id) ??
       asString(workObj?.id) ??
       asString(rec.surah) ??
+      asString(rec.surah_id) ??
       asString(rec.id);
     const edition = asString(rec.edition) ?? asString(workObj?.edition);
 
-    const isQuran = rec.surah !== undefined || rec.verse_key !== undefined || rec.text_uthmani !== undefined;
-    const isPage = rec.file_id !== undefined && rec.page_number !== undefined && rec.text !== undefined;
+    const isQuran =
+      rec.surah !== undefined ||
+      rec.surah_id !== undefined ||
+      rec.verse_key !== undefined ||
+      rec.text_uthmani !== undefined;
+    const isPage =
+      (rec.file_id !== undefined && rec.page_number !== undefined && rec.text !== undefined) ||
+      (contextMode === "books_read_page" && typeof rec.text === "string");
     const isWeb = rec.displayUrl !== undefined || (rec.url !== undefined && rec.snippet !== undefined);
     const kind: CanonicalEvidenceItem["kind"] = isQuran
       ? "quran_ayah"
@@ -1095,7 +1193,7 @@ export class SchemaNormalizer {
         ? "book_page"
         : isWeb
           ? "web_result"
-          : rec.text !== undefined || rec.snip !== undefined || rec.excerpt !== undefined
+          : rec.text !== undefined || rec.text_raw !== undefined || rec.snip !== undefined || rec.excerpt !== undefined
             ? "book_passage"
             : title !== null
               ? "catalog_entry"
@@ -1105,11 +1203,13 @@ export class SchemaNormalizer {
     const textObj = asRecord(rec.text);
     const verbatim =
       (typeof rec.text_uthmani === "string" && rec.text_uthmani ? rec.text_uthmani : null) ??
+      (typeof rec.text_raw === "string" && rec.text_raw ? rec.text_raw : null) ??
       (typeof rec.text === "string" ? rec.text : null) ??
       (typeof textObj?.content === "string" ? textObj.content : null) ??
       (typeof rec.excerpt === "string" && rec.excerpt ? rec.excerpt : null) ??
       (typeof rec.snip === "string" && rec.snip ? rec.snip : null) ??
       (typeof rec.snippet === "string" && rec.snippet ? rec.snippet : null) ??
+      (typeof rec.word === "string" && rec.word ? rec.word : null) ??
       (typeof rec.description === "string" && rec.description ? rec.description : null) ??
       rawFallbackText;
 
@@ -1117,7 +1217,9 @@ export class SchemaNormalizer {
       asString(rec.source_url) ??
       asString(citationObj?.url) ??
       asString(rec.url) ??
-      asString(rec.link);
+      asString(rec.link) ??
+      mdLinkMatch?.[2] ??
+      null;
     const pdfUrl = asString(rec.pdf_url) ?? asString(rec.pdf) ?? asString(citationObj?.pdf_url);
 
     // Never infer printed_page_label from digital_page_number.
@@ -1133,6 +1235,9 @@ export class SchemaNormalizer {
       asString(workObj?.page_id) ??
       asString(rec.verse_key) ??
       (rec.surah !== undefined && rec.ayah !== undefined ? `${rec.surah}:${rec.ayah}` : null) ??
+      (rec.surah_id !== undefined && rec.ayah_number !== undefined
+        ? `${rec.surah_id}:${rec.ayah_number}`
+        : null) ??
       asString(rec.page) ??
       (asRecord(rec.book) ? asString(rec.id) : null);
     const volumeLabel =
@@ -1209,6 +1314,18 @@ export class SchemaNormalizer {
     let parsed: unknown = null;
     if (raw.structuredContent) {
       parsed = raw.structuredContent;
+    } else if (rawTextBlocks.length > 1) {
+      const multiParsed: unknown[] = [];
+      let allJson = true;
+      for (const blockText of rawTextBlocks) {
+        try {
+          multiParsed.push(JSON.parse(blockText));
+        } catch {
+          allJson = false;
+          break;
+        }
+      }
+      parsed = allJson ? multiParsed : null;
     } else if (rawTextBlocks[0]) {
       try {
         parsed = JSON.parse(rawTextBlocks[0]);
@@ -1223,7 +1340,14 @@ export class SchemaNormalizer {
     if (Array.isArray(parsed)) {
       rawItems = parsed;
     } else if (parsedObj) {
-      const list = parsedObj.results ?? parsedObj.items ?? parsedObj.hits ?? parsedObj.data;
+      const list =
+        parsedObj.results ??
+        parsedObj.result ??
+        parsedObj.items ??
+        parsedObj.hits ??
+        parsedObj.data ??
+        parsedObj.verses ??
+        parsedObj.occurrences;
       const pageObj = asRecord(parsedObj.page);
       const parsedTextObj = asRecord(parsedObj.text);
       if (Array.isArray(list)) {
@@ -1270,10 +1394,11 @@ export class SchemaNormalizer {
     }
 
     const results = rawItems.map((item, idx) =>
-      this.mapRecordToEvidenceItem(item, idx, providerId, retrievedAt, combinedText)
+      this.mapRecordToEvidenceItem(item, idx, providerId, retrievedAt, combinedText, context.mode)
     );
 
     const parsedTextObj = asRecord(parsedObj?.text);
+    const parsedPaginationObj = asRecord(parsedObj?.pagination);
     const rawNextOffset = parsedObj?.next_offset ?? parsedTextObj?.next_offset;
     const nextCursor =
       asString(parsedObj?.next_cursor) ??
@@ -1287,6 +1412,7 @@ export class SchemaNormalizer {
       parsedTotalOverride ??
       asInt(parsedObj?.total_available) ??
       asInt(parsedObj?.total) ??
+      asInt(parsedPaginationObj?.total) ??
       asInt(parsedObj?.count) ??
       (results.length > 0 ? results.length : 0);
     const hasMore = Boolean(context.hasMore || parsedObj?.has_more || nextCursor);
@@ -1317,7 +1443,7 @@ export class SchemaNormalizer {
       warnings: [...(context.warnings ?? [])],
     };
 
-    return {
+    const finalResult: ToolResult = {
       isError: raw.isError,
       content: raw.content.map((block) => {
         if (block.type === "text") {
@@ -1330,6 +1456,7 @@ export class SchemaNormalizer {
       }),
       structuredContent: envelope as unknown as Record<string, unknown>,
     };
+    return context.skipByteBound ? finalResult : this.boundResponseByBytes(finalResult);
   }
 
   // Sanitizes provider-specific arguments to prevent schema mismatches

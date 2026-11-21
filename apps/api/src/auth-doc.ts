@@ -26,7 +26,7 @@ Cloudflare WAF and rate-limiting rules when a hard quota is required.
 While no token is required to query tools, agents should identify themselves with an informative \`User-Agent\` header:
 
 \`\`\`http
-POST /mcp?suite=core HTTP/1.1
+POST /mcp HTTP/1.1
 Host: mcp.waqf.app
 User-Agent: MyIslamicResearchAgent/1.0 (contact: info@example.com)
 Content-Type: application/json

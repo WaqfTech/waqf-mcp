@@ -39,11 +39,12 @@ User-Agent: MyAgentName/1.0 (+https://example.com)
 
 ## 3. Query Profiles & Context Presets
 
-To prevent prompt context window exhaustion, append the `?suite=` parameter to the MCP endpoint:
+The bare `/mcp` endpoint defaults to the 8 cross-platform canonical tools so every assistant connects under token and schema limits. Optional `?suite=` profiles narrow or expand the surface:
 
-### A. `?suite=core` (Recommended for AI Agents)
-Exposes only the 7 canonical, high-level normalized tools. Context overhead: ~1,700 tokens.
+### A. Default (`/mcp` or `?suite=core`, Recommended)
+Exposes the 8 canonical, high-level normalized tools (~2,500 tokens):
 - `waqf_quran_get_ayah`
+- `waqf_quran_search`
 - `waqf_hadith_search`
 - `waqf_turath_search_books`
 - `waqf_search_scholarship`
@@ -53,7 +54,7 @@ Exposes only the 7 canonical, high-level normalized tools. Context overhead: ~1,
 
 ### B. `?suite=quran`
 Exposes Quranic, Tafsir, linguistic, and morphological tools from **Bahouth** and **Tafsir.net**.
-- Canonical: `waqf_quran_get_ayah`
+- Canonical: `waqf_quran_get_ayah`, `waqf_quran_search`
 - Bahouth: `bahouth__*` (9 tools)
 - Tafsir.net: `tafsir_net__*` (17 tools)
 
@@ -70,8 +71,8 @@ Exposes verified academic web search across vetted Islamic portals from **Fihris
 - Canonical: `waqf_search_scholarship`
 - Fihris: `fihris__*` (2 tools)
 
-### E. Default (`?suite=all` or omitted)
-Exposes all 56 tools across all 7 federated providers.
+### E. Full Federation (`?suite=all`)
+Exposes all 57 tools across all 7 federated providers.
 
 ---
 
@@ -116,6 +117,22 @@ Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authen
       }
     },
     "required": ["surah", "ayah"]
+  }
+  ```
+
+#### `waqf_quran_search`
+Search Holy Quran verses by Arabic text (FTS5, diacritics normalized) or by Arabic triliteral/quadriliteral morphological root.
+- **Input Schema**:
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string", "description": "Arabic text or root letters (e.g. 'رحم')" },
+      "mode": { "type": "string", "enum": ["text", "root"], "default": "text" },
+      "surah": { "type": "integer", "minimum": 1, "maximum": 114, "description": "Optional Surah filter in text mode" },
+      "limit": { "type": "integer", "minimum": 1, "maximum": 50, "default": 10 }
+    },
+    "required": ["query"]
   }
   ```
 
@@ -228,19 +245,23 @@ Search inside the full text of classical Islamic books (the Aljam3 corpus) and r
   ```
 
 #### `waqf_books_read_page`
-Read one exact page of a digitized book in context, with citation metadata, a PDF link and neighbouring page numbers. Long pages are chunked: repeat with the returned next offset to continue.
+Read one exact page of a book across Aljam3, Turath, or Shamela with citation metadata and continuation offsets or cursors. Pass `fileId` + `pageNumber` for Aljam3, or `provider` + `bookId` + `pageId` for Turath or Shamela.
 - **Input Schema**:
   ```json
   {
     "type": "object",
     "properties": {
-      "fileId": { "type": "number", "description": "Book file ID, from waqf_books_search" },
-      "pageNumber": { "type": "number", "description": "Page number within that file" },
-      "offset": { "type": "number", "description": "Character offset to continue from (default: 0)" },
-      "maxChars": { "type": "number", "description": "Maximum characters of page text (default: 6000, max: 12000)" },
-      "locale": { "type": "string", "enum": ["ar", "ur", "en"], "description": "Language of the returned links" }
-    },
-    "required": ["fileId", "pageNumber"]
+      "provider": { "type": "string", "enum": ["aljam3", "turath", "shamela"], "default": "aljam3" },
+      "fileId": { "type": "integer", "description": "Aljam3 book file ID" },
+      "bookId": { "type": "integer", "description": "Turath or Shamela book ID" },
+      "pageNumber": { "type": "integer", "description": "Digitized page number (Aljam3)" },
+      "pageId": { "type": "integer", "description": "Internal page ID (Turath and Shamela)" },
+      "offset": { "type": "integer", "description": "Character offset to continue from (default: 0)" },
+      "cursor": { "type": "string", "description": "Continuation cursor returned by Shamela" },
+      "field": { "type": "string", "enum": ["body", "footnotes"], "default": "body" },
+      "maxChars": { "type": "integer", "description": "Maximum characters of page text (default: 3500, max: 12000)" },
+      "locale": { "type": "string", "enum": ["ar", "ur", "en"], "description": "Language of the returned Aljam3 links" }
+    }
   }
   ```
 
@@ -258,9 +279,11 @@ Run a concurrent federated research query across relevant Islamic providers by s
         "description": "Scholarly domain for provider routing (default: 'general')"
       },
       "providers": {
-        "description": "'auto' or explicit list of provider IDs"
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Optional list of provider IDs; omit or pass [] for automatic domain routing"
       },
-      "max_results": { "type": "integer", "description": "Maximum items across providers (1-20, default: 10)" },
+      "max_results": { "type": "integer", "description": "Maximum items across providers (1-20, default: 6)" },
       "language": { "type": "string", "description": "Preferred language code (default: 'ar')" }
     },
     "required": ["query"]
@@ -380,7 +403,7 @@ Notes: the gateway sanitizes loose input (`query` string, camelCase IDs) into Sh
 ### Host Truncation & Pagination Guidance
 Some AI connector gateways truncate tool responses above ~20 KB. To avoid mid-sentence truncation:
 - Keep search page sizes compact (`limit: 5` to `10` for `waqf_books_search` and `waqf_hadith_search`; `max_total_chars` / `max_chars` for Shamela tools).
-- Use `offset` and `maxChars` (`default: 6000`) on `waqf_books_read_page` / `aljam3__get_page`, or `next_cursor` on `shamela__shamela_open` and `shamela__shamela_find_scoped`, to read long pages incrementally.
+- Use `offset` and `maxChars` (`default: 3500`, `max: 12000`) on `waqf_books_read_page` / `aljam3__get_page`, or `cursor` / `next_cursor` on `waqf_books_read_page` (`provider: "shamela"`) and `shamela__shamela_open`, to read long pages incrementally.
 - For `waqf_quran_get_ayah`, request `includeTafsir: true` with a specific `tafsirSource` slug rather than dumping multiple commentaries when only one is needed.
 
 ---
@@ -391,7 +414,7 @@ All interactions with `POST /mcp` strictly follow the JSON-RPC 2.0 specification
 
 ### Tool Call Example
 ```http
-POST /mcp?suite=core HTTP/1.1
+POST /mcp HTTP/1.1
 Host: mcp.waqf.app
 Content-Type: application/json
 User-Agent: MyResearchAgent/1.0
@@ -480,9 +503,9 @@ headers = {
     "Content-Type": "application/json",
 }
 
-# 1. List available tools in core suite
+# 1. List available tools on the default universal endpoint
 resp = httpx.post(
-    "https://mcp.waqf.app/mcp?suite=core",
+    "https://mcp.waqf.app/mcp",
     json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
     headers=headers,
     timeout=10.0,
@@ -492,7 +515,7 @@ print(f"Available tools: {[t['name'] for t in tools]}")
 
 # 2. Search scholarly fatwas and research
 query_resp = httpx.post(
-    "https://mcp.waqf.app/mcp?suite=core",
+    "https://mcp.waqf.app/mcp",
     json={
         "jsonrpc": "2.0",
         "id": 2,
@@ -514,7 +537,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const transport = new StreamableHttpClientTransport(
-  new URL("https://mcp.waqf.app/mcp?suite=core"),
+  new URL("https://mcp.waqf.app/mcp"),
   {
     headers: {
       "User-Agent": "WaqfNodeAgent/1.0",

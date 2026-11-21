@@ -87,6 +87,7 @@ type client struct {
 
 var toolArgs = map[string]map[string]any{
 	"waqf_quran_get_ayah":      {"surah": 1, "ayah": 1},
+	"waqf_quran_search":        {"query": "الرحمة", "mode": "text", "limit": 3},
 	"waqf_hadith_search":       {"query": "الصلاة", "limit": 3},
 	"waqf_turath_search_books": {"query": "الصلاة"},
 	"waqf_search_scholarship":  {"query": "الصلاة"},
@@ -158,7 +159,7 @@ func main() {
 	jsonOut := flag.String("json", "", "optional path for a JSON report")
 	strict := flag.Bool("strict", false, "exit non-zero on transport/protocol errors, missing tools or missing sample arguments")
 	strictTools := flag.Bool("strict-tools", false, "also exit non-zero on unexpected tool errors")
-	expectTools := flag.Int("expect-tools", 56, "expected advertised tool count; 0 disables")
+	expectTools := flag.Int("expect-tools", 57, "expected advertised tool count; 0 disables")
 	flag.Parse()
 
 	c := &client{
@@ -231,6 +232,7 @@ func main() {
 
 	// Baseline and security/transport checks.
 	report.Attempts = append(report.Attempts, c.ping())
+	report.Attempts = append(report.Attempts, c.listToolsAttempt("", "default canonical tools/list"))
 	report.Attempts = append(report.Attempts, c.listToolsAttempt("?suite=core", "core tools/list"))
 	report.Attempts = append(report.Attempts, c.unknownTool())
 	report.Attempts = append(report.Attempts, c.getJSON())

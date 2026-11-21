@@ -222,6 +222,27 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     }
   });
 
+  it("POST /mcp without ?suite defaults to the 8 cross-platform canonical tools under OpenAI token caps", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 21,
+        method: "tools/list",
+        params: {},
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const bodyText = await res.text();
+    expect(bodyText.length).toBeLessThan(18000);
+    const body = JSON.parse(bodyText) as { result: { tools: Array<{ name: string }> } };
+    expect(body.result.tools).toHaveLength(8);
+    expect(body.result.tools.every((t) => t.name.startsWith("waqf_"))).toBe(true);
+  });
+
   it("POST /mcp?suite=core returns only canonical tools", async () => {
     const req = new Request("http://localhost:8787/mcp?suite=core", {
       method: "POST",
@@ -237,7 +258,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const res = await worker.fetch(req, mockEnv, mockCtx);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { result: { tools: Array<{ name: string }> } };
-    expect(body.result.tools.length).toBeGreaterThanOrEqual(3);
+    expect(body.result.tools).toHaveLength(8);
     expect(body.result.tools.every((t) => t.name.startsWith("waqf_"))).toBe(true);
   });
 
@@ -309,6 +330,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     };
     expect(body.result.resultType).toBe("complete");
     expect(body.result.supportedVersions).toContain("2026-07-28");
+    expect(body.result.supportedVersions).toContain("2025-11-25");
     expect(body.result.supportedVersions).toContain("2024-11-05");
     expect(body.result.capabilities.tools).toBeDefined();
     expect(body.result._meta["io.modelcontextprotocol/serverInfo"].name).toBe(
@@ -859,18 +881,22 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(location).toContain("state=xyz123");
   });
 
-  it("GET /oauth/authorize allows Google's hosted OAuth redirect", async () => {
-    const redirect = "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-test";
-    const req = new Request(
-      `http://localhost:8787/oauth/authorize?redirect_uri=${encodeURIComponent(redirect)}&state=xyz`
-    );
-    const res = await worker.fetch(req, mockEnv, mockCtx);
+  it("GET /oauth/authorize allows Google's hosted OAuth redirects (prod and -test)", async () => {
+    for (const redirect of [
+      "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-test",
+      "https://oauth-redirect-test.googleusercontent.com/r/user_bound_custom-mcp-test",
+    ]) {
+      const req = new Request(
+        `http://localhost:8787/oauth/authorize?redirect_uri=${encodeURIComponent(redirect)}&state=xyz`
+      );
+      const res = await worker.fetch(req, mockEnv, mockCtx);
 
-    expect(res.status).toBe(302);
-    const location = res.headers.get("Location");
-    expect(location).toContain("oauth-redirect.googleusercontent.com");
-    expect(location).toContain("code=waqf_code_");
-    expect(location).toContain("state=xyz");
+      expect(res.status).toBe(302);
+      const location = res.headers.get("Location");
+      expect(location).toContain(new URL(redirect).host);
+      expect(location).toContain("code=waqf_code_");
+      expect(location).toContain("state=xyz");
+    }
   });
 
   it("GET /oauth/authorize refuses an unknown redirect origin", async () => {

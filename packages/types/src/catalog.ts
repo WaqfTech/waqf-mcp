@@ -295,6 +295,7 @@ export const TOTAL_PROVIDER_TOOL_COUNT: number = PROVIDER_CATALOG.reduce(
 /** Canonical waqf_* tools exposed on top of the federated surface. */
 export const CANONICAL_TOOL_NAMES: readonly string[] = [
   "waqf_quran_get_ayah",
+  "waqf_quran_search",
   "waqf_hadith_search",
   "waqf_turath_search_books",
   "waqf_search_scholarship",

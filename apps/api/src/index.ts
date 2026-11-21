@@ -434,8 +434,8 @@ export default {
             },
             usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
             suites: {
-              all: "All available upstream tools across federated Islamic servers",
-              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page, waqf_research_search)",
+              core: "Default suite on /mcp: 8 cross-platform canonical tools (waqf_quran_get_ayah, waqf_quran_search, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page, waqf_research_search)",
+              all: "All canonical and provider-specific upstream tools via ?suite=all",
               quran: "Quran & Tafsir specialized suite",
               turath: "Hadith, Islamic heritage and classical books suite (Turath, Maher Al-Fahel, Aljam3, Shamela)",
               search: "Scholarly web search across vetted Islamic portals (Fihris)",
@@ -748,7 +748,7 @@ export default {
 
       const reqId = rpc.id ?? null;
       const requestId = request.headers.get("x-request-id")?.trim() || crypto.randomUUID();
-      const suite = url.searchParams.get("suite") ?? "all";
+      const suite = url.searchParams.get("suite") ?? "core";
       const cacheService = env.DB ? new D1CacheService(env.DB) : undefined;
       const telemetryService = env.DB ? new D1TelemetryService(env.DB, env.TELEMETRY_SALT) : undefined;
 

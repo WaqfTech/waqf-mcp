@@ -9,7 +9,7 @@ interface Props {
 
 const { t } = Astro.props;
 
-const MCP_URL = `${GATEWAY_MCP_URL}?suite=core`;
+const MCP_URL = GATEWAY_MCP_URL;
 
 const WEB_SETUP_URLS: Record<string, string> = Object.fromEntries(
   WEB_ASSISTANT_GUIDES.map((guide) => [guide.id, guide.setUpUrl])
@@ -95,9 +95,9 @@ headers = {
     "Content-Type": "application/json",
 }
 
-# 1. Discover available tools (use ?suite=core for canonical tools)
+# 1. Discover available tools (default bare /mcp exposes 8 universal canonical tools)
 tools_resp = httpx.post(
-    "https://mcp.waqf.app/mcp?suite=core",
+    "https://mcp.waqf.app/mcp",
     json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
     headers=headers,
 )
@@ -138,7 +138,7 @@ import { StreamableHttpClientTransport } from "@modelcontextprotocol/sdk/client/
 
 // Cloudflare WAF requires a custom User-Agent for programmatic clients
 const transport = new StreamableHttpClientTransport(
-  new URL("https://mcp.waqf.app/mcp?suite=core"),
+  new URL("https://mcp.waqf.app/mcp"),
   {
     headers: {
       "User-Agent": "WaqfClient/1.0 (https://waqf.dev)",
@@ -172,8 +172,8 @@ const prompt = await client.getPrompt({
 console.log("Study Prompt Message:", prompt.messages[0]);
 `;
 
-const CURL_SNIPPET = `# 1. List canonical tools (saving tokens with ?suite=core)
-curl -s -X POST "https://mcp.waqf.app/mcp?suite=core" \\
+const CURL_SNIPPET = `# 1. List universal canonical tools at /mcp
+curl -s -X POST "https://mcp.waqf.app/mcp" \\
   -H "Content-Type: application/json" \\
   -H "User-Agent: WaqfClient/1.0" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'

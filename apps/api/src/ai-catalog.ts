@@ -10,9 +10,9 @@ export const AI_CATALOG_JSON = JSON.stringify(
         id: "urn:air:mcp.waqf.app:mcp:core",
         displayName: "Islamic Sources (@IslamicSources) — Core Tools",
         description:
-          "Normalized high-level canonical tools for Quran recitation/tafsir, Hadith verification, Turath book searches, and scholarly inquiries.",
+          "Default /mcp endpoint exposing 8 cross-platform canonical tools for Quran, Tafsir, Hadith, Turath, Aljam3, Shamela, and scholarly search.",
         type: "application/json",
-        url: "https://mcp.waqf.app/mcp?suite=core",
+        url: "https://mcp.waqf.app/mcp",
         representativeQueries: [
           "Search Quran verse and tafsir",
           "Find Sahih hadith about intentions",

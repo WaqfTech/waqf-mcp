@@ -1198,6 +1198,311 @@ describe("Canonical Tools & Schema Normalization", () => {
         kind: "cats",
       });
     });
+
+    it("keeps all canonical tool definitions compliant across OpenAI, Gemini, Claude, and Grok", () => {
+      const tools = normalizer.getCanonicalToolDefinitions();
+      expect(tools).toHaveLength(8);
+      const serialized = JSON.stringify(tools);
+      // OpenAI custom MCP UI enforces <5000 tokens across tool definitions.
+      expect(serialized.length).toBeLessThan(15000);
+      expect(serialized).not.toContain('"oneOf"');
+      expect(serialized).not.toContain('"anyOf"');
+      expect(serialized).not.toContain('"allOf"');
+      expect(serialized).not.toContain('"const"');
+
+      const findTypeArray = (node: unknown): boolean => {
+        if (!node || typeof node !== "object") return false;
+        if (Array.isArray(node)) return node.some(findTypeArray);
+        const rec = node as Record<string, unknown>;
+        if (Array.isArray(rec.type)) return true;
+        return Object.values(rec).some(findTypeArray);
+      };
+
+      for (const tool of tools) {
+        expect(tool.title && tool.title.trim().length > 0).toBe(true);
+        expect(tool.name.length).toBeLessThanOrEqual(64);
+        expect(tool.annotations?.readOnlyHint).toBe(true);
+        expect(tool.annotations?.destructiveHint).toBe(false);
+        expect(typeof tool.annotations?.openWorldHint).toBe("boolean");
+        expect(findTypeArray(tool.inputSchema)).toBe(false);
+        expect(findTypeArray(tool.outputSchema)).toBe(false);
+      }
+    });
+
+    it("supports waqf_quran_search in text mode, root mode with Bahouth fallback, and validation errors", async () => {
+      const registry = new ProviderRegistry([]);
+      const tafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir",
+      });
+      const bahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+
+      const tafsirSpy = vi
+        .spyOn(tafsir, "callTool")
+        .mockResolvedValueOnce({
+          content: [
+            { type: "text", text: JSON.stringify({ surah: 4, ayah: 103, text: "فإذا قضيتم الصلاة" }) },
+            { type: "text", text: JSON.stringify({ surah: 4, ayah: 43, text: "لا تقربوا الصلاة" }) },
+          ],
+          structuredContent: {
+            result: [
+              { surah: 4, ayah: 103, text: "فإذا قضيتم الصلاة" },
+              { surah: 4, ayah: 43, text: "لا تقربوا الصلاة" },
+            ],
+          },
+        })
+        .mockRejectedValueOnce(new Error("Tafsir root endpoint unavailable"));
+
+      const bahouthSpy = vi.spyOn(bahouth, "callTool").mockResolvedValueOnce({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              root_text: "كتب",
+              verses: [
+                {
+                  verse_id: 9,
+                  surah_id: 2,
+                  ayah_number: 2,
+                  verse_key: "2-2",
+                  text_raw: "ذَلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ",
+                },
+              ],
+            }),
+          },
+        ],
+      });
+
+      registry.register(tafsir);
+      registry.register(bahouth);
+      const router = new FederationRouter(registry, normalizer);
+
+      const textRes = await router.callTool("waqf_quran_search", {
+        query: "الصلاة",
+        mode: "text",
+        surah: 4,
+        limit: 10,
+      });
+      expect(tafsirSpy).toHaveBeenNthCalledWith(1, "search_quran_text", {
+        query: "الصلاة",
+        limit: 10,
+        surah_filter: [4],
+      });
+      const textSc = textRes.result.structuredContent as {
+        status: string;
+        results: Array<{ kind: string; location: { page_id: string | null }; content: { verbatim: string } }>;
+      };
+      expect(textSc.status).toBe("ok");
+      expect(textSc.results).toHaveLength(2);
+      expect(textSc.results[0].kind).toBe("quran_ayah");
+      expect(textSc.results[0].location.page_id).toBe("4:103");
+
+      const rootRes = await router.callTool("waqf_quran_search", {
+        query: "كتب",
+        mode: "root",
+        limit: 5,
+      });
+      expect(bahouthSpy).toHaveBeenCalledWith("list_root_verses", {
+        root_text: "كتب",
+        limit: 5,
+        offset: 0,
+      });
+      expect(rootRes.providerId).toBe("bahouth");
+      const rootSc = rootRes.result.structuredContent as {
+        warnings: string[];
+        results: Array<{ content: { verbatim: string }; location: { page_id: string | null } }>;
+      };
+      expect(rootSc.results[0].content.verbatim).toBe("ذَلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ");
+      expect(rootSc.results[0].location.page_id).toBe("2-2");
+      expect(rootSc.warnings[0]).toContain("Bahouth fallback");
+
+      const badSurah = await router.callTool("waqf_quran_search", {
+        query: "الصلاة",
+        surah: 200,
+      });
+      expect(badSurah.result.isError).toBe(true);
+      expect(badSurah.result.error?.code).toBe("INVALID_ARGUMENT");
+
+      const badMode = await router.callTool("waqf_quran_search", {
+        query: "الصلاة",
+        mode: "semantic",
+      });
+      expect(badMode.result.isError).toBe(true);
+      expect(badMode.result.error?.code).toBe("INVALID_ARGUMENT");
+    });
+
+    it("routes waqf_books_read_page across aljam3, turath, and shamela with distinct cache keys", async () => {
+      const registry = new ProviderRegistry([]);
+      const aljam3 = new JsonRpcMcpAdapter({
+        id: "aljam3",
+        name: "Aljam3",
+        baseUrl: "https://aljam3.com/mcp",
+        transport: "json-rpc",
+        description: "Aljam3",
+      });
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+      const shamela = new JsonRpcMcpAdapter({
+        id: "shamela",
+        name: "Shamela",
+        baseUrl: "https://mcp.shamela.ws",
+        transport: "json-rpc",
+        description: "Shamela",
+      });
+
+      const aljam3Spy = vi.spyOn(aljam3, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: JSON.stringify({ file_id: 5, page_number: 1, text: "صفحة الجامع" }) }],
+      });
+      const turathSpy = vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: JSON.stringify({ book_id: 2051, page_id: 1203, text: "صفحة التراث" }) }],
+      });
+      const shamelaSpy = vi.spyOn(shamela, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              book_id: 5,
+              page_id: 1,
+              text: "صفحة الشاملة",
+              citation: { markdown: "[المدونة (1/ 207)](https://shamela.ws/book/5/1)" },
+              next_cursor: "cur-2",
+            }),
+          },
+        ],
+      });
+
+      registry.register(aljam3);
+      registry.register(turath);
+      registry.register(shamela);
+
+      const cache = {
+        computeKey: vi.fn((provider: string, tool: string, a: Record<string, unknown>) =>
+          Promise.resolve(`${provider}:${tool}:${JSON.stringify(a)}`)
+        ),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
+
+      const router = new FederationRouter(registry, normalizer);
+
+      const aljam3Res = await router.callTool("waqf_books_read_page", { fileId: 5, pageNumber: 1 }, cache);
+      expect(aljam3Spy).toHaveBeenCalledWith("get_page", { file_id: 5, page_number: 1 });
+      expect(aljam3Res.providerId).toBe("aljam3");
+
+      const turathRes = await router.callTool(
+        "waqf_books_read_page",
+        { provider: "turath", bookId: 2051, pageId: 1203 },
+        cache
+      );
+      expect(turathSpy).toHaveBeenCalledWith("get_page", { book_id: 2051, page_id: 1203 });
+      expect(turathRes.providerId).toBe("turath");
+      expect((turathRes.result.structuredContent as { results: Array<{ kind: string }> }).results[0].kind).toBe(
+        "book_page"
+      );
+
+      const shamelaRes = await router.callTool(
+        "waqf_books_read_page",
+        { provider: "shamela", bookId: 5, pageId: 1 },
+        cache
+      );
+      expect(shamelaSpy).toHaveBeenCalledWith("shamela_open", {
+        book_id: 5,
+        page_id: 1,
+        max_chars: 3500,
+      });
+      const shamelaSc = shamelaRes.result.structuredContent as {
+        results: Array<{
+          kind: string;
+          work: { title: string | null };
+          citation: { source_url: string | null; verification_status: string };
+        }>;
+        pagination: { has_more: boolean; next_cursor: string | null };
+      };
+      expect(shamelaSc.results[0].kind).toBe("book_page");
+      expect(shamelaSc.results[0].work.title).toBe("المدونة");
+      expect(shamelaSc.results[0].citation.source_url).toBe("https://shamela.ws/book/5/1");
+      expect(shamelaSc.results[0].citation.verification_status).toBe("resolved");
+      expect(shamelaSc.pagination.has_more).toBe(true);
+      expect(shamelaSc.pagination.next_cursor).toBe("cur-2");
+
+      const keys = (cache.computeKey as ReturnType<typeof vi.fn>).mock.calls.map((c) => JSON.stringify(c[2]));
+      expect(keys[0]).not.toBe(keys[2]);
+
+      const badProvider = await router.callTool("waqf_books_read_page", {
+        provider: "unknown_lib",
+        bookId: 1,
+        pageId: 1,
+      });
+      expect(badProvider.result.isError).toBe(true);
+      expect(badProvider.result.error?.code).toBe("INVALID_ARGUMENT");
+
+      const missingIds = await router.callTool("waqf_books_read_page", { provider: "turath" });
+      expect(missingIds.result.isError).toBe(true);
+      expect(missingIds.result.error?.code).toBe("INVALID_ARGUMENT");
+    });
+
+    it("routes waqf_research_search automatically when providers is [] and trims oversized multi-item payloads", async () => {
+      const registry = new ProviderRegistry([]);
+      const shamela = new JsonRpcMcpAdapter({
+        id: "shamela",
+        name: "Shamela",
+        baseUrl: "https://mcp.shamela.ws",
+        transport: "json-rpc",
+        description: "Shamela",
+      });
+      const bigText = "أ".repeat(3500);
+      vi.spyOn(shamela, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              results: Array.from({ length: 5 }, (_, i) => ({
+                book_id: i + 1,
+                title: `كتاب ${i + 1}`,
+                text: bigText,
+                url: `https://shamela.ws/book/${i + 1}/1`,
+              })),
+            }),
+          },
+        ],
+      });
+      registry.register(shamela);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_research_search", {
+        query: "الصلاة",
+        domain: "hadith",
+        providers: [],
+      });
+      const bytes = new TextEncoder().encode(JSON.stringify(res.result)).length;
+      expect(bytes).toBeLessThanOrEqual(16500);
+      const sc = res.result.structuredContent as {
+        status: string;
+        results: unknown[];
+        pagination: { has_more: boolean };
+        warnings: string[];
+      };
+      expect(sc.status).toBe("ok");
+      expect(sc.results.length).toBeGreaterThanOrEqual(1);
+      expect(sc.results.length).toBeLessThan(5);
+      expect(sc.pagination.has_more).toBe(true);
+      expect(sc.warnings.some((w) => w.includes("18 KB"))).toBe(true);
+    });
   });
 });
 

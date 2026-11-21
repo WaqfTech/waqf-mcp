@@ -69,6 +69,7 @@ function refineUpstreamToolDefinition(
   return {
     ...tool,
     name: fullName,
+    title: tool.title ?? tool.name.replace(/[-_]/g, " "),
     description,
     inputSchema,
     annotations: tool.annotations ?? {
@@ -109,6 +110,7 @@ const PROVIDERS_WITH_PROMPTS = new Set<string>(
 
 const CANONICAL_PRIMARY_PROVIDER: Record<string, string> = {
   waqf_quran_get_ayah: "tafsir_net",
+  waqf_quran_search: "tafsir_net",
   waqf_turath_search_books: "turath",
   waqf_hadith_search: "turath",
   waqf_search_scholarship: "fihris",
@@ -388,8 +390,21 @@ export class FederationRouter {
     const bookArgs =
       toolName === "waqf_books_search"
         ? this.normalizer.toAljam3Args("search", args)
-        : toolName === "waqf_books_read_page"
-          ? this.normalizer.toAljam3Args("get_page", args)
+        : toolName === "waqf_books_read_page" &&
+            (!args.provider || String(args.provider).trim().toLowerCase() === "aljam3")
+          ? this.normalizer.toAljam3Args("get_page", {
+              ...args,
+              ...(args.fileId === undefined &&
+              args.file_id === undefined &&
+              (args.bookId !== undefined || args.book_id !== undefined)
+                ? { fileId: args.bookId ?? args.book_id }
+                : {}),
+              ...(args.pageNumber === undefined &&
+              args.page_number === undefined &&
+              (args.pageId !== undefined || args.page_id !== undefined)
+                ? { pageNumber: args.pageId ?? args.page_id }
+                : {}),
+            })
           : null;
 
     let cacheKey: string | null = null;
@@ -540,6 +555,152 @@ export class FederationRouter {
         } catch (err: unknown) {
           const classified = classifyThrownError("turath", err);
           return toolError("turath", toolName, classified.message, classified.code, classified.retryable);
+        }
+        break;
+      }
+
+      case "waqf_quran_search": {
+        const query = String(args.query ?? "").trim();
+        if (!query) {
+          return toolError(
+            "canonical",
+            toolName,
+            "Missing required 'query' parameter for waqf_quran_search.",
+            "INVALID_ARGUMENT",
+            false
+          );
+        }
+        const mode = String(args.mode ?? "text").trim().toLowerCase();
+        if (mode !== "text" && mode !== "root") {
+          return toolError(
+            "canonical",
+            toolName,
+            `Invalid mode '${args.mode}' for waqf_quran_search. Expected 'text' or 'root'.`,
+            "INVALID_ARGUMENT",
+            false
+          );
+        }
+        const parsedLimit = Number(args.limit ?? 10);
+        const limit = Number.isFinite(parsedLimit)
+          ? Math.min(50, Math.max(1, Math.trunc(parsedLimit)))
+          : 10;
+
+        let surahFilter: number | undefined;
+        if (args.surah !== undefined && args.surah !== null && args.surah !== "") {
+          const parsedSurah = Number(args.surah);
+          if (!Number.isInteger(parsedSurah) || parsedSurah < 1 || parsedSurah > 114) {
+            return toolError(
+              "canonical",
+              toolName,
+              "Invalid 'surah' filter for waqf_quran_search: expected an integer between 1 and 114.",
+              "INVALID_ARGUMENT",
+              false
+            );
+          }
+          surahFilter = parsedSurah;
+        }
+
+        const tafsirProvider = this.registry.get("tafsir_net");
+        const bahouthProvider = this.registry.get("bahouth");
+
+        if (mode === "text") {
+          if (!tafsirProvider) {
+            return toolError(
+              "tafsir_net",
+              toolName,
+              "Tafsir.net Quran full-text search provider is not configured.",
+              "SOURCE_UNAVAILABLE",
+              false
+            );
+          }
+          targetProvider = "tafsir_net";
+          try {
+            const raw = stripDisplayDirective(
+              await tafsirProvider.callTool("search_quran_text", {
+                query,
+                limit,
+                ...(surahFilter !== undefined ? { surah_filter: [surahFilter] } : {}),
+              })
+            );
+            const bounded = this.normalizer.boundResultList(raw, limit);
+            result = this.normalizer.normalizeToolResult(bounded.result, "Tafsir.net", {
+              providerId: "tafsir_net",
+              query,
+              mode: "quran_search_text",
+              limit,
+              hasMore: bounded.hasMore,
+            });
+          } catch (err: unknown) {
+            const classified = classifyThrownError("tafsir_net", err);
+            return toolError("tafsir_net", toolName, classified.message, classified.code, classified.retryable);
+          }
+          break;
+        }
+
+        let fetched = false;
+        if (tafsirProvider) {
+          try {
+            targetProvider = "tafsir_net";
+            const raw = stripDisplayDirective(
+              await tafsirProvider.callTool("find_root_occurrences", {
+                root: query,
+                limit,
+              })
+            );
+            if (!raw.isError) {
+              const bounded = this.normalizer.boundResultList(raw, limit);
+              result = this.normalizer.normalizeToolResult(bounded.result, "Tafsir.net", {
+                providerId: "tafsir_net",
+                query,
+                mode: "quran_search_root",
+                limit,
+                hasMore: bounded.hasMore,
+              });
+              fetched = true;
+            }
+          } catch {
+            // Fall through to Bahouth root fallback
+          }
+        }
+
+        if (!fetched && bahouthProvider) {
+          try {
+            targetProvider = "bahouth";
+            const bahouthLimit = Math.min(50, limit);
+            const raw = await bahouthProvider.callTool("list_root_verses", {
+              root_text: query,
+              limit: bahouthLimit,
+              offset: 0,
+            });
+            if (!raw.isError) {
+              const bounded = this.normalizer.boundResultList(raw, bahouthLimit);
+              result = this.normalizer.normalizeToolResult(bounded.result, "Bahouth (Fallback)", {
+                providerId: "bahouth",
+                query,
+                mode: "quran_search_root",
+                limit: bahouthLimit,
+                hasMore: bounded.hasMore,
+                warnings: [
+                  "Primary Quran root provider (tafsir_net) unavailable; served via Bahouth fallback.",
+                ],
+              });
+              fetched = true;
+              servedByFallback = true;
+            }
+          } catch (err: unknown) {
+            const classified = classifyThrownError("bahouth", err);
+            return toolError("bahouth", toolName, classified.message, classified.code, classified.retryable);
+          }
+        }
+
+        if (!fetched) {
+          return toolError(
+            "canonical",
+            toolName,
+            "No Quran root search provider is available right now; retry in a moment.",
+            "SOURCE_UNAVAILABLE",
+            true
+          );
         }
         break;
       }
@@ -770,29 +931,139 @@ export class FederationRouter {
       }
 
       case "waqf_books_read_page": {
-        const aljam3Provider = this.registry.get("aljam3");
-        if (!aljam3Provider) {
-          return toolError(
-            "aljam3",
-            toolName,
-            "Aljam3 books provider not configured",
-            "SOURCE_UNAVAILABLE",
-            false
-          );
+        const readProvider = String(args.provider ?? "aljam3").trim().toLowerCase();
+        const toPositiveInt = (value: unknown): number | null => {
+          const parsed = typeof value === "number" ? value : Number(String(value ?? "").trim());
+          return Number.isInteger(parsed) && parsed >= 1 ? parsed : null;
+        };
+
+        if (readProvider === "aljam3") {
+          const aljam3Provider = this.registry.get("aljam3");
+          if (!aljam3Provider) {
+            return toolError(
+              "aljam3",
+              toolName,
+              "Aljam3 books provider not configured",
+              "SOURCE_UNAVAILABLE",
+              false
+            );
+          }
+          const aljam3Args = bookArgs ?? {};
+          if (!aljam3Args.file_id || !aljam3Args.page_number) {
+            return toolError(
+              "canonical",
+              toolName,
+              "waqf_books_read_page with provider 'aljam3' requires positive integers 'fileId' and 'pageNumber'.",
+              "INVALID_ARGUMENT",
+              false
+            );
+          }
+          targetProvider = "aljam3";
+          try {
+            const raw = await aljam3Provider.callTool("get_page", aljam3Args);
+            result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
+              providerId: "aljam3",
+              query: `${aljam3Args.file_id}:${aljam3Args.page_number}`,
+              mode: "books_read_page",
+            });
+          } catch (err: unknown) {
+            const classified = classifyThrownError("aljam3", err);
+            return toolError("aljam3", toolName, classified.message, classified.code, classified.retryable);
+          }
+          break;
         }
-        targetProvider = "aljam3";
-        try {
-          const raw = await aljam3Provider.callTool("get_page", bookArgs ?? {});
-          result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
-            providerId: "aljam3",
-            query: `${bookArgs?.file_id ?? ""}:${bookArgs?.page_number ?? ""}`,
-            mode: "books_read_page",
-          });
-        } catch (err: unknown) {
-          const classified = classifyThrownError("aljam3", err);
-          return toolError("aljam3", toolName, classified.message, classified.code, classified.retryable);
+
+        if (readProvider === "turath") {
+          const turathProvider = this.registry.get("turath");
+          if (!turathProvider) {
+            return toolError(
+              "turath",
+              toolName,
+              "Turath provider not configured",
+              "SOURCE_UNAVAILABLE",
+              false
+            );
+          }
+          const bookId = toPositiveInt(args.bookId ?? args.book_id ?? args.fileId ?? args.file_id);
+          const pageId = toPositiveInt(args.pageId ?? args.page_id ?? args.pageNumber ?? args.page_number);
+          if (!bookId || !pageId) {
+            return toolError(
+              "canonical",
+              toolName,
+              "waqf_books_read_page with provider 'turath' requires positive integers 'bookId' and 'pageId'.",
+              "INVALID_ARGUMENT",
+              false
+            );
+          }
+          targetProvider = "turath";
+          try {
+            const raw = await turathProvider.callTool("get_page", { book_id: bookId, page_id: pageId });
+            result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
+              providerId: "turath",
+              query: `${bookId}:${pageId}`,
+              mode: "books_read_page",
+            });
+          } catch (err: unknown) {
+            const classified = classifyThrownError("turath", err);
+            return toolError("turath", toolName, classified.message, classified.code, classified.retryable);
+          }
+          break;
         }
-        break;
+
+        if (readProvider === "shamela") {
+          const shamelaProvider = this.registry.get("shamela");
+          if (!shamelaProvider) {
+            return toolError(
+              "shamela",
+              toolName,
+              "Shamela provider not configured",
+              "SOURCE_UNAVAILABLE",
+              false
+            );
+          }
+          const bookId = toPositiveInt(args.bookId ?? args.book_id ?? args.fileId ?? args.file_id);
+          const pageId = toPositiveInt(args.pageId ?? args.page_id ?? args.pageNumber ?? args.page_number);
+          if (!bookId || !pageId) {
+            return toolError(
+              "canonical",
+              toolName,
+              "waqf_books_read_page with provider 'shamela' requires positive integers 'bookId' and 'pageId'.",
+              "INVALID_ARGUMENT",
+              false
+            );
+          }
+          const maxCharsRaw = toPositiveInt(args.maxChars ?? args.max_chars);
+          const maxChars = maxCharsRaw ? Math.min(16000, Math.max(500, maxCharsRaw)) : 3500;
+          const cursor = typeof args.cursor === "string" && args.cursor.trim() ? args.cursor.trim() : undefined;
+          const field = args.field === "footnotes" || args.field === "body" ? args.field : undefined;
+          targetProvider = "shamela";
+          try {
+            const raw = await shamelaProvider.callTool("shamela_open", {
+              book_id: bookId,
+              page_id: pageId,
+              max_chars: maxChars,
+              ...(cursor ? { cursor } : {}),
+              ...(field ? { field } : {}),
+            });
+            result = this.normalizer.normalizeToolResult(raw, "Al-Maktaba Al-Shamela", {
+              providerId: "shamela",
+              query: `${bookId}:${pageId}`,
+              mode: "books_read_page",
+            });
+          } catch (err: unknown) {
+            const classified = classifyThrownError("shamela", err);
+            return toolError("shamela", toolName, classified.message, classified.code, classified.retryable);
+          }
+          break;
+        }
+
+        return toolError(
+          "canonical",
+          toolName,
+          `Unsupported provider '${args.provider}' for waqf_books_read_page. Expected 'aljam3', 'turath', or 'shamela'.`,
+          "INVALID_ARGUMENT",
+          false
+        );
       }
 
       case "waqf_research_search": {
@@ -848,15 +1119,15 @@ export class FederationRouter {
     }
 
     const domain = String(args.domain ?? "general");
-    const parsedMax = Number(args.max_results ?? 10);
+    const parsedMax = Number(args.max_results ?? 6);
     const maxResults = Number.isFinite(parsedMax)
       ? Math.min(20, Math.max(1, Math.trunc(parsedMax)))
-      : 10;
+      : 6;
     const perProviderLimit = Math.min(5, maxResults);
 
     const warnings: string[] = [];
     let requestedIds: string[];
-    if (Array.isArray(args.providers)) {
+    if (Array.isArray(args.providers) && args.providers.length > 0) {
       requestedIds = [];
       for (const rawId of args.providers) {
         const pid = String(rawId).trim();
@@ -923,6 +1194,7 @@ export class FederationRouter {
           query,
           mode: `federated:${domain}`,
           limit: perProviderLimit,
+          skipByteBound: true,
         });
         const sc = normalized.structuredContent as CanonicalResultEnvelope | undefined;
         return { pid, items: sc?.results ?? [] };
@@ -1015,7 +1287,7 @@ export class FederationRouter {
       originalToolName: "waqf_research_search",
       isCacheHit: false,
       isPartial,
-      result: {
+      result: this.normalizer.boundResponseByBytes({
         content: [
           {
             type: "text",
@@ -1038,7 +1310,7 @@ export class FederationRouter {
           },
         ],
         structuredContent: envelope as unknown as Record<string, unknown>,
-      },
+      }),
     };
   }
 

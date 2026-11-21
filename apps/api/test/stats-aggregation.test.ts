@@ -55,9 +55,13 @@ describe("Daily stats aggregation", () => {
     const result = await aggregateDailyStats(db, "2026-11-20");
 
     expect(batch).toHaveBeenCalledTimes(1);
-    expect(statements).toHaveLength(9); // delete + 7 dimensions + total
+    expect(statements).toHaveLength(10); // delete + 8 dimensions + total
     expect(statements[0].sql).toContain("DELETE FROM mcp_stats_daily");
     expect(statements[0].bindings).toEqual(["2026-11-20"]);
+
+    const errorCode = statements.find((statement) => statement.bindings.includes("error_code"));
+    expect(errorCode).toBeDefined();
+    expect(errorCode?.sql).toContain("COALESCE(error_code");
 
     const provider = statements.find((statement) =>
       statement.bindings.includes("provider")
@@ -78,7 +82,7 @@ describe("Daily stats aggregation", () => {
     const country = statements.find((statement) => statement.bindings.includes("country"));
     expect(country?.sql).toContain("tool_name IS NOT NULL");
     expect(provider?.sql).not.toContain("tool_name IS NOT NULL");
-    expect(result).toEqual({ day: "2026-11-20", changedRows: 9 });
+    expect(result).toEqual({ day: "2026-11-20", changedRows: 10 });
   });
 
   it("backfills a range oldest-first", async () => {
@@ -144,7 +148,7 @@ describe("POST /api/stats/aggregate", () => {
     const body = (await res.json()) as {
       results: Array<{ day: string; changedRows: number }>;
     };
-    expect(body.results[0]).toEqual({ day: "2026-11-20", changedRows: 18 });
+    expect(body.results[0]).toEqual({ day: "2026-11-20", changedRows: 20 });
   });
 
   it("runs the scheduled job through the same aggregation path", async () => {

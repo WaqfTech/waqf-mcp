@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import worker from "../src/index";
+import worker, { resetDeepHealthCache } from "../src/index";
 
 describe("Waqf MCP Gateway Worker E2E", () => {
   const mockCtx = {
@@ -165,6 +165,59 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as { id: number; result: Record<string, unknown> };
     expect(body.id).toBe(42);
+  });
+
+  it("propagates X-Request-Id and serves cached GET /health?deep=1 checks", async () => {
+    const pingReq = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Request-Id": "trace-waqf-123",
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 77, method: "ping" }),
+    });
+    const pingRes = await worker.fetch(pingReq, mockEnv, mockCtx);
+    expect(pingRes.headers.get("X-Request-Id")).toBe("trace-waqf-123");
+    const pingBody = (await pingRes.json()) as { result: { _meta?: { requestId?: string } } };
+    expect(pingBody.result._meta?.requestId).toBe("trace-waqf-123");
+
+    resetDeepHealthCache();
+    const originalFetch = globalThis.fetch;
+    try {
+      const mockFetch = vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              result: { tools: [{ name: "mock_tool", inputSchema: {} }] },
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          )
+        )
+      );
+      globalThis.fetch = mockFetch;
+
+      const firstRes = await worker.fetch(new Request("http://localhost:8787/health?deep=1"), mockEnv, mockCtx);
+      expect(firstRes.status).toBe(200);
+      const firstBody = (await firstRes.json()) as {
+        status: string;
+        cached: boolean;
+        providers: Array<{ id: string; healthy: boolean }>;
+      };
+      expect(firstBody.status).toBe("healthy");
+      expect(firstBody.cached).toBe(false);
+      expect(firstBody.providers).toHaveLength(7);
+      const firstCalls = mockFetch.mock.calls.length;
+
+      const secondRes = await worker.fetch(new Request("http://localhost:8787/health?deep=1"), mockEnv, mockCtx);
+      const secondBody = (await secondRes.json()) as { cached: boolean };
+      expect(secondBody.cached).toBe(true);
+      expect(mockFetch.mock.calls.length).toBe(firstCalls);
+    } finally {
+      globalThis.fetch = originalFetch;
+      resetDeepHealthCache();
+    }
   });
 
   it("POST /mcp?suite=core returns only canonical tools", async () => {

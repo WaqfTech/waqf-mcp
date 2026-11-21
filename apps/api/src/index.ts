@@ -47,6 +47,45 @@ const registry = new ProviderRegistry();
 const router = new FederationRouter(registry);
 const textEncoder = new TextEncoder();
 
+interface DeepHealthSnapshot {
+  status: "healthy" | "degraded";
+  checkedAt: string;
+  providers: Array<{ id: string; name: string; healthy: boolean; latencyMs: number }>;
+}
+
+const DEEP_HEALTH_TTL_MS = 60_000;
+let deepHealthCache: { snapshot: DeepHealthSnapshot; expiresAtMs: number } | null = null;
+
+export function resetDeepHealthCache(): void {
+  deepHealthCache = null;
+}
+
+async function getDeepHealthSnapshot(): Promise<{ snapshot: DeepHealthSnapshot; cached: boolean }> {
+  const now = Date.now();
+  if (deepHealthCache && deepHealthCache.expiresAtMs > now) {
+    return { snapshot: deepHealthCache.snapshot, cached: true };
+  }
+  const providers = await Promise.all(
+    registry.getAll().map(async (provider) => {
+      const t0 = performance.now();
+      const healthy = await provider.healthCheck();
+      return {
+        id: provider.id,
+        name: provider.name,
+        healthy,
+        latencyMs: Math.round(performance.now() - t0),
+      };
+    })
+  );
+  const snapshot: DeepHealthSnapshot = {
+    status: providers.every((p) => p.healthy) ? "healthy" : "degraded",
+    checkedAt: new Date(now).toISOString(),
+    providers,
+  };
+  deepHealthCache = { snapshot, expiresAtMs: now + DEEP_HEALTH_TTL_MS };
+  return { snapshot, cached: false };
+}
+
 const submissionRateLimits = new Map<string, number[]>();
 
 export function isSubmissionRateLimited(ip: string): boolean {
@@ -330,6 +369,15 @@ export default {
             "Connection": "keep-alive",
             ...DISCOVERY_HEADERS,
           },
+        });
+      }
+
+      // Deep provider functional readiness probe (cached per isolate for 60s)
+      if (pathname === "/health" && url.searchParams.get("deep") === "1") {
+        const { snapshot, cached } = await getDeepHealthSnapshot();
+        return new Response(JSON.stringify({ ...snapshot, cached }, null, 2), {
+          status: 200,
+          headers: { "Content-Type": "application/json; charset=utf-8", ...DISCOVERY_HEADERS },
         });
       }
 
@@ -691,6 +739,7 @@ export default {
       }
 
       const reqId = rpc.id ?? null;
+      const requestId = request.headers.get("x-request-id")?.trim() || crypto.randomUUID();
       const suite = url.searchParams.get("suite") ?? "all";
       const cacheService = env.DB ? new D1CacheService(env.DB) : undefined;
       const telemetryService = env.DB ? new D1TelemetryService(env.DB, env.TELEMETRY_SALT) : undefined;
@@ -708,7 +757,8 @@ export default {
         isCacheHit: boolean,
         statusCode: number,
         errorMsg: string | null,
-        responseSizeBytes: number | null = null
+        responseSizeBytes: number | null = null,
+        errorCode: string | null = null
       ) => {
         if (!telemetryService) return;
         const latencyMs = Math.round(performance.now() - startTime);
@@ -741,6 +791,8 @@ export default {
               statusCode,
               latencyMs,
               errorMessage: errorMsg,
+              errorCode,
+              requestId,
               responseSizeBytes,
             });
           })().catch(() => {})
@@ -752,12 +804,18 @@ export default {
         status = 200,
         extraMeta?: Record<string, unknown>
       ) => {
-        const bodyStr = JSON.stringify(withCompleteResult(payload, extraMeta));
+        const bodyStr = JSON.stringify(
+          withCompleteResult(payload, { requestId, ...(extraMeta ?? {}) })
+        );
         const bytes = textEncoder.encode(bodyStr).length;
         return {
           response: new Response(bodyStr, {
             status,
-            headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+            headers: {
+              "Content-Type": "application/json",
+              "X-Request-Id": requestId,
+              ...CORS_HEADERS,
+            },
           }),
           bytes,
         };
@@ -821,7 +879,7 @@ export default {
                 id: reqId,
                 error: { code: -32602, message: "Missing required tool 'name' parameter" },
               });
-              logExecution("tools/call", null, null, null, false, 400, "Missing tool name", resData.bytes);
+              logExecution("tools/call", null, null, null, false, 400, "Missing tool name", resData.bytes, "INVALID_ARGUMENT");
               return resData.response;
             }
 
@@ -831,6 +889,10 @@ export default {
               cacheService,
               ctx
             );
+
+            const structuredStatus = (result.structuredContent as { status?: string } | undefined)?.status;
+            const telemetryErrorCode =
+              result.error?.code ?? (structuredStatus === "no_results" ? "NO_RESULTS" : null);
 
             const responseTimeMs = Math.round(performance.now() - startTime);
             const resData = jsonResponse(
@@ -866,7 +928,8 @@ export default {
               isCacheHit,
               200,
               toolErrorText,
-              resData.bytes
+              resData.bytes,
+              telemetryErrorCode
             );
 
             return resData.response;
@@ -1021,7 +1084,7 @@ export default {
               id: reqId,
               error: { code: -32601, message: `Method '${rpc.method}' not found` },
             });
-            logExecution(rpc.method, null, null, null, false, 404, "Method not found", resData.bytes);
+            logExecution(rpc.method, null, null, null, false, 404, "Method not found", resData.bytes, "INVALID_ARGUMENT");
             return resData.response;
           }
         }
@@ -1032,7 +1095,7 @@ export default {
           id: reqId,
           error: { code: -32603, message: "Internal error" },
         });
-        logExecution(rpc.method, null, null, null, false, 500, errorMsg, resData.bytes);
+        logExecution(rpc.method, null, null, null, false, 500, errorMsg, resData.bytes, "INTERNAL_ERROR");
         return resData.response;
       }
     }

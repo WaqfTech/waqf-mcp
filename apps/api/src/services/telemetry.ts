@@ -18,6 +18,13 @@ function warnTelemetryUnavailable(error: unknown): void {
   );
 }
 
+export interface ErrorBreakdown {
+  gatewayFailures: number;
+  callerValidationErrors: number;
+  upstreamFailures: number;
+  noResults: number;
+}
+
 export interface AggregatedMetrics {
   timeWindowHours: number;
   since: string;
@@ -25,11 +32,22 @@ export interface AggregatedMetrics {
   cacheHits: number;
   cacheHitRatio: number;
   avgLatencyMs: number;
+  p50LatencyMs: number;
+  p95LatencyMs: number;
+  p99LatencyMs: number;
   errorCount: number;
   errorRate: number;
+  errorBreakdown: ErrorBreakdown;
   topTools: Array<{ toolName: string; count: number; avgLatencyMs: number }>;
   clientApps: Array<{ clientApp: string; count: number }>;
   topCountries: Array<{ country: string; count: number }>;
+}
+
+function percentile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return 0;
+  const rank = Math.ceil((p / 100) * sorted.length) - 1;
+  const idx = Math.max(0, Math.min(sorted.length - 1, rank));
+  return Math.round(sorted[idx] * 100) / 100;
 }
 
 export class D1TelemetryService {
@@ -97,7 +115,7 @@ export class D1TelemetryService {
         COUNT(*) as total_requests,
         SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) as cache_hits,
         AVG(latency_ms) as avg_latency_ms,
-        SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) as error_count
+        SUM(CASE WHEN (status_code >= 400 OR error_message IS NOT NULL) AND COALESCE(error_code, '') != 'NO_RESULTS' THEN 1 ELSE 0 END) as error_count
       FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ?
     `).bind(since);
@@ -135,12 +153,30 @@ export class D1TelemetryService {
       LIMIT 10
     `).bind(since);
 
-    const [summaryRes, toolsRes, clientAppsRes, countriesRes] = await this.d1.batch([
+    const latenciesStmt = this.d1.prepare(`
+      SELECT latency_ms
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
+      WHERE timestamp >= ?
+      ORDER BY latency_ms ASC
+      LIMIT 2000
+    `).bind(since);
+
+    const breakdownStmt = this.d1.prepare(`
+      SELECT error_code, status_code, COUNT(*) as count
+      FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
+      WHERE timestamp >= ? AND (status_code >= 400 OR error_message IS NOT NULL OR error_code IS NOT NULL)
+      GROUP BY error_code, status_code
+    `).bind(since);
+
+    const batchResults = await this.d1.batch([
       summaryStmt,
       toolsStmt,
       clientAppsStmt,
       countriesStmt,
+      latenciesStmt,
+      breakdownStmt,
     ]);
+    const [summaryRes, toolsRes, clientAppsRes, countriesRes, latenciesRes, breakdownRes] = batchResults;
 
     const summaryRow = (summaryRes.results?.[0] as Record<string, unknown>) ?? {};
     const totalRequests = Number(summaryRow.total_requests ?? 0);
@@ -150,6 +186,39 @@ export class D1TelemetryService {
 
     const cacheHitRatio = totalRequests > 0 ? Math.round((cacheHits / totalRequests) * 1000) / 1000 : 0;
     const errorRate = totalRequests > 0 ? Math.round((errorCount / totalRequests) * 1000) / 1000 : 0;
+
+    const sortedLatencies = ((latenciesRes?.results as Array<Record<string, unknown>>) ?? [])
+      .map((row) => Number(row.latency_ms))
+      .filter((n) => Number.isFinite(n))
+      .sort((a, b) => a - b);
+
+    const errorBreakdown: ErrorBreakdown = {
+      gatewayFailures: 0,
+      callerValidationErrors: 0,
+      upstreamFailures: 0,
+      noResults: 0,
+    };
+    for (const row of ((breakdownRes?.results as Array<Record<string, unknown>>) ?? [])) {
+      const count = Number(row.count ?? 0);
+      const code = String(row.error_code ?? "");
+      const status = Number(row.status_code ?? 200);
+      if (code === "NO_RESULTS") {
+        errorBreakdown.noResults += count;
+      } else if (code === "INVALID_ARGUMENT" || (status >= 400 && status < 500 && !code)) {
+        errorBreakdown.callerValidationErrors += count;
+      } else if (
+        code === "SOURCE_UNAVAILABLE" ||
+        code === "UPSTREAM_TIMEOUT" ||
+        code === "RATE_LIMITED" ||
+        code === "SOURCE_NOT_FOUND" ||
+        code === "SCHEMA_INVALID" ||
+        code === "PARTIAL_RESULTS"
+      ) {
+        errorBreakdown.upstreamFailures += count;
+      } else if (code === "INTERNAL_ERROR" || status >= 500 || count > 0) {
+        errorBreakdown.gatewayFailures += count;
+      }
+    }
 
     const topTools = ((toolsRes.results as Array<Record<string, unknown>>) ?? []).map((row) => ({
       toolName: String(row.tool_name ?? ""),
@@ -174,8 +243,12 @@ export class D1TelemetryService {
       cacheHits,
       cacheHitRatio,
       avgLatencyMs,
+      p50LatencyMs: percentile(sortedLatencies, 50),
+      p95LatencyMs: percentile(sortedLatencies, 95),
+      p99LatencyMs: percentile(sortedLatencies, 99),
       errorCount,
       errorRate,
+      errorBreakdown,
       topTools,
       clientApps,
       topCountries,

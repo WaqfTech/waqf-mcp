@@ -11,6 +11,7 @@ export const STATS_DIMENSIONS = [
   "method",
   "status",
   "colo",
+  "error_code",
 ] as const;
 
 export type StatsDimension = (typeof STATS_DIMENSIONS)[number];
@@ -48,6 +49,8 @@ const VALUE_EXPRESSIONS: Record<StatsDimension, string> = {
   method: "method",
   status: "CAST(status_code AS TEXT)",
   colo: "COALESCE(colo, 'unknown')",
+  error_code:
+    "COALESCE(error_code, CASE WHEN status_code >= 500 THEN 'INTERNAL_ERROR' WHEN status_code >= 400 THEN 'INVALID_ARGUMENT' ELSE 'OK' END)",
 };
 
 const METRICS = `

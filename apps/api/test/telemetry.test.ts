@@ -68,6 +68,22 @@ describe("D1TelemetryService", () => {
           { country: "EG", count: 30 },
         ],
       },
+      {
+        results: [
+          { latency_ms: 5 },
+          { latency_ms: 10 },
+          { latency_ms: 15 },
+          { latency_ms: 20 },
+          { latency_ms: 100 },
+        ],
+      },
+      {
+        results: [
+          { error_code: "INVALID_ARGUMENT", status_code: 400, count: 2 },
+          { error_code: "UPSTREAM_TIMEOUT", status_code: 200, count: 3 },
+          { error_code: "NO_RESULTS", status_code: 200, count: 4 },
+        ],
+      },
     ]);
 
     const mockD1 = {
@@ -85,8 +101,17 @@ describe("D1TelemetryService", () => {
     expect(metrics.cacheHits).toBe(40);
     expect(metrics.cacheHitRatio).toBe(0.4);
     expect(metrics.avgLatencyMs).toBe(12.35);
+    expect(metrics.p50LatencyMs).toBe(15);
+    expect(metrics.p95LatencyMs).toBe(100);
+    expect(metrics.p99LatencyMs).toBe(100);
     expect(metrics.errorCount).toBe(5);
     expect(metrics.errorRate).toBe(0.05);
+    expect(metrics.errorBreakdown).toEqual({
+      gatewayFailures: 0,
+      callerValidationErrors: 2,
+      upstreamFailures: 3,
+      noResults: 4,
+    });
     expect(metrics.topTools).toHaveLength(2);
     expect(metrics.topTools[0].toolName).toBe("waqf_quran_get_ayah");
     expect(metrics.clientApps[0].clientApp).toBe("cursor");

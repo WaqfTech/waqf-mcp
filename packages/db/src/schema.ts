@@ -23,6 +23,8 @@ export const mcpLogs = sqliteTable(
     statusCode: integer("status_code").notNull(),
     latencyMs: integer("latency_ms").notNull(),
     errorMessage: text("error_message"),
+    errorCode: text("error_code"),
+    requestId: text("request_id"),
     responseSizeBytes: integer("response_size_bytes"),
   },
   (table) => [

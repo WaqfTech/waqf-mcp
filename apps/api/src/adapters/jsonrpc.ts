@@ -42,13 +42,13 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
     });
 
     if (!res.ok && res.status !== 307 && res.status !== 308) {
-      throw new Error(`[${this.id}] tools/list failed with HTTP ${res.status}: ${await res.text()}`);
+      throw new Error(`[${this.id}] tools/list failed with HTTP ${res.status}: ${await this.readResponseText(res)}`);
     }
 
-    const data = (await res.json()) as {
+    const data = await this.readResponseJson<{
       result?: { tools?: ToolDefinition[] };
       error?: { message?: string };
-    };
+    }>(res);
 
     if (data.error) {
       throw new Error(`[${this.id}] tools/list RPC error: ${data.error.message ?? "Unknown error"}`);
@@ -77,7 +77,7 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
+      const errorText = await this.readResponseText(res);
       const { code, retryable } = classifyHttpStatus(res.status);
       const message = `[${this.id}] Upstream HTTP ${res.status} error: ${errorText}`;
       return {
@@ -87,10 +87,10 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
       };
     }
 
-    const data = (await res.json()) as {
+    const data = await this.readResponseJson<{
       result?: ToolResult;
       error?: { code?: number; message?: string };
-    };
+    }>(res);
 
     if (data.error) {
       const code =

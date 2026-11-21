@@ -66,6 +66,49 @@ export function resetSubmissionRateLimits(): void {
   submissionRateLimits.clear();
 }
 
+const MAX_MCP_REQUEST_BYTES = 1024 * 1024;
+const textDecoder = new TextDecoder();
+
+class PayloadTooLargeError extends Error {
+  constructor() {
+    super("Invalid Request: Payload exceeds 1MB limit");
+  }
+}
+
+async function readBoundedJsonBody<T>(request: Request, maxBytes = MAX_MCP_REQUEST_BYTES): Promise<T> {
+  if (!request.body || typeof request.body.getReader !== "function") {
+    const raw = await request.text();
+    if (textEncoder.encode(raw).byteLength > maxBytes) {
+      throw new PayloadTooLargeError();
+    }
+    return JSON.parse(raw) as T;
+  }
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw new PayloadTooLargeError();
+    }
+    chunks.push(value);
+  }
+
+  const combined = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return JSON.parse(textDecoder.decode(combined)) as T;
+}
+
 // Not exported: the Worker entry module may only export handlers.
 interface JsonRpcRequest {
   jsonrpc?: string;
@@ -610,9 +653,9 @@ export default {
 
     // MCP Streamable HTTP / POST Endpoint
     if (request.method === "POST" && (pathname === "/mcp" || pathname === "/")) {
-      // Enforce 1MB request body limit to prevent memory exhaustion
+      // Enforce 1MB request body limit to prevent memory exhaustion (header + streamed bytes)
       const contentLength = Number(request.headers.get("content-length") || 0);
-      if (contentLength > 1024 * 1024) {
+      if (contentLength > MAX_MCP_REQUEST_BYTES) {
         return new Response(
           JSON.stringify({
             jsonrpc: "2.0",
@@ -625,8 +668,18 @@ export default {
 
       let rpc: JsonRpcRequest;
       try {
-        rpc = (await request.json()) as JsonRpcRequest;
-      } catch {
+        rpc = await readBoundedJsonBody<JsonRpcRequest>(request, MAX_MCP_REQUEST_BYTES);
+      } catch (err: unknown) {
+        if (err instanceof PayloadTooLargeError) {
+          return new Response(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: null,
+              error: { code: -32600, message: "Invalid Request: Payload exceeds 1MB limit" },
+            }),
+            { status: 413, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+          );
+        }
         return new Response(
           JSON.stringify({
             jsonrpc: "2.0",

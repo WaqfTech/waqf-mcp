@@ -22,6 +22,7 @@ export const CANONICAL_RESULT_OUTPUT_SCHEMA: Record<string, unknown> = {
   required: ["schema_version", "status", "query", "results", "pagination", "warnings"],
   properties: {
     schema_version: { type: "string", const: "1.0.0" },
+    trust_boundary: { type: "string", const: "external_untrusted_source" },
     status: { type: "string", enum: ["ok", "no_results", "partial_results", "error"] },
     query: {
       type: "object",
@@ -1071,8 +1072,9 @@ export class SchemaNormalizer {
         ? "no_results"
         : "ok";
 
-    const envelope: CanonicalResultEnvelope = {
+    const envelope: CanonicalResultEnvelope & { trust_boundary: "external_untrusted_source" } = {
       schema_version: "1.0.0",
+      trust_boundary: "external_untrusted_source",
       status,
       query: {
         original: context.query ?? "",

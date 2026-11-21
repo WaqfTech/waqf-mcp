@@ -25,6 +25,9 @@ const circuitStates = new Map<string, CircuitState>();
 const CIRCUIT_FAILURE_THRESHOLD = 3;
 const CIRCUIT_COOLDOWN_MS = 15_000;
 const MAX_RETRY_AFTER_MS = 2_000;
+export const MAX_UPSTREAM_RESPONSE_BYTES = 2 * 1024 * 1024;
+const adapterTextEncoder = new TextEncoder();
+const adapterTextDecoder = new TextDecoder();
 
 export class GatewayUpstreamError extends Error {
   constructor(
@@ -163,14 +166,136 @@ export abstract class BaseMcpAdapter implements IMcpProvider {
   private async runSingleFetch(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
-    const request = { ...init, signal: controller.signal };
+    const request: RequestInit = { ...init, signal: controller.signal, redirect: "manual" };
     const bound = requestFetchers.get(this.id);
 
     try {
-      return bound ? await bound.fetch(url, request) : await fetch(url, request);
+      const res = bound ? await bound.fetch(url, request) : await fetch(url, request);
+      if (
+        res.status === 301 ||
+        res.status === 302 ||
+        res.status === 303 ||
+        res.status === 307 ||
+        res.status === 308
+      ) {
+        const location = res.headers?.get?.("Location");
+        if (!location) {
+          return res;
+        }
+        let expectedOrigin: string;
+        let redirectTarget: URL;
+        try {
+          expectedOrigin = new URL(url).origin;
+          redirectTarget = new URL(location, url);
+        } catch {
+          throw new GatewayUpstreamError("FORBIDDEN", this.id, false, `[${this.id}] Invalid upstream redirect URL`);
+        }
+        if (redirectTarget.protocol !== "https:" || redirectTarget.origin !== expectedOrigin) {
+          throw new GatewayUpstreamError(
+            "FORBIDDEN",
+            this.id,
+            false,
+            `[${this.id}] Blocked unsafe cross-origin or insecure redirect to ${redirectTarget.origin}`
+          );
+        }
+        return bound
+          ? await bound.fetch(redirectTarget.toString(), request)
+          : await fetch(redirectTarget.toString(), request);
+      }
+      return res;
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  protected async readResponseText(
+    res: Response,
+    maxBytes = MAX_UPSTREAM_RESPONSE_BYTES
+  ): Promise<string> {
+    const headerLen = Number(res.headers?.get?.("content-length") || 0);
+    if (headerLen > maxBytes) {
+      throw new GatewayUpstreamError(
+        "SCHEMA_INVALID",
+        this.id,
+        false,
+        `[${this.id}] Upstream response exceeds ${maxBytes}-byte limit`
+      );
+    }
+
+    if (res.body && typeof res.body.getReader === "function") {
+      const reader = res.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let total = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!value) continue;
+        total += value.byteLength;
+        if (total > maxBytes) {
+          await reader.cancel().catch(() => {});
+          throw new GatewayUpstreamError(
+            "SCHEMA_INVALID",
+            this.id,
+            false,
+            `[${this.id}] Upstream response exceeds ${maxBytes}-byte limit`
+          );
+        }
+        chunks.push(value);
+      }
+      const combined = new Uint8Array(total);
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      return adapterTextDecoder.decode(combined);
+    }
+
+    if (typeof res.text === "function") {
+      const raw = await res.text();
+      if (adapterTextEncoder.encode(raw).byteLength > maxBytes) {
+        throw new GatewayUpstreamError(
+          "SCHEMA_INVALID",
+          this.id,
+          false,
+          `[${this.id}] Upstream response exceeds ${maxBytes}-byte limit`
+        );
+      }
+      return raw;
+    }
+
+    const parsed = await res.json();
+    const serialized = JSON.stringify(parsed);
+    if (adapterTextEncoder.encode(serialized).byteLength > maxBytes) {
+      throw new GatewayUpstreamError(
+        "SCHEMA_INVALID",
+        this.id,
+        false,
+        `[${this.id}] Upstream response exceeds ${maxBytes}-byte limit`
+      );
+    }
+    return serialized;
+  }
+
+  protected async readResponseJson<T>(
+    res: Response,
+    maxBytes = MAX_UPSTREAM_RESPONSE_BYTES
+  ): Promise<T> {
+    if (!res.body && typeof res.text !== "function" && typeof res.json === "function") {
+      const parsed = (await res.json()) as T;
+      const serialized = JSON.stringify(parsed);
+      if (adapterTextEncoder.encode(serialized).byteLength > maxBytes) {
+        throw new GatewayUpstreamError(
+          "SCHEMA_INVALID",
+          this.id,
+          false,
+          `[${this.id}] Upstream response exceeds ${maxBytes}-byte limit`
+        );
+      }
+      return parsed;
+    }
+    const text = await this.readResponseText(res, maxBytes);
+    return JSON.parse(text) as T;
   }
 
   protected async fetchWithTimeout(

@@ -59,10 +59,10 @@ export class SseMcpAdapter extends BaseMcpAdapter {
     });
 
     if (!res.ok) {
-      throw new Error(`[${this.id}] SSE tools/list HTTP ${res.status}: ${await res.text()}`);
+      throw new Error(`[${this.id}] SSE tools/list HTTP ${res.status}: ${await this.readResponseText(res)}`);
     }
 
-    const text = await res.text();
+    const text = await this.readResponseText(res);
     const parsed = this.parseResponsePayload(text) as {
       result?: { tools?: ToolDefinition[] };
       error?: { message?: string };
@@ -95,7 +95,7 @@ export class SseMcpAdapter extends BaseMcpAdapter {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
+      const errorText = await this.readResponseText(res);
       const { code, retryable } = classifyHttpStatus(res.status);
       const message = `[${this.id}] SSE upstream HTTP ${res.status} error: ${errorText}`;
       return {
@@ -105,7 +105,7 @@ export class SseMcpAdapter extends BaseMcpAdapter {
       };
     }
 
-    const text = await res.text();
+    const text = await this.readResponseText(res);
     const parsed = this.parseResponsePayload(text) as {
       result?: ToolResult;
       error?: { code?: number; message?: string };

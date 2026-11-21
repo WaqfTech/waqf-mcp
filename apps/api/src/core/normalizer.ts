@@ -1,8 +1,182 @@
 import type {
+  CanonicalEvidenceItem,
   CanonicalQuranAyahInput,
+  CanonicalResultEnvelope,
+  OcrStatus,
   ToolDefinition,
   ToolResult,
 } from "@waqf/types";
+
+export interface NormalizeToolContext {
+  providerId?: string;
+  query?: string;
+  mode?: string;
+  limit?: number;
+  page?: number;
+  hasMore?: boolean;
+  warnings?: string[];
+}
+
+export const CANONICAL_RESULT_OUTPUT_SCHEMA: Record<string, unknown> = {
+  type: "object",
+  required: ["schema_version", "status", "query", "results", "pagination", "warnings"],
+  properties: {
+    schema_version: { type: "string", const: "1.0.0" },
+    status: { type: "string", enum: ["ok", "no_results", "partial_results", "error"] },
+    query: {
+      type: "object",
+      required: ["original", "mode", "limit"],
+      properties: {
+        original: { type: "string" },
+        mode: { type: "string" },
+        limit: { type: ["integer", "null"] },
+      },
+    },
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["result_id", "kind", "provider", "work", "location", "content", "citation", "provenance"],
+        properties: {
+          result_id: { type: "string" },
+          kind: {
+            type: "string",
+            enum: ["quran_ayah", "book_passage", "book_page", "catalog_entry", "web_result", "raw_text"],
+          },
+          provider: { type: "string" },
+          work: {
+            type: "object",
+            properties: {
+              id: { type: ["string", "null"] },
+              title: { type: ["string", "null"] },
+              author: { type: ["string", "null"] },
+              edition: { type: ["string", "null"] },
+            },
+          },
+          location: {
+            type: "object",
+            properties: {
+              volume_label: { type: ["string", "null"] },
+              printed_page_label: { type: ["string", "null"] },
+              digital_page_number: { type: ["integer", "null"] },
+              page_id: { type: ["string", "null"] },
+              file_id: { type: ["integer", "null"] },
+              offset: { type: ["integer", "null"] },
+              next_offset: { type: ["integer", "null"] },
+            },
+          },
+          content: {
+            type: "object",
+            required: ["verbatim", "is_excerpt", "language", "ocr_status"],
+            properties: {
+              verbatim: { type: "string" },
+              is_excerpt: { type: "boolean" },
+              language: { type: ["string", "null"] },
+              ocr_status: { type: "string", enum: ["unknown", "verified_clean", "possible_ocr_errors"] },
+            },
+          },
+          citation: {
+            type: "object",
+            required: ["source_url", "pdf_url", "citation_markdown", "verification_status"],
+            properties: {
+              source_url: { type: ["string", "null"] },
+              pdf_url: { type: ["string", "null"] },
+              citation_markdown: { type: ["string", "null"] },
+              verification_status: { type: "string", enum: ["unverified", "resolved", "broken", "ambiguous"] },
+            },
+          },
+          provenance: {
+            type: "object",
+            required: ["retrieved_at", "source_version", "content_hash"],
+            properties: {
+              retrieved_at: { type: "string" },
+              source_version: { type: ["string", "null"] },
+              content_hash: { type: ["string", "null"] },
+            },
+          },
+        },
+      },
+    },
+    pagination: {
+      type: "object",
+      required: ["page", "limit", "total", "has_more", "next_cursor"],
+      properties: {
+        page: { type: ["integer", "null"] },
+        limit: { type: ["integer", "null"] },
+        total: { type: ["integer", "null"] },
+        has_more: { type: "boolean" },
+        next_cursor: { type: ["string", "null"] },
+      },
+    },
+    warnings: { type: "array", items: { type: "string" } },
+  },
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function asString(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  return null;
+}
+
+function asInt(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value.trim());
+    if (Number.isInteger(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function detectOcrStatus(record: Record<string, unknown>, rawText: string): OcrStatus {
+  const explicit = asString(record.ocr_status);
+  if (explicit === "verified_clean" || explicit === "possible_ocr_errors") {
+    return explicit;
+  }
+  const warning = asString(record.ocr_warning) ?? asString(record.notice) ?? "";
+  if (/ocr/i.test(warning) || /ocr/i.test(rawText)) {
+    return "possible_ocr_errors";
+  }
+  return "unknown";
+}
+
+function buildCitationMarkdown(
+  record: Record<string, unknown>,
+  title: string | null,
+  sourceUrl: string | null,
+  printedPage: string | null,
+  digitalPage: number | null
+): string | null {
+  const citation = asRecord(record.citation);
+  const upstreamMd = asString(citation?.markdown) ?? asString(record.citation_markdown);
+  if (upstreamMd) {
+    return upstreamMd;
+  }
+  if (!sourceUrl) {
+    return null;
+  }
+  const label = title ?? sourceUrl;
+  const pageHint = printedPage
+    ? ` (p. ${printedPage})`
+    : digitalPage !== null
+      ? ` (file p. ${digitalPage})`
+      : "";
+  return `[${label}${pageHint}](${sourceUrl})`;
+}
 
 export class SchemaNormalizer {
   // Returns definitions for high-level Waqf Canonical tools
@@ -46,6 +220,7 @@ export class SchemaNormalizer {
           },
           required: ["surah", "ayah"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_hadith_search",
@@ -60,12 +235,15 @@ export class SchemaNormalizer {
             },
             limit: {
               type: "integer",
+              minimum: 1,
+              maximum: 20,
               default: 5,
               description: "Maximum number of results to return",
             },
           },
           required: ["query"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_turath_search_books",
@@ -87,6 +265,7 @@ export class SchemaNormalizer {
           },
           required: ["query"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_search_scholarship",
@@ -116,6 +295,7 @@ export class SchemaNormalizer {
           },
           required: ["query"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_books_search",
@@ -168,6 +348,7 @@ export class SchemaNormalizer {
           },
           required: ["query"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
       {
         name: "waqf_books_read_page",
@@ -207,6 +388,7 @@ export class SchemaNormalizer {
           },
           required: ["fileId", "pageNumber"],
         },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
     ];
   }
@@ -596,8 +778,319 @@ export class SchemaNormalizer {
     return args;
   }
 
-  // Normalizes diverse upstream output blocks into a unified Waqf text envelope
-  public normalizeToolResult(raw: ToolResult, sourceTag: string): ToolResult {
+  /**
+   * Bounds oversized upstream list payloads (e.g. turath__search_turath) to the
+   * caller's requested limit without altering any retained item's verbatim text.
+   */
+  public boundResultList(
+    raw: ToolResult,
+    limit: number
+  ): { result: ToolResult; hasMore: boolean; total: number | null } {
+    const safeLimit = Math.min(20, Math.max(1, Math.trunc(limit)));
+    if (raw.isError || !raw.content.length) {
+      return { result: raw, hasMore: false, total: null };
+    }
+
+    const first = raw.content[0];
+    if (first.type !== "text") {
+      return { result: raw, hasMore: false, total: null };
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(first.text);
+    } catch {
+      return { result: raw, hasMore: false, total: null };
+    }
+
+    if (Array.isArray(parsed)) {
+      const hasMore = parsed.length > safeLimit;
+      if (!hasMore) {
+        return { result: raw, hasMore: false, total: parsed.length };
+      }
+      return {
+        hasMore: true,
+        total: parsed.length,
+        result: {
+          ...raw,
+          content: [{ type: "text", text: JSON.stringify(parsed.slice(0, safeLimit)) }, ...raw.content.slice(1)],
+        },
+      };
+    }
+
+    const obj = asRecord(parsed);
+    if (!obj) {
+      return { result: raw, hasMore: false, total: null };
+    }
+
+    for (const key of ["results", "items", "hits", "data"] as const) {
+      const list = obj[key];
+      if (!Array.isArray(list)) continue;
+      const total = asInt(obj.total) ?? asInt(obj.count) ?? list.length;
+      const hasMore = list.length > safeLimit || Boolean(obj.has_more) || Boolean(obj.next_cursor);
+      if (list.length <= safeLimit) {
+        return { result: raw, hasMore, total };
+      }
+      const boundedObj = {
+        ...obj,
+        [key]: list.slice(0, safeLimit),
+        returned_count: safeLimit,
+        total_available: total,
+      };
+      return {
+        hasMore: true,
+        total,
+        result: {
+          ...raw,
+          content: [{ type: "text", text: JSON.stringify(boundedObj) }, ...raw.content.slice(1)],
+        },
+      };
+    }
+
+    return { result: raw, hasMore: false, total: null };
+  }
+
+  private mapRecordToEvidenceItem(
+    entry: unknown,
+    index: number,
+    providerId: string,
+    retrievedAt: string,
+    rawFallbackText: string
+  ): CanonicalEvidenceItem {
+    const rec = asRecord(entry);
+    if (!rec) {
+      const text = typeof entry === "string" ? entry : JSON.stringify(entry);
+      return {
+        result_id: `${providerId}_${index + 1}`,
+        kind: "raw_text",
+        provider: providerId,
+        work: { id: null, title: null, author: null, edition: null },
+        location: {
+          volume_label: null,
+          printed_page_label: null,
+          digital_page_number: null,
+          page_id: null,
+          file_id: null,
+          offset: null,
+          next_offset: null,
+        },
+        content: {
+          verbatim: text,
+          is_excerpt: false,
+          language: null,
+          ocr_status: detectOcrStatus({}, text),
+        },
+        citation: {
+          source_url: null,
+          pdf_url: null,
+          citation_markdown: null,
+          verification_status: "unverified",
+        },
+        provenance: {
+          retrieved_at: retrievedAt,
+          source_version: null,
+          content_hash: null,
+        },
+      };
+    }
+
+    const workObj = asRecord(rec.book) ?? asRecord(rec.work) ?? asRecord(rec.meta);
+    const citationObj = asRecord(rec.citation);
+    const title =
+      asString(rec.book_title) ??
+      asString(rec.title) ??
+      asString(rec.name) ??
+      asString(workObj?.title) ??
+      asString(workObj?.name);
+    const author =
+      asString(rec.author_name) ??
+      asString(rec.author) ??
+      asString(asRecord(rec.author)?.name) ??
+      asString(workObj?.author);
+    const workId =
+      asString(rec.book_id) ??
+      asString(workObj?.id) ??
+      asString(rec.surah) ??
+      asString(rec.id);
+    const edition = asString(rec.edition) ?? asString(workObj?.edition);
+
+    const isQuran = rec.surah !== undefined || rec.verse_key !== undefined || rec.text_uthmani !== undefined;
+    const isPage = rec.file_id !== undefined && rec.page_number !== undefined && rec.text !== undefined;
+    const isWeb = rec.displayUrl !== undefined || (rec.url !== undefined && rec.snippet !== undefined);
+    const kind: CanonicalEvidenceItem["kind"] = isQuran
+      ? "quran_ayah"
+      : isPage
+        ? "book_page"
+        : isWeb
+          ? "web_result"
+          : rec.text !== undefined || rec.snip !== undefined || rec.excerpt !== undefined
+            ? "book_passage"
+            : title !== null
+              ? "catalog_entry"
+              : "raw_text";
+
+    // Preserve exact verbatim source text without mutating diacritics or orthography.
+    const verbatim =
+      (typeof rec.text_uthmani === "string" && rec.text_uthmani) ||
+      (typeof rec.text === "string" && rec.text) ||
+      (typeof rec.excerpt === "string" && rec.excerpt) ||
+      (typeof rec.snip === "string" && rec.snip) ||
+      (typeof rec.snippet === "string" && rec.snippet) ||
+      (typeof rec.description === "string" && rec.description) ||
+      rawFallbackText;
+
+    const sourceUrl =
+      asString(rec.source_url) ??
+      asString(citationObj?.url) ??
+      asString(rec.url) ??
+      asString(rec.link);
+    const pdfUrl = asString(rec.pdf_url) ?? asString(rec.pdf) ?? asString(citationObj?.pdf_url);
+
+    // Never infer printed_page_label from digital_page_number.
+    const printedPageLabel =
+      asString(rec.printed_page_label) ?? asString(rec.printed_page) ?? asString(rec.book_page);
+    const digitalPageNumber =
+      asInt(rec.digital_page_number) ?? asInt(rec.file_page) ?? asInt(rec.page_number);
+    const pageId =
+      asString(rec.page_id) ??
+      asString(rec.verse_key) ??
+      (rec.surah !== undefined && rec.ayah !== undefined ? `${rec.surah}:${rec.ayah}` : null) ??
+      asString(rec.page);
+    const volumeLabel = asString(rec.volume_label) ?? asString(rec.volume) ?? asString(rec.vol);
+    const fileId = asInt(rec.file_id);
+    const offset = asInt(rec.offset);
+    const nextOffset = asInt(rec.next_offset) ?? asInt(rec.nextOffset);
+
+    const citationMarkdown = buildCitationMarkdown(
+      rec,
+      title,
+      sourceUrl,
+      printedPageLabel,
+      digitalPageNumber
+    );
+
+    return {
+      result_id: asString(rec.id) ?? `${providerId}_${index + 1}`,
+      kind,
+      provider: providerId,
+      work: {
+        id: workId,
+        title,
+        author,
+        edition,
+      },
+      location: {
+        volume_label: volumeLabel,
+        printed_page_label: printedPageLabel,
+        digital_page_number: digitalPageNumber,
+        page_id: pageId,
+        file_id: fileId,
+        offset,
+        next_offset: nextOffset,
+      },
+      content: {
+        verbatim,
+        is_excerpt: Boolean(rec.is_excerpt ?? (kind === "book_passage" || rec.snip !== undefined || rec.excerpt !== undefined)),
+        language: asString(rec.language) ?? asString(rec.locale),
+        ocr_status: detectOcrStatus(rec, verbatim),
+      },
+      citation: {
+        source_url: sourceUrl,
+        pdf_url: pdfUrl,
+        citation_markdown: citationMarkdown,
+        verification_status: sourceUrl || pdfUrl ? "resolved" : "unverified",
+      },
+      provenance: {
+        retrieved_at: retrievedAt,
+        source_version: asString(rec.source_version),
+        content_hash: null,
+      },
+      raw: rec,
+    };
+  }
+
+  // Normalizes diverse upstream output blocks into a unified Waqf text envelope + structuredContent
+  public normalizeToolResult(
+    raw: ToolResult,
+    sourceTag: string,
+    context: NormalizeToolContext = {}
+  ): ToolResult {
+    const providerId = context.providerId ?? sourceTag.toLowerCase().replace(/[^a-z0-9_]+/g, "_");
+    const retrievedAt = new Date().toISOString();
+    const rawTextBlocks = raw.content
+      .filter((block): block is { type: "text"; text: string } => block.type === "text")
+      .map((block) => block.text);
+    const combinedText = rawTextBlocks.join("\n");
+
+    let parsed: unknown = null;
+    if (raw.structuredContent) {
+      parsed = raw.structuredContent;
+    } else if (rawTextBlocks[0]) {
+      try {
+        parsed = JSON.parse(rawTextBlocks[0]);
+      } catch {
+        parsed = null;
+      }
+    }
+
+    const parsedObj = asRecord(parsed);
+    let rawItems: unknown[] = [];
+    if (Array.isArray(parsed)) {
+      rawItems = parsed;
+    } else if (parsedObj) {
+      const list = parsedObj.results ?? parsedObj.items ?? parsedObj.hits ?? parsedObj.data;
+      if (Array.isArray(list)) {
+        rawItems = list;
+      } else if (Object.keys(parsedObj).length > 0) {
+        rawItems = [parsedObj];
+      }
+    } else if (combinedText.trim() !== "") {
+      rawItems = [combinedText];
+    }
+
+    const results = rawItems.map((item, idx) =>
+      this.mapRecordToEvidenceItem(item, idx, providerId, retrievedAt, combinedText)
+    );
+
+    const nextCursor =
+      asString(parsedObj?.next_cursor) ??
+      asString(parsedObj?.nextCursor) ??
+      (parsedObj?.next_offset !== undefined && parsedObj?.next_offset !== null
+        ? String(parsedObj.next_offset)
+        : null);
+    const total =
+      asInt(parsedObj?.total_available) ??
+      asInt(parsedObj?.total) ??
+      asInt(parsedObj?.count) ??
+      (results.length > 0 ? results.length : 0);
+    const hasMore = Boolean(context.hasMore || parsedObj?.has_more || nextCursor);
+
+    const status: CanonicalResultEnvelope["status"] = raw.isError
+      ? "error"
+      : results.length === 0
+        ? "no_results"
+        : "ok";
+
+    const envelope: CanonicalResultEnvelope = {
+      schema_version: "1.0.0",
+      status,
+      query: {
+        original: context.query ?? "",
+        mode: context.mode ?? "default",
+        limit: context.limit ?? null,
+      },
+      results,
+      pagination: {
+        page: context.page ?? asInt(parsedObj?.page) ?? null,
+        limit: context.limit ?? asInt(parsedObj?.per_page) ?? null,
+        total,
+        has_more: hasMore,
+        next_cursor: nextCursor,
+      },
+      warnings: [...(context.warnings ?? [])],
+      ...(raw.structuredContent ? { raw: raw.structuredContent } : {}),
+    };
+
     return {
       isError: raw.isError,
       content: raw.content.map((block) => {
@@ -609,6 +1102,7 @@ export class SchemaNormalizer {
         }
         return block;
       }),
+      structuredContent: envelope as unknown as Record<string, unknown>,
     };
   }
 

@@ -125,8 +125,14 @@ export class SseMcpAdapter extends BaseMcpAdapter {
       };
     }
 
-    if (parsed.result?.content) {
-      return parsed.result;
+    if (parsed.result?.content || parsed.result?.structuredContent) {
+      return {
+        content: parsed.result.content ?? [],
+        ...(parsed.result.structuredContent !== undefined
+          ? { structuredContent: parsed.result.structuredContent }
+          : {}),
+        ...(parsed.result.isError !== undefined ? { isError: parsed.result.isError } : {}),
+      };
     }
 
     return {

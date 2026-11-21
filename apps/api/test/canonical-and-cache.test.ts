@@ -528,7 +528,12 @@ describe("Canonical Tools & Schema Normalization", () => {
       });
       registry.register(fihris);
       registry.register(turath);
-      const cache = fakeCache();
+      const cache = {
+        computeKey: vi.fn().mockResolvedValue("cache-key"),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
       const router = new FederationRouter(registry, normalizer);
 
       const res = await router.callTool("waqf_search_scholarship", { query: "الصلاة", page: 2 }, cache);
@@ -536,6 +541,132 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect(res.result.isError).toBe(true);
       expect((res.result.content[0] as { text: string }).text).toContain("cannot honour page");
       expect(turathSpy).not.toHaveBeenCalled();
+      expect(cache.set).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Structured Content, Citations, and Pagination", () => {
+    it("declares outputSchema on every canonical tool", () => {
+      for (const tool of normalizer.getCanonicalToolDefinitions()) {
+        expect(tool.outputSchema).toBeDefined();
+        expect(tool.outputSchema?.type).toBe("object");
+      }
+    });
+
+    it("preserves Uthmani text verbatim and keeps printed_page_label null when only digital page is known", () => {
+      const registry = new ProviderRegistry([]);
+      const aljam3 = new JsonRpcMcpAdapter({
+        id: "aljam3",
+        name: "Aljam3",
+        baseUrl: "https://aljam3.com/mcp",
+        transport: "json-rpc",
+        description: "Aljam3",
+      });
+      const verbatimText = "قُلْ هُوَ ٱللَّهُ أَحَدٌ — نص قد يحتوي على أخطاء OCR";
+      vi.spyOn(aljam3, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              file_id: 49852,
+              page_number: 247,
+              book_title: "صحيح البخاري",
+              author: "البخاري",
+              url: "https://aljam3.com/book/1/247",
+              pdf_url: "https://aljam3.com/book/1.pdf#page=247",
+              next_offset: 6000,
+              text: verbatimText,
+            }),
+          },
+        ],
+      });
+      registry.register(aljam3);
+      const router = new FederationRouter(registry, normalizer);
+
+      return router.callTool("waqf_books_read_page", { fileId: 49852, pageNumber: 247 }).then((res) => {
+        const sc = res.result.structuredContent as {
+          schema_version: string;
+          status: string;
+          results: Array<{
+            content: { verbatim: string; ocr_status: string };
+            location: { printed_page_label: string | null; digital_page_number: number | null; next_offset: number | null };
+            citation: { source_url: string | null; pdf_url: string | null; citation_markdown: string | null };
+          }>;
+          pagination: { has_more: boolean; next_cursor: string | null };
+        };
+        expect(sc.schema_version).toBe("1.0.0");
+        expect(sc.status).toBe("ok");
+        expect(sc.results[0].content.verbatim).toBe(verbatimText);
+        expect(sc.results[0].content.ocr_status).toBe("possible_ocr_errors");
+        expect(sc.results[0].location.printed_page_label).toBeNull();
+        expect(sc.results[0].location.digital_page_number).toBe(247);
+        expect(sc.results[0].location.next_offset).toBe(6000);
+        expect(sc.results[0].citation.pdf_url).toBe("https://aljam3.com/book/1.pdf#page=247");
+        expect(sc.results[0].citation.citation_markdown).toContain("[صحيح البخاري (file p. 247)](https://aljam3.com/book/1/247)");
+        expect(sc.pagination.has_more).toBe(true);
+        expect(sc.pagination.next_cursor).toBe("6000");
+      });
+    });
+
+    it("enforces limit on waqf_hadith_search so oversized Turath responses are bounded", async () => {
+      const registry = new ProviderRegistry([]);
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+      const manyResults = Array.from({ length: 12 }, (_, idx) => ({
+        book_id: idx + 1,
+        title: `كتاب ${idx + 1}`,
+        text: `نص الحديث رقم ${idx + 1}`,
+      }));
+      vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: JSON.stringify({ count: 12, results: manyResults }) }],
+      });
+      registry.register(turath);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_hadith_search", { query: "النية", limit: 3 });
+      const sc = res.result.structuredContent as {
+        results: Array<{ content: { verbatim: string } }>;
+        pagination: { limit: number; total: number; has_more: boolean };
+      };
+      expect(sc.results).toHaveLength(3);
+      expect(sc.results[0].content.verbatim).toBe("نص الحديث رقم 1");
+      expect(sc.pagination.limit).toBe(3);
+      expect(sc.pagination.total).toBe(12);
+      expect(sc.pagination.has_more).toBe(true);
+    });
+
+    it("marks empty canonical results as no_results and skips caching", async () => {
+      const registry = new ProviderRegistry([]);
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+      vi.spyOn(turath, "callTool").mockResolvedValue({
+        content: [{ type: "text", text: JSON.stringify({ count: 0, results: [] }) }],
+      });
+      registry.register(turath);
+      const cache = {
+        computeKey: vi.fn().mockResolvedValue("cache-key"),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_hadith_search", { query: "nonexistent-xyz" }, cache);
+      const sc = res.result.structuredContent as { status: string; results: unknown[] };
+      expect(res.result.isError).toBeUndefined();
+      expect(sc.status).toBe("no_results");
+      expect(sc.results).toEqual([]);
+      expect(router.isEmptyResult(res.result)).toBe(true);
       expect(cache.set).not.toHaveBeenCalled();
     });
   });

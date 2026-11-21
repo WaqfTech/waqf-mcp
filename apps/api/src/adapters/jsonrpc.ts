@@ -106,8 +106,14 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
       };
     }
 
-    if (data.result?.content) {
-      return data.result;
+    if (data.result?.content || data.result?.structuredContent) {
+      return {
+        content: data.result.content ?? [],
+        ...(data.result.structuredContent !== undefined
+          ? { structuredContent: data.result.structuredContent }
+          : {}),
+        ...(data.result.isError !== undefined ? { isError: data.result.isError } : {}),
+      };
     }
 
     // Default fallback wrapper

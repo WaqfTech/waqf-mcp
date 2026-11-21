@@ -30,6 +30,7 @@ export type ContentBlock = TextContent | ImageContent | ResourceContent;
 
 export interface ToolResult {
   content: ContentBlock[];
+  structuredContent?: Record<string, unknown>;
   isError?: boolean;
 }
 

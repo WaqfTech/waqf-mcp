@@ -62,6 +62,47 @@ describe("MCP Adapters & Federation Router", () => {
     expect(tools[0].name).toBe("fetch_ayah");
   });
 
+  it("preserves upstream structuredContent in JsonRpcMcpAdapter and SseMcpAdapter", async () => {
+    const structured = { schema_version: "1.0.0", items: [{ id: 1 }] };
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        result: {
+          content: [{ type: "text", text: "ok" }],
+          structuredContent: structured,
+        },
+      }),
+    });
+    const jsonRpc = new JsonRpcMcpAdapter({
+      id: "shamela",
+      name: "Shamela",
+      baseUrl: "https://mcp.shamela.ws",
+      transport: "json-rpc",
+      description: "Shamela",
+    });
+    const rpcRes = await jsonRpc.callTool("shamela_find", { keywords: ["x"] });
+    expect(rpcRes.structuredContent).toEqual(structured);
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () =>
+        `event: message\ndata: ${JSON.stringify({
+          result: { content: [{ type: "text", text: "ok" }], structuredContent: structured },
+        })}\n\n`,
+    });
+    const sse = new SseMcpAdapter({
+      id: "tafsir_net",
+      name: "Tafsir.net",
+      baseUrl: "https://mcp.tafsir.net/mcp",
+      transport: "sse",
+      description: "Tafsir",
+    });
+    const sseRes = await sse.callTool("fetch_ayah", { surah: 1, ayah: 1 });
+    expect(sseRes.structuredContent).toEqual(structured);
+  });
+
   it("FederationRouter prefixes tool names to prevent collisions", async () => {
     const registry = new ProviderRegistry([]);
 

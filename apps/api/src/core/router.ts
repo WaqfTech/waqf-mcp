@@ -353,7 +353,11 @@ export class FederationRouter {
             });
             const raw = await tafsirProvider.callTool("fetch_ayah", upstreamArgs);
             if (!raw.isError) {
-              result = this.normalizer.normalizeToolResult(raw, "Tafsir.net");
+              result = this.normalizer.normalizeToolResult(raw, "Tafsir.net", {
+                providerId: "tafsir_net",
+                query: `${surah}:${ayah}`,
+                mode: "quran_ayah",
+              });
               fetched = true;
             }
           } catch {
@@ -367,7 +371,12 @@ export class FederationRouter {
           const raw = await bahouthProvider.callTool("get_verse", {
             verse_key: this.normalizer.toBahouthVerseKey({ surah, ayah }),
           });
-          result = this.normalizer.normalizeToolResult(raw, "Bahouth");
+          result = this.normalizer.normalizeToolResult(raw, "Bahouth", {
+            providerId: "bahouth",
+            query: `${surah}:${ayah}`,
+            mode: "quran_ayah",
+            warnings: ["Primary Quran provider (tafsir_net) unavailable; served via Bahouth fallback."],
+          });
           fetched = true;
         }
 
@@ -392,7 +401,11 @@ export class FederationRouter {
           q: query,
           kind: args.kind ?? "books",
         });
-        result = this.normalizer.normalizeToolResult(raw, "Turath Library");
+        result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
+          providerId: "turath",
+          query,
+          mode: String(args.kind ?? "books"),
+        });
         break;
       }
 
@@ -403,16 +416,29 @@ export class FederationRouter {
         }
         targetProvider = "turath";
         const query = String(args.query ?? "");
+        const parsedLimit = Number(args.limit ?? 5);
+        const limit = Number.isFinite(parsedLimit)
+          ? Math.min(20, Math.max(1, Math.trunc(parsedLimit)))
+          : 5;
         const raw = await turathProvider.callTool("search_turath", {
           q: query,
         });
-        result = this.normalizer.normalizeToolResult(raw, "Hadith Sources (Turath)");
+        const bounded = this.normalizer.boundResultList(raw, limit);
+        result = this.normalizer.normalizeToolResult(bounded.result, "Hadith Sources (Turath)", {
+          providerId: "turath",
+          query,
+          mode: "hadith_search",
+          limit,
+          hasMore: bounded.hasMore,
+        });
         break;
       }
 
       case "waqf_search_scholarship": {
         const fihrisProvider = this.registry.get("fihris");
         const turathProvider = this.registry.get("turath");
+        const query = String(args.query || args.q || "");
+        const page = typeof args.page === "number" ? args.page : 1;
         let fetched = false;
 
         // Primary: Fihris web search across Islamic directories
@@ -421,7 +447,12 @@ export class FederationRouter {
             targetProvider = "fihris";
             const raw = await fihrisProvider.callTool("search_islamic_sources", args);
             if (!raw.isError) {
-              result = this.normalizer.normalizeToolResult(raw, "Fihris Islamic Search");
+              result = this.normalizer.normalizeToolResult(raw, "Fihris Islamic Search", {
+                providerId: "fihris",
+                query,
+                mode: "scholarship_search",
+                page,
+              });
               fetched = true;
             }
           } catch {
@@ -458,9 +489,20 @@ export class FederationRouter {
           }
           try {
             targetProvider = "turath";
-            const query = String(args.query || args.q || "");
             const raw = await turathProvider.callTool("search_turath", { q: query });
-            result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Scholarship Fallback)");
+            const bounded = this.normalizer.boundResultList(raw, 10);
+            result = this.normalizer.normalizeToolResult(
+              bounded.result,
+              "Turath Islamic Heritage (Scholarship Fallback)",
+              {
+                providerId: "turath",
+                query,
+                mode: "scholarship_search",
+                limit: 10,
+                hasMore: bounded.hasMore,
+                warnings: ["Primary search provider (fihris) unavailable; served via Turath fallback."],
+              }
+            );
             fetched = true;
             servedByFallback = true;
           } catch {
@@ -481,6 +523,9 @@ export class FederationRouter {
       case "waqf_books_search": {
         const aljam3Provider = this.registry.get("aljam3");
         const turathProvider = this.registry.get("turath");
+        const query = String((bookArgs ?? {}).q ?? "");
+        const limit = typeof bookArgs?.per_page === "number" ? bookArgs.per_page : 10;
+        const page = typeof bookArgs?.page === "number" ? bookArgs.page : 1;
         let fetched = false;
 
         // Primary: Aljam3 books corpus (passages with citations and source links)
@@ -489,7 +534,13 @@ export class FederationRouter {
             targetProvider = "aljam3";
             const raw = await aljam3Provider.callTool("search", bookArgs ?? {});
             if (!raw.isError) {
-              result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
+              result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
+                providerId: "aljam3",
+                query,
+                mode: "books_search",
+                limit,
+                page,
+              });
               fetched = true;
             }
           } catch {
@@ -525,9 +576,20 @@ export class FederationRouter {
           }
           try {
             targetProvider = "turath";
-            const query = String((bookArgs ?? {}).q ?? "");
             const raw = await turathProvider.callTool("search_turath", { q: query });
-            result = this.normalizer.normalizeToolResult(raw, "Turath Islamic Heritage (Books Fallback)");
+            const bounded = this.normalizer.boundResultList(raw, limit);
+            result = this.normalizer.normalizeToolResult(
+              bounded.result,
+              "Turath Islamic Heritage (Books Fallback)",
+              {
+                providerId: "turath",
+                query,
+                mode: "books_search",
+                limit,
+                hasMore: bounded.hasMore,
+                warnings: ["Primary books provider (aljam3) unavailable; served via Turath fallback."],
+              }
+            );
             fetched = true;
             servedByFallback = true;
           } catch {
@@ -552,7 +614,11 @@ export class FederationRouter {
         }
         targetProvider = "aljam3";
         const raw = await aljam3Provider.callTool("get_page", bookArgs ?? {});
-        result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library");
+        result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
+          providerId: "aljam3",
+          query: `${bookArgs?.file_id ?? ""}:${bookArgs?.page_number ?? ""}`,
+          mode: "books_read_page",
+        });
         break;
       }
 
@@ -581,6 +647,9 @@ export class FederationRouter {
   }
 
   public isEmptyResult(result: ToolResult): boolean {
+    if (result.structuredContent && (result.structuredContent as { status?: string }).status === "no_results") {
+      return true;
+    }
     if (!result.content || result.content.length === 0) {
       return true;
     }

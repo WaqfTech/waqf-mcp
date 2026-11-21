@@ -96,7 +96,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.status).toBe("healthy");
   });
 
-  it("GET /mcp with Accept: text/event-stream initiates SSE stream", async () => {
+  it("GET /mcp with Accept: text/event-stream returns a finite SSE endpoint event", async () => {
     const req = new Request("http://localhost:8787/mcp", {
       headers: { Accept: "text/event-stream" },
     });
@@ -104,6 +104,9 @@ describe("Waqf MCP Gateway Worker E2E", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/event-stream");
+    const text = await res.text();
+    expect(text).toContain("event: endpoint");
+    expect(text).toContain("data: http://localhost:8787/mcp");
   });
 
   it("POST /mcp handles 'initialize' method", async () => {

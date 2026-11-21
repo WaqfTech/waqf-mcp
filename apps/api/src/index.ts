@@ -266,15 +266,14 @@ export default {
 
       // Support SSE (Server-Sent Events) clients
       if (accept.includes("text/event-stream")) {
-        const { readable, writable } = new TransformStream();
-        const writer = writable.getWriter();
-        const encoder = new TextEncoder();
-
-        // Send endpoint event per MCP SSE spec
+        // The gateway is stateless and never sends server-initiated messages,
+        // so return the endpoint event as a finite body. Holding a
+        // TransformStream open forever made the Workers runtime cancel
+        // GET /mcp as a hung request (HTTP 503) for SSE clients.
         const postEndpoint = `${url.origin}/mcp`;
-        writer.write(encoder.encode(`event: endpoint\ndata: ${postEndpoint}\n\n`));
+        const sseBody = `retry: 3600000\nevent: endpoint\ndata: ${postEndpoint}\n\n`;
 
-        return new Response(readable, {
+        return new Response(sseBody, {
           headers: {
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-cache",

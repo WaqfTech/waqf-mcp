@@ -161,11 +161,25 @@ describe("Golden Evidence & Scholarly Integrity Regression Suite", () => {
       expect((res.result.structuredContent as { status: string }).status).toBe("no_results");
     });
 
-    it("reports tool error when no Quran provider is registered", async () => {
+    it("reports tool error when no Quran provider is registered or both fail", async () => {
       const router = new FederationRouter(new ProviderRegistry([]), normalizer);
       const res = await router.callTool("waqf_quran_get_ayah", { surah: 1, ayah: 1 });
       expect(res.result.isError).toBe(true);
       expect(res.result.error?.code).toBe("SOURCE_UNAVAILABLE");
+
+      const registry = new ProviderRegistry([]);
+      const tafsir = makeSseAdapter("tafsir_net", "Tafsir.net", "https://mcp.tafsir.net/mcp");
+      const bahouth = makeJsonAdapter("bahouth", "Bahouth", "https://bahouth.tafsir.net/mcp");
+      vi.spyOn(tafsir, "callTool").mockRejectedValue(new Error("down"));
+      vi.spyOn(bahouth, "callTool").mockRejectedValue(new Error("down"));
+      registry.register(tafsir);
+      registry.register(bahouth);
+      const bothDown = await new FederationRouter(registry, normalizer).callTool("waqf_quran_get_ayah", {
+        surah: 1,
+        ayah: 1,
+      });
+      expect(bothDown.result.isError).toBe(true);
+      expect(bothDown.result.error?.code).toBe("SOURCE_UNAVAILABLE");
     });
   });
 

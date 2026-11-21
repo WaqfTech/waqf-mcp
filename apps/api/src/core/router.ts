@@ -399,17 +399,22 @@ export class FederationRouter {
 
         // Fallback: Bahouth
         if (!fetched && bahouthProvider) {
-          targetProvider = "bahouth";
-          const raw = await bahouthProvider.callTool("get_verse", {
-            verse_key: this.normalizer.toBahouthVerseKey({ surah, ayah }),
-          });
-          result = this.normalizer.normalizeToolResult(raw, "Bahouth", {
-            providerId: "bahouth",
-            query: `${surah}:${ayah}`,
-            mode: "quran_ayah",
-            warnings: ["Primary Quran provider (tafsir_net) unavailable; served via Bahouth fallback."],
-          });
-          fetched = true;
+          try {
+            targetProvider = "bahouth";
+            const raw = await bahouthProvider.callTool("get_verse", {
+              verse_key: this.normalizer.toBahouthVerseKey({ surah, ayah }),
+            });
+            result = this.normalizer.normalizeToolResult(raw, "Bahouth", {
+              providerId: "bahouth",
+              query: `${surah}:${ayah}`,
+              mode: "quran_ayah",
+              warnings: ["Primary Quran provider (tafsir_net) unavailable; served via Bahouth fallback."],
+            });
+            fetched = true;
+            servedByFallback = Boolean(tafsirProvider);
+          } catch {
+            // Fall through to SOURCE_UNAVAILABLE toolError
+          }
         }
 
         if (!fetched) {

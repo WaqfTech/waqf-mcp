@@ -36,6 +36,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Local stats-report build output
+scripts/stats-report/stats-report
+
 # Temporary scratch & test artifacts
 scratch/
 coverage/

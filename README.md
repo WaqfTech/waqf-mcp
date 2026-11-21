@@ -265,6 +265,9 @@ aube run dev
 
 # Build production assets
 aube run build
+
+# Aggregated usage report from production D1 (Go, read-only)
+go run ./scripts/stats-report/main.go -days 30
 ```
 
 ---

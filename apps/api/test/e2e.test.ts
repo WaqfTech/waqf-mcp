@@ -695,6 +695,20 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(location).toContain("state=xyz123");
   });
 
+  it("GET /oauth/authorize allows Google's hosted OAuth redirect", async () => {
+    const redirect = "https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-test";
+    const req = new Request(
+      `http://localhost:8787/oauth/authorize?redirect_uri=${encodeURIComponent(redirect)}&state=xyz`
+    );
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(302);
+    const location = res.headers.get("Location");
+    expect(location).toContain("oauth-redirect.googleusercontent.com");
+    expect(location).toContain("code=waqf_code_");
+    expect(location).toContain("state=xyz");
+  });
+
   it("GET /oauth/authorize refuses an unknown redirect origin", async () => {
     const req = new Request(
       "http://localhost:8787/oauth/authorize?redirect_uri=https%3A%2F%2Fevil.example%2Fcallback&state=abc"

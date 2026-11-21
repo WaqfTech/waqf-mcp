@@ -93,6 +93,8 @@ const ALLOWED_REDIRECT_ORIGINS = new Set([
   "https://chatgpt.com",
   "https://chat.openai.com",
   "https://gemini.google.com",
+  "https://oauth-redirect.googleusercontent.com",
+  "https://oauth-redirect-sandbox.googleusercontent.com",
   "https://cursor.com",
   "https://www.cursor.com",
   "https://vscode.dev",

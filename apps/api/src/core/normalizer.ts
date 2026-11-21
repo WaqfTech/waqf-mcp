@@ -182,7 +182,7 @@ function buildCitationMarkdown(
 export class SchemaNormalizer {
   // Returns definitions for high-level Waqf Canonical tools
   public getCanonicalToolDefinitions(): ToolDefinition[] {
-    return [
+    const definitions: ToolDefinition[] = [
       {
         name: "waqf_quran_get_ayah",
         description:
@@ -459,6 +459,16 @@ export class SchemaNormalizer {
         outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
     ];
+    return definitions.map((tool) => ({
+      ...tool,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint:
+          tool.name === "waqf_search_scholarship" || tool.name === "waqf_research_search",
+      },
+    }));
   }
 
   // Translates canonical Quran input to Bahouth format

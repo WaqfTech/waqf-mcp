@@ -144,6 +144,12 @@ export class FederationRouter {
           ...tool,
           name: `${provider.id}__${tool.name}`,
           description: `[${provider.name}] ${tool.description ?? ""}`.trim(),
+          annotations: tool.annotations ?? {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: provider.id === "fihris",
+          },
         }));
       })
     );

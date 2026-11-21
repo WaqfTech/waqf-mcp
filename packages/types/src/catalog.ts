@@ -12,6 +12,8 @@
  *   apps/api/test/catalog-drift.test.ts fails when they disagree.
  */
 
+import type { ProviderCapabilities } from "./provider";
+
 export type ProviderId =
   | "tafsir_net"
   | "bahouth"
@@ -49,6 +51,8 @@ export interface ProviderCatalogEntry {
   tools: readonly string[];
   resources?: readonly string[];
   prompts?: readonly string[];
+  capabilities: ProviderCapabilities;
+  knownLimitations?: readonly string[];
 }
 
 export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
@@ -86,6 +90,17 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     ],
     resources: ["quran://surahs", "quran://tafsirs", "quran://sciences", "quran://schema"],
     prompts: ["study_ayah", "compare_tafsirs", "root_study", "surah_overview", "tajweed_lesson"],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: false,
+      authorFilter: false,
+      bookFilter: true,
+      pageRead: true,
+      pagination: false,
+      citationLinks: false,
+      quranMorphology: true,
+      hadithMetadata: false,
+    },
   },
   {
     id: "bahouth",
@@ -111,6 +126,17 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
       "list_verse_topics",
       "list_topic_verses",
     ],
+    capabilities: {
+      fullTextSearch: false,
+      exactPhrase: false,
+      authorFilter: false,
+      bookFilter: false,
+      pageRead: false,
+      pagination: true,
+      citationLinks: false,
+      quranMorphology: true,
+      hadithMetadata: false,
+    },
   },
   {
     id: "turath",
@@ -126,6 +152,18 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     timeoutMs: 8000,
     enabled: true,
     tools: ["discover_turath", "search_turath", "get_book", "get_page", "get_author"],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: false,
+      authorFilter: false,
+      bookFilter: false,
+      pageRead: true,
+      pagination: false,
+      citationLinks: false,
+      quranMorphology: false,
+      hadithMetadata: true,
+    },
+    knownLimitations: ["search_turath accepts free-text query without author or book filters"],
   },
   {
     id: "maheralfahel",
@@ -141,6 +179,17 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     timeoutMs: 8000,
     enabled: true,
     tools: ["list-books", "get-book", "list-media", "search-content", "get-site-info"],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: false,
+      authorFilter: false,
+      bookFilter: false,
+      pageRead: false,
+      pagination: false,
+      citationLinks: true,
+      quranMorphology: false,
+      hadithMetadata: true,
+    },
   },
   {
     id: "fihris",
@@ -156,6 +205,17 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     timeoutMs: 10000,
     enabled: true,
     tools: ["search_islamic_sources", "list_indexed_sources"],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: false,
+      authorFilter: false,
+      bookFilter: false,
+      pageRead: false,
+      pagination: true,
+      citationLinks: true,
+      quranMorphology: false,
+      hadithMetadata: false,
+    },
   },
   {
     id: "aljam3",
@@ -181,6 +241,18 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
       "list_categories",
       "list_libraries",
     ],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: true,
+      authorFilter: true,
+      bookFilter: true,
+      pageRead: true,
+      pagination: true,
+      citationLinks: true,
+      quranMorphology: false,
+      hadithMetadata: false,
+    },
+    knownLimitations: ["Page numbers refer to digitized files, not printed editions; OCR errors possible"],
   },
   {
     id: "shamela",
@@ -198,6 +270,18 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     enabled: true,
     cacheTtlSeconds: 604800,
     tools: ["shamela_find", "shamela_find_scoped", "shamela_open", "shamela_open_many"],
+    capabilities: {
+      fullTextSearch: true,
+      exactPhrase: true,
+      authorFilter: true,
+      bookFilter: true,
+      pageRead: true,
+      pagination: true,
+      citationLinks: true,
+      quranMorphology: false,
+      hadithMetadata: true,
+    },
+    knownLimitations: ["Input schemas reject unknown properties; use next_cursor for pagination"],
   },
 ];
 

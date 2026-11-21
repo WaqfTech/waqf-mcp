@@ -77,6 +77,18 @@ describe("Provider catalog consistency", () => {
     const defined = new SchemaNormalizer().getCanonicalToolDefinitions().map((tool) => tool.name);
     expect(defined).toEqual([...CANONICAL_TOOL_NAMES]);
   });
+
+  it("declares verified capabilities for every provider and readOnlyHint annotations on canonical tools", () => {
+    for (const entry of PROVIDER_CATALOG) {
+      expect(entry.capabilities).toBeDefined();
+      expect(typeof entry.capabilities.fullTextSearch).toBe("boolean");
+      expect(typeof entry.capabilities.pageRead).toBe("boolean");
+    }
+    for (const tool of new SchemaNormalizer().getCanonicalToolDefinitions()) {
+      expect(tool.annotations?.readOnlyHint).toBe(true);
+      expect(tool.annotations?.destructiveHint).toBe(false);
+    }
+  });
 });
 
 describe("llms artifacts match the catalog", () => {

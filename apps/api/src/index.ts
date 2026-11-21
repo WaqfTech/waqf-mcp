@@ -16,6 +16,7 @@ import { runScheduledAggregation } from "./services/stats";
 import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
+import { PROVIDER_CATALOG } from "@waqf/types";
 import { createDb, mcpSubmissions } from "@waqf/db";
 import { eq, desc } from "drizzle-orm";
 import { LLMS_TXT, LLMS_FULL_TXT } from "./llms";
@@ -443,12 +444,19 @@ export default {
               federatedProvidersCount: registry.getAll().length,
               availableSuites: ["core", "quran", "turath", "search", "all"],
             },
-            federatedProviders: registry.getAll().map((p) => ({
-              id: p.id,
-              name: p.name,
-              transport: p.transport,
-              description: p.description,
-            })),
+            federatedProviders: registry.getAll().map((p) => {
+              const catalogEntry = PROVIDER_CATALOG.find((entry) => entry.id === p.id);
+              return {
+                id: p.id,
+                name: p.name,
+                transport: p.transport,
+                description: p.description,
+                toolCount: catalogEntry?.tools.length ?? null,
+                suites: catalogEntry?.suites ?? [],
+                capabilities: catalogEntry?.capabilities ?? null,
+                knownLimitations: catalogEntry?.knownLimitations ?? [],
+              };
+            }),
           },
           null,
           2

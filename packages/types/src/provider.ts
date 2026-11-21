@@ -1,8 +1,29 @@
+export interface ToolAnnotations {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
+export interface ProviderCapabilities {
+  fullTextSearch: boolean;
+  exactPhrase: boolean;
+  authorFilter: boolean;
+  bookFilter: boolean;
+  pageRead: boolean;
+  pagination: boolean;
+  citationLinks: boolean;
+  quranMorphology: boolean;
+  hadithMetadata: boolean;
+}
+
 export interface ToolDefinition {
   name: string;
   description?: string;
   inputSchema: Record<string, unknown>;
   outputSchema?: Record<string, unknown>;
+  annotations?: ToolAnnotations;
 }
 
 export interface TextContent {

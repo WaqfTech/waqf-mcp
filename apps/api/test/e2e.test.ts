@@ -86,6 +86,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
       protocolVersion?: string;
       endpoint: string;
       suites: Record<string, string>;
+      federatedProviders?: Array<{ id: string; capabilities?: Record<string, boolean> }>;
     };
     expect(body.status).toBe("healthy");
     expect(body.protocolVersion).toBe("2026-07-28");
@@ -93,6 +94,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.suites.core).toBeDefined();
     expect(body.suites.turath).toContain("Shamela");
     expect(body.suites.search).not.toContain("38+");
+    expect(body.federatedProviders?.every((p) => Boolean(p.capabilities))).toBe(true);
   });
 
   it("GET /mcp/ (trailing slash) also resolves successfully", async () => {

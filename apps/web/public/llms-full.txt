@@ -130,6 +130,12 @@ Search classical Hadith and scholarly Islamic literature using full-text search.
         "type": "string",
         "description": "Search keywords in Arabic or transliteration"
       },
+      "scope": {
+        "type": "string",
+        "enum": ["collections", "commentaries", "all"],
+        "default": "collections",
+        "description": "Search scope: 'collections' filters primary Hadith collections (كتب السنة, cat_id 6); 'commentaries' adds Hadith commentaries (cat_id 6, 7); 'all' searches all Turath books."
+      },
       "limit": {
         "type": "integer",
         "default": 5,

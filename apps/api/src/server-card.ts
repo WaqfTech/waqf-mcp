@@ -19,6 +19,7 @@ export const MCP_SERVER_CARD_JSON = JSON.stringify(
     transport: {
       type: "streamable-http",
       endpoint: "https://mcp.waqf.app/mcp",
+      recommendedEndpoint: "https://mcp.waqf.app/mcp?suite=core",
       sseEndpoint: "https://mcp.waqf.app/sse",
     },
     capabilities: {

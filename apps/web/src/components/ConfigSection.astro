@@ -9,7 +9,7 @@ interface Props {
 
 const { t } = Astro.props;
 
-const MCP_URL = GATEWAY_MCP_URL;
+const MCP_URL = `${GATEWAY_MCP_URL}?suite=core`;
 
 const WEB_SETUP_URLS: Record<string, string> = Object.fromEntries(
   WEB_ASSISTANT_GUIDES.map((guide) => [guide.id, guide.setUpUrl])

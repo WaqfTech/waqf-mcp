@@ -309,13 +309,20 @@ export class SchemaNormalizer {
       {
         name: "waqf_hadith_search",
         description:
-          "Search classical Hadith and scholarly Islamic literature using full-text search.",
+          "Search classical Hadith collections and scholarly Islamic literature using full-text search, prioritizing primary Hadith collections (كتب السنة) by default.",
         inputSchema: {
           type: "object",
           properties: {
             query: {
               type: "string",
               description: "Search keywords in Arabic or transliteration",
+            },
+            scope: {
+              type: "string",
+              enum: ["collections", "commentaries", "all"],
+              default: "collections",
+              description:
+                "Search scope: 'collections' filters primary Hadith collections (كتب السنة, cat_id 6); 'commentaries' adds Hadith commentaries (cat_id 6, 7); 'all' searches all Turath books.",
             },
             limit: {
               type: "integer",

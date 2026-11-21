@@ -1116,6 +1116,88 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect((bahouthTool?.inputSchema.properties as Record<string, { description?: string }>).root_text.description).toBeTruthy();
       expect((tafsirTool?.inputSchema.properties as Record<string, { description?: string }>).query.description).toContain("FTS5");
     });
+
+    it("prioritizes primary Hadith collections (cat_id 6) on waqf_hadith_search with fallback and maps categories -> cats", async () => {
+      const registry = new ProviderRegistry([]);
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+      const turathSpy = vi
+        .spyOn(turath, "callTool")
+        .mockResolvedValueOnce({
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                count: 1,
+                results: [{ book_id: 1, meta: { book_name: "صحيح البخاري" }, text: "إنما الأعمال" }],
+              }),
+            },
+          ],
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: JSON.stringify({ count: 0, results: [] }) }],
+        })
+        .mockResolvedValueOnce({
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                count: 1,
+                results: [{ book_id: 2, meta: { book_name: "شرح حديث" }, text: "شرح" }],
+              }),
+            },
+          ],
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: JSON.stringify({ count: 0, results: [] }) }],
+        })
+        .mockResolvedValueOnce({
+          content: [{ type: "text", text: JSON.stringify({ cats: [{ id: 6, name: "كتب السنة" }] }) }],
+        });
+      registry.register(turath);
+      const router = new FederationRouter(registry, normalizer);
+
+      await router.callTool("waqf_hadith_search", { query: "إنما الأعمال" });
+      expect(turathSpy).toHaveBeenNthCalledWith(1, "search_turath", {
+        q: "إنما الأعمال",
+        cat_id: [6],
+      });
+
+      const broadened = await router.callTool("waqf_hadith_search", { query: "عبارة نادرة" });
+      expect(turathSpy).toHaveBeenNthCalledWith(2, "search_turath", {
+        q: "عبارة نادرة",
+        cat_id: [6],
+      });
+      expect(turathSpy).toHaveBeenNthCalledWith(3, "search_turath", {
+        q: "عبارة نادرة",
+      });
+      expect(
+        ((broadened.result.structuredContent as { warnings: string[] }).warnings || [])[0]
+      ).toContain("cat_id 6");
+
+      await router.callTool("waqf_hadith_search", {
+        query: "النية",
+        scope: "commentaries",
+      });
+      expect(turathSpy).toHaveBeenNthCalledWith(4, "search_turath", {
+        q: "النية",
+        cat_id: [6, 7],
+      });
+
+      await router.callTool("waqf_turath_search_books", {
+        query: "الحديث",
+        kind: "categories",
+      });
+      expect(turathSpy).toHaveBeenNthCalledWith(5, "discover_turath", {
+        q: "الحديث",
+        kind: "cats",
+      });
+    });
   });
 });
 

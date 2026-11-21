@@ -525,15 +525,17 @@ export class FederationRouter {
         }
         targetProvider = "turath";
         const query = String(args.query ?? "");
+        const requestedKind = String(args.kind ?? "books");
+        const upstreamKind = requestedKind === "categories" ? "cats" : requestedKind;
         try {
           const raw = await turathProvider.callTool("discover_turath", {
             q: query,
-            kind: args.kind ?? "books",
+            kind: upstreamKind,
           });
           result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
             providerId: "turath",
             query,
-            mode: String(args.kind ?? "books"),
+            mode: requestedKind,
           });
         } catch (err: unknown) {
           const classified = classifyThrownError("turath", err);
@@ -555,14 +557,25 @@ export class FederationRouter {
         }
         targetProvider = "turath";
         const query = String(args.query ?? "");
+        const scope = String(args.scope ?? "collections").trim();
         const parsedLimit = Number(args.limit ?? 5);
         const limit = Number.isFinite(parsedLimit)
           ? Math.min(20, Math.max(1, Math.trunc(parsedLimit)))
           : 5;
+        const catFilter =
+          scope === "all" ? null : scope === "commentaries" ? [6, 7] : [6];
         try {
-          const raw = await turathProvider.callTool("search_turath", {
+          let raw = await turathProvider.callTool("search_turath", {
             q: query,
+            ...(catFilter ? { cat_id: catFilter } : {}),
           });
+          const warnings: string[] = [];
+          if (scope === "collections" && !raw.isError && this.isEmptyResult(raw)) {
+            raw = await turathProvider.callTool("search_turath", { q: query });
+            warnings.push(
+              "No matches found in primary Hadith collections (cat_id 6); broadened search across Turath."
+            );
+          }
           const bounded = this.normalizer.boundResultList(raw, limit);
           result = this.normalizer.normalizeToolResult(bounded.result, "Hadith Sources (Turath)", {
             providerId: "turath",
@@ -570,6 +583,7 @@ export class FederationRouter {
             mode: "hadith_search",
             limit,
             hasMore: bounded.hasMore,
+            ...(warnings.length > 0 ? { warnings } : {}),
           });
         } catch (err: unknown) {
           const classified = classifyThrownError("turath", err);

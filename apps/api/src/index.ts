@@ -1,6 +1,8 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
 import {
+  MODERN_PROTOCOL_VERSION,
+  SUPPORTED_PROTOCOL_VERSIONS,
   buildDiscoverResult,
   buildInitializeResult,
   withCompleteResult,
@@ -295,7 +297,8 @@ export default {
             status: "healthy",
             name: "Islamic Sources (@IslamicSources) — Waqf MCP Gateway",
             version: "1.0.0",
-            protocolVersion: "2024-11-05",
+            protocolVersion: MODERN_PROTOCOL_VERSION,
+            supportedProtocolVersions: [...SUPPORTED_PROTOCOL_VERSIONS],
             endpoint: "/mcp",
             role: "aggregator",
             disclaimer: {
@@ -342,8 +345,8 @@ export default {
               all: "All available upstream tools across federated Islamic servers",
               core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page)",
               quran: "Quran & Tafsir specialized suite",
-              turath: "Hadith, Islamic heritage and classical books suite (Turath, Maher Al-Fahel, Aljam3)",
-              search: "Scholarly web search across 38+ verified Islamic portals (Fihris)",
+              turath: "Hadith, Islamic heritage and classical books suite (Turath, Maher Al-Fahel, Aljam3, Shamela)",
+              search: "Scholarly web search across vetted Islamic portals (Fihris)",
             },
             stats: {
               federatedProvidersCount: registry.getAll().length,

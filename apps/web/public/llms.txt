@@ -57,7 +57,7 @@ Loading 50+ tools into an LLM's system prompt consumes excessive context tokens.
    - Scope: Hadith sciences (Mustalah al-Hadith), scholarly verification (Tahqiq), verified publications, and audio/video lectures.
 5. **Fihris Islamic Web Search** (`fihris`):
    - Host: `https://search.waqf.app/api/mcp` (JSON-RPC)
-   - Scope: Curated Google Custom Search across 38+ authentic Islamic scholarship portals, academic research journals, and verified fatwa councils.
+   - Scope: Curated Google Custom Search across vetted Islamic scholarship portals, academic research journals, and verified fatwa councils (call `fihris__list_indexed_sources` for the live site list).
 6. **Aljam3 Islamic Books Library** (`aljam3`):
    - Host: `https://aljam3.com/mcp` (JSON-RPC, read-only, no authentication)
    - Scope: Search the full text of public Islamic books, browse books and their files, and read exact pages with book, author, file and page citations plus direct source and PDF links.
@@ -70,29 +70,28 @@ Loading 50+ tools into an LLM's system prompt consumes excessive context tokens.
 Canonical tools unify divergent upstream interfaces into consistent, standardized tool signatures:
 
 ### 1. `waqf_quran_get_ayah`
-Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authentic Tafsir.
+Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authentic Tafsir and Quranic sciences.
 - **Parameters**:
-  - `surah` (number, required): Surah number (1–114).
-  - `ayah` (number, required): Ayah number (1–286).
-  - `includeTafsir` (boolean, optional): Include tafsir explanation (default: `true`).
-  - `tafsirSource` (string, optional): Tafsir source key (default: `"almukhtasar"`). Supported: `"almukhtasar"`, `"al-tabari"`, `"ibn-kathir"`, `"al-saadi"`, `"al-qurtubi"`.
+  - `surah` (integer, required): Surah number (1–114).
+  - `ayah` (integer, required): Ayah number within the Surah (minimum: 1).
+  - `includeTafsir` (boolean, optional): Include concise Tafsir explanation (default: `false`).
+  - `tafsirSource` (string, optional): Specific tafsir source slug (e.g. `"mukhtasar"`, `"ibnkathir"`, `"tabari"`, `"saadi"`, `"muyassar"`, `"qurtubi"`).
+  - `includeSciences` (array of strings, optional): Quranic science annotations (`"tajweed"`, `"irab"`, `"gharib"`, `"qiraat_ayah"`, `"tadabbur"`).
 
 ### 2. `waqf_hadith_search`
-Search classical Hadith and scholarly Islamic literature using semantic or lexical queries.
+Search classical Hadith and scholarly Islamic literature using full-text search.
 - **Parameters**:
-  - `query` (string, required): Search query in Arabic or English (e.g. `"إنما الأعمال بالنيات"`).
-  - `book` (string, optional): Specific book filter (e.g. `"bukhari"`, `"muslim"`, `"tirmidhi"`).
-  - `limit` (number, optional): Maximum results to return (default: `5`).
+  - `query` (string, required): Search keywords in Arabic or transliteration (e.g. `"إنما الأعمال بالنيات"`).
+  - `limit` (integer, optional): Maximum number of results to return (default: `5`).
 
 ### 3. `waqf_turath_search_books`
-Search the vast Turath Islamic library catalog for classical books, treatises, and manuscripts.
+Search the vast Turath Islamic library catalog for classical books, authors, and encyclopedias.
 - **Parameters**:
-  - `query` (string, required): Book title, author name, or topic in Arabic.
-  - `category` (string, optional): Optional category filter (e.g. `"تفسير"`, `"حديث"`, `"عقيدة"`, `"فقه"`).
-  - `limit` (number, optional): Maximum results (default: `10`).
+  - `query` (string, required): Book title or author name in Arabic.
+  - `kind` (string, optional): Metadata kind to search (`"books" | "authors" | "categories" | "all"`, default: `"books"`).
 
 ### 4. `waqf_search_scholarship`
-Search across 38+ authentic Islamic scholarship portals (fatwas, research journals, classical treatises) using Fihris Islamic Search.
+Search across vetted Islamic scholarship portals (fatwas, research journals, classical treatises) using Fihris Islamic Search.
 - **Parameters**:
   - `query` (string, required): Search keywords or question in Arabic or English.
   - `fileType` (string, optional): `"pdf" | "doc" | "docx" | "txt"`.

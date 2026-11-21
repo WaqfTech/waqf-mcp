@@ -145,7 +145,7 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
   {
     id: "fihris",
     displayName: "Fihris Islamic Web Search",
-    summary: "Curated Google Custom Search across 38+ authentic Islamic scholarship portals.",
+    summary: "Curated Google Custom Search across vetted Islamic scholarship portals.",
     upstreamUrl: "https://search.waqf.app/api/mcp",
     upstreamTransport: "json-rpc",
     upstreamAuth: "none",

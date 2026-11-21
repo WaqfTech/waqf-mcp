@@ -91,7 +91,7 @@ export class SchemaNormalizer {
       {
         name: "waqf_search_scholarship",
         description:
-          "Search across 38+ authentic Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.",
+          "Search across vetted Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.",
         inputSchema: {
           type: "object",
           properties: {

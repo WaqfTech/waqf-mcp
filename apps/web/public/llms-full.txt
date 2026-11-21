@@ -65,7 +65,7 @@ Exposes classical Hadith collections, Islamic heritage libraries, the Aljam3 boo
 - Shamela: `shamela__*` (4 tools)
 
 ### D. `?suite=search`
-Exposes verified academic web search across 38+ authentic Islamic portals from **Fihris**.
+Exposes verified academic web search across vetted Islamic portals from **Fihris**.
 - Canonical: `waqf_search_scholarship`
 - Fihris: `fihris__*` (2 tools)
 
@@ -79,30 +79,39 @@ Exposes all 55 tools across all 7 federated providers.
 ### Group 1: Canonical Unified Tools (`waqf_*`)
 
 #### `waqf_quran_get_ayah`
-Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authentic Tafsir.
+Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authentic Tafsir and Quranic sciences.
 - **Input Schema**:
   ```json
   {
     "type": "object",
     "properties": {
       "surah": {
-        "type": "number",
-        "description": "Surah number (1-114)",
+        "type": "integer",
+        "description": "Surah number (1 to 114)",
         "minimum": 1,
         "maximum": 114
       },
       "ayah": {
-        "type": "number",
-        "description": "Ayah number (1-286)",
+        "type": "integer",
+        "description": "Ayah number within the Surah",
         "minimum": 1
       },
       "includeTafsir": {
         "type": "boolean",
-        "description": "Whether to include tafsir explanation (default: true)"
+        "default": false,
+        "description": "Whether to include concise Tafsir explanation"
       },
       "tafsirSource": {
         "type": "string",
-        "description": "Tafsir source key (e.g. 'almukhtasar', 'al-tabari', 'ibn-kathir', 'al-saadi', 'al-qurtubi')"
+        "description": "Specific tafsir source slug (e.g. 'mukhtasar', 'ibnkathir', 'tabari', 'saadi', 'muyassar', 'qurtubi')"
+      },
+      "includeSciences": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["tajweed", "irab", "gharib", "qiraat_ayah", "tadabbur"]
+        },
+        "description": "Optional Quranic science annotations to include"
       }
     },
     "required": ["surah", "ayah"]
@@ -110,7 +119,7 @@ Lookup a verified Holy Quran Ayah by Surah and Ayah number, with optional authen
   ```
 
 #### `waqf_hadith_search`
-Search classical Hadith and scholarly Islamic literature using semantic or lexical queries.
+Search classical Hadith and scholarly Islamic literature using full-text search.
 - **Input Schema**:
   ```json
   {
@@ -118,15 +127,12 @@ Search classical Hadith and scholarly Islamic literature using semantic or lexic
     "properties": {
       "query": {
         "type": "string",
-        "description": "Hadith text, topic, or keyword in Arabic or English"
-      },
-      "book": {
-        "type": "string",
-        "description": "Filter by primary Hadith collection (e.g. 'bukhari', 'muslim', 'tirmidhi', 'abu-dawood')"
+        "description": "Search keywords in Arabic or transliteration"
       },
       "limit": {
-        "type": "number",
-        "description": "Maximum number of hadiths to return (default: 5)"
+        "type": "integer",
+        "default": 5,
+        "description": "Maximum number of results to return"
       }
     },
     "required": ["query"]
@@ -134,7 +140,7 @@ Search classical Hadith and scholarly Islamic literature using semantic or lexic
   ```
 
 #### `waqf_turath_search_books`
-Search the vast Turath Islamic library catalog for classical books, treatises, and manuscripts.
+Search the vast Turath Islamic library catalog for classical books, authors, and encyclopedias.
 - **Input Schema**:
   ```json
   {
@@ -142,15 +148,13 @@ Search the vast Turath Islamic library catalog for classical books, treatises, a
     "properties": {
       "query": {
         "type": "string",
-        "description": "Book title, author, or subject keyword in Arabic"
+        "description": "Book title or author name in Arabic"
       },
-      "category": {
+      "kind": {
         "type": "string",
-        "description": "Optional category filter (e.g. 'تفسير', 'حديث', 'فقه', 'عقيدة')"
-      },
-      "limit": {
-        "type": "number",
-        "description": "Maximum books to return (default: 10)"
+        "enum": ["books", "authors", "categories", "all"],
+        "default": "books",
+        "description": "Metadata kind to search"
       }
     },
     "required": ["query"]
@@ -158,7 +162,7 @@ Search the vast Turath Islamic library catalog for classical books, treatises, a
   ```
 
 #### `waqf_search_scholarship`
-Search across 38+ authentic Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.
+Search across vetted Islamic scholarship portals (fatwas, research, classical treatises) using Fihris Islamic Search.
 - **Input Schema**:
   ```json
   {
@@ -313,8 +317,8 @@ Upstream: `https://maheralfahel.net/mcp/` (SSE)
 ### Group 6: Fihris Islamic Web Search (`fihris__*`)
 Upstream: `https://search.waqf.app/api/mcp` (JSON-RPC)
 
-1. `fihris__search_islamic_sources`: Search across 38+ vetted Islamic scholarship portals (e.g. Alukah, Dorar, IslamQA, Bin Baz, Ibn Uthaymeen, Majallat al-Buhuth).
-2. `fihris__list_indexed_sources`: List all 38+ indexed scholar websites, institutions, and portals.
+1. `fihris__search_islamic_sources`: Search across vetted Islamic scholarship portals (e.g. Alukah, Dorar, IslamQA, Bin Baz, Ibn Uthaymeen, Majallat al-Buhuth).
+2. `fihris__list_indexed_sources`: List all currently indexed scholar websites, institutions, and portals (37 observed at last live audit; call this tool for the authoritative count).
 
 ---
 
@@ -343,6 +347,12 @@ Upstream: `https://mcp.shamela.ws` (JSON-RPC, read-only, no authentication)
 
 Notes: the gateway sanitizes loose input (`query` string, camelCase IDs) into Shamela's strict schemas; end every source-based paragraph with the returned `citation.markdown` page links.
 
+### Host Truncation & Pagination Guidance
+Some AI connector gateways truncate tool responses above ~20 KB. To avoid mid-sentence truncation:
+- Keep search page sizes compact (`limit: 5` to `10` for `waqf_books_search` and `waqf_hadith_search`; `max_total_chars` / `max_chars` for Shamela tools).
+- Use `offset` and `maxChars` (`default: 6000`) on `waqf_books_read_page` / `aljam3__get_page`, or `next_cursor` on `shamela__shamela_open` and `shamela__shamela_find_scoped`, to read long pages incrementally.
+- For `waqf_quran_get_ayah`, request `includeTafsir: true` with a specific `tafsirSource` slug rather than dumping multiple commentaries when only one is needed.
+
 ---
 
 ## 5. JSON-RPC 2.0 Request & Response Protocol
@@ -366,7 +376,7 @@ User-Agent: MyResearchAgent/1.0
       "surah": 112,
       "ayah": 1,
       "includeTafsir": true,
-      "tafsirSource": "almukhtasar"
+      "tafsirSource": "mukhtasar"
     }
   }
 }

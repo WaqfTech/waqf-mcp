@@ -22,9 +22,9 @@ export const AGENT_SKILLS_INDEX_JSON = JSON.stringify(
         name: "scholarly-search",
         type: "skill",
         description:
-          "Search verified Islamic research portals, university faculties, and fatwa archives across 38+ authenticated Islamic institutions.",
+          "Search verified Islamic research portals, university faculties, and fatwa archives across vetted Islamic institutions.",
         url: "https://mcp.waqf.app/.well-known/agent-skills/scholarly-search/SKILL.md",
-        sha256: "c749e00ed81e5bfe1e3688f0d132e594b7f10be4ef9eeb6ce1c4fd8fecf64c31",
+        sha256: "c27876eda6d3790af0f36b569fa6f453b4b36a6f1b1ab2940814dce2f1752c28",
       },
     ],
   },

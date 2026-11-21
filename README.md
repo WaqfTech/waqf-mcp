@@ -52,7 +52,7 @@ Instead of forcing users to configure 10+ independent Islamic MCP servers in the
 | **Bahouth Quran & Tafsir** | `https://bahouth.tafsir.net/mcp` | JSON-RPC 2.0 | Quranic root analysis, verse words, morphology, and verse topics (`get_verse`, `find_root`) |
 | **Turath Islamic Heritage Library** | `https://mcp.turath.io/mcp/` | JSON-RPC 2.0 | Search across thousands of classical Islamic books, authors, and page texts (`discover_turath`, `search_turath`) |
 | **Sheikh Maher Al-Fahel Library** | `https://maheralfahel.net/mcp/` | SSE (`text/event-stream`) | Hadith sciences, scholarly critique, and verified publications (`list-books`, `get-book`, `search-content`) |
-| **Fihris Islamic Web Search** | `https://search.waqf.app/api/mcp` | JSON-RPC 2.0 | Curated search across 38+ authentic Islamic scholarship portals and fatwas (`search_islamic_sources`, `list_indexed_sources`) |
+| **Fihris Islamic Web Search** | `https://search.waqf.app/api/mcp` | JSON-RPC 2.0 | Curated search across vetted Islamic scholarship portals and fatwas (`search_islamic_sources`, `list_indexed_sources`) |
 | **Aljam3 Islamic Books Library** | `https://aljam3.com/mcp` | JSON-RPC 2.0 | Read-only access to a public books library: search passages, browse books and files, read pages with citations (`search`, `get_page`, `get_book`) |
 | **Al-Maktaba Al-Shamela** | [mcp.shamela.ws](https://mcp.shamela.ws) | JSON-RPC 2.0 | Official Shamela corpus: ranked book search with cited previews, scoped follow-up search, page reading with citation links (`shamela_find`, `shamela_open`) |
 

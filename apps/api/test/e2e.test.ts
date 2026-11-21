@@ -81,10 +81,18 @@ describe("Waqf MCP Gateway Worker E2E", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers.get("Link")).toContain('rel="api-catalog"');
-    const body = (await res.json()) as { status: string; endpoint: string; suites: Record<string, string> };
+    const body = (await res.json()) as {
+      status: string;
+      protocolVersion?: string;
+      endpoint: string;
+      suites: Record<string, string>;
+    };
     expect(body.status).toBe("healthy");
+    expect(body.protocolVersion).toBe("2026-07-28");
     expect(body.endpoint).toBe("/mcp");
     expect(body.suites.core).toBeDefined();
+    expect(body.suites.turath).toContain("Shamela");
+    expect(body.suites.search).not.toContain("38+");
   });
 
   it("GET /mcp/ (trailing slash) also resolves successfully", async () => {

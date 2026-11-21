@@ -107,6 +107,27 @@ describe("llms artifacts match the catalog", () => {
     }
   });
 
+  it("keeps canonical parameter docs aligned with SchemaNormalizer and avoids hardcoded 38+ Fihris claims", () => {
+    const definitions = new SchemaNormalizer().getCanonicalToolDefinitions();
+    const quranDef = definitions.find((t) => t.name === "waqf_quran_get_ayah");
+    const hadithDef = definitions.find((t) => t.name === "waqf_hadith_search");
+    const turathDef = definitions.find((t) => t.name === "waqf_turath_search_books");
+
+    expect(quranDef?.inputSchema.properties).toHaveProperty("includeSciences");
+    expect((quranDef?.inputSchema.properties as Record<string, { default?: unknown }>).includeTafsir.default).toBe(false);
+    expect(hadithDef?.inputSchema.properties).not.toHaveProperty("book");
+    expect(turathDef?.inputSchema.properties).toHaveProperty("kind");
+    expect(turathDef?.inputSchema.properties).not.toHaveProperty("category");
+
+    expect(LLMS_FULL_TXT).toContain('"includeSciences"');
+    expect(LLMS_FULL_TXT).toContain('"kind"');
+    expect(LLMS_FULL_TXT).not.toContain('"book": {');
+    expect(LLMS_FULL_TXT).not.toContain('"category": {');
+    for (const artifact of [LLMS_TXT, LLMS_FULL_TXT]) {
+      expect(artifact).not.toContain("38+");
+    }
+  });
+
   it("publishes the current federation totals", () => {
     expect(LLMS_TXT).toContain(`all ${TOTAL_GATEWAY_TOOL_COUNT} tools across all ${PROVIDER_COUNT} providers.`);
     expect(LLMS_FULL_TXT).toContain(

@@ -33,7 +33,7 @@
     {
       "id": "urn:air:mcp.waqf.app:mcp:turath",
       "displayName": "Islamic Heritage & Hadith Library",
-      "description": "Classical Islamic library and Hadith verification tools powered by Turath and Bahouth.",
+      "description": "Classical Islamic library and Hadith tools powered by Turath, Shamela, Aljam3, and Maher Al-Fahel.",
       "type": "application/json",
       "url": "https://mcp.waqf.app/mcp?suite=turath",
       "representativeQueries": [
@@ -45,7 +45,7 @@
     {
       "id": "urn:air:mcp.waqf.app:mcp:search",
       "displayName": "Fihris Islamic Scholarship Search",
-      "description": "Specialized web discovery across 38+ verified Islamic portals, seminaries, and fatwa archives.",
+      "description": "Specialized web discovery across vetted Islamic portals, seminaries, and fatwa archives.",
       "type": "application/json",
       "url": "https://mcp.waqf.app/mcp?suite=search",
       "representativeQueries": [

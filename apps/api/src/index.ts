@@ -899,8 +899,10 @@ export default {
             );
 
             const structuredStatus = (result.structuredContent as { status?: string } | undefined)?.status;
+            const resolvedErrorCode =
+              result.error?.code ?? (result.isError ? "UPSTREAM_TOOL_ERROR" : null);
             const telemetryErrorCode =
-              result.error?.code ?? (structuredStatus === "no_results" ? "NO_RESULTS" : null);
+              resolvedErrorCode ?? (structuredStatus === "no_results" ? "NO_RESULTS" : null);
 
             const responseTimeMs = Math.round(performance.now() - startTime);
             const resData = jsonResponse(
@@ -913,7 +915,7 @@ export default {
               {
                 responseTimeMs,
                 cacheHit: isCacheHit,
-                ...(result.error ? { errorCode: result.error.code } : {}),
+                ...(resolvedErrorCode ? { errorCode: resolvedErrorCode } : {}),
               }
             );
 

@@ -976,15 +976,19 @@ export class SchemaNormalizer {
     const citationObj = asRecord(rec.citation);
     const title =
       asString(rec.book_title) ??
+      asString(rec.book_name) ??
       asString(rec.title) ??
       asString(rec.name) ??
+      asString(workObj?.book_name) ??
       asString(workObj?.title) ??
       asString(workObj?.name);
     const author =
       asString(rec.author_name) ??
       asString(rec.author) ??
       asString(asRecord(rec.author)?.name) ??
-      asString(workObj?.author);
+      asString(workObj?.author_name) ??
+      asString(workObj?.author) ??
+      asString(asRecord(workObj?.author)?.name);
     const workId =
       asString(rec.book_id) ??
       asString(workObj?.id) ??
@@ -1026,15 +1030,25 @@ export class SchemaNormalizer {
 
     // Never infer printed_page_label from digital_page_number.
     const printedPageLabel =
-      asString(rec.printed_page_label) ?? asString(rec.printed_page) ?? asString(rec.book_page);
+      asString(rec.printed_page_label) ??
+      asString(rec.printed_page) ??
+      asString(rec.book_page) ??
+      asString(workObj?.page);
     const digitalPageNumber =
       asInt(rec.digital_page_number) ?? asInt(rec.file_page) ?? asInt(rec.page_number);
     const pageId =
       asString(rec.page_id) ??
+      asString(workObj?.page_id) ??
       asString(rec.verse_key) ??
       (rec.surah !== undefined && rec.ayah !== undefined ? `${rec.surah}:${rec.ayah}` : null) ??
-      asString(rec.page);
-    const volumeLabel = asString(rec.volume_label) ?? asString(rec.volume) ?? asString(rec.vol);
+      asString(rec.page) ??
+      (asRecord(rec.book) ? asString(rec.id) : null);
+    const volumeLabel =
+      asString(rec.volume_label) ??
+      asString(rec.volume) ??
+      asString(rec.vol) ??
+      asString(workObj?.vol) ??
+      asString(workObj?.volume);
     const fileId = asInt(rec.file_id);
     const offset = asInt(rec.offset);
     const nextOffset = asInt(rec.next_offset) ?? asInt(rec.nextOffset);
@@ -1117,8 +1131,19 @@ export class SchemaNormalizer {
       rawItems = parsed;
     } else if (parsedObj) {
       const list = parsedObj.results ?? parsedObj.items ?? parsedObj.hits ?? parsedObj.data;
+      const pageObj = asRecord(parsedObj.page);
       if (Array.isArray(list)) {
         rawItems = list;
+      } else if (pageObj) {
+        const navObj = asRecord(parsedObj.navigation);
+        rawItems = [
+          {
+            ...parsedObj,
+            ...pageObj,
+            ...(navObj ?? {}),
+            ...(typeof parsedObj.text === "string" && !pageObj.text ? { text: parsedObj.text } : {}),
+          },
+        ];
       } else if (Object.keys(parsedObj).length > 0) {
         rawItems = [parsedObj];
       }

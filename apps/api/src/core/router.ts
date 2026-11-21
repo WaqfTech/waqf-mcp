@@ -364,6 +364,15 @@ export class FederationRouter {
       case "waqf_quran_get_ayah": {
         const surah = Number(args.surah);
         const ayah = Number(args.ayah);
+        if (!Number.isInteger(surah) || surah < 1 || surah > 114 || !Number.isInteger(ayah) || ayah < 1) {
+          return toolError(
+            "canonical",
+            toolName,
+            "Invalid Quran reference: surah must be an integer between 1 and 114 and ayah must be >= 1.",
+            "INVALID_ARGUMENT",
+            false
+          );
+        }
         const tafsirProvider = this.registry.get("tafsir_net");
         const bahouthProvider = this.registry.get("bahouth");
 

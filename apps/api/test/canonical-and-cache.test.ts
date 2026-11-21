@@ -608,6 +608,108 @@ describe("Canonical Tools & Schema Normalization", () => {
       });
     });
 
+    it("unwraps nested Aljam3 get_page {page, text, navigation} and Turath meta fields", async () => {
+      const aljam3Normalized = normalizer.normalizeToolResult(
+        {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                page: {
+                  id: 3547087,
+                  file_id: 9025,
+                  page_number: 3,
+                  book: {
+                    id: 3741,
+                    title: "البناية شرح الهداية",
+                    author: { id: 30865, name: "بدر الدين العيني" },
+                  },
+                  url: "https://aljam3.com/ar/3741/9025/3",
+                  pdf_url: "https://example.com/03_74943.pdf#page=3",
+                },
+                text: "باب صلاة المسافر",
+                navigation: { next_offset: null },
+              }),
+            },
+          ],
+        },
+        "Aljam3 Library",
+        { providerId: "aljam3", mode: "books_read_page" }
+      );
+      const aljam3Sc = aljam3Normalized.structuredContent as {
+        results: Array<{
+          kind: string;
+          work: { id: string | null; title: string | null; author: string | null };
+          location: { digital_page_number: number | null; file_id: number | null; page_id: string | null };
+          content: { verbatim: string };
+          citation: { source_url: string | null; pdf_url: string | null };
+        }>;
+      };
+      expect(aljam3Sc.results[0].kind).toBe("book_page");
+      expect(aljam3Sc.results[0].work).toEqual({
+        id: "3741",
+        title: "البناية شرح الهداية",
+        author: "بدر الدين العيني",
+        edition: null,
+      });
+      expect(aljam3Sc.results[0].location.file_id).toBe(9025);
+      expect(aljam3Sc.results[0].location.digital_page_number).toBe(3);
+      expect(aljam3Sc.results[0].location.page_id).toBe("3547087");
+      expect(aljam3Sc.results[0].content.verbatim).toBe("باب صلاة المسافر");
+      expect(aljam3Sc.results[0].citation.pdf_url).toBe("https://example.com/03_74943.pdf#page=3");
+
+      const turathNormalized = normalizer.normalizeToolResult(
+        {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                count: 1,
+                results: [
+                  {
+                    book_id: 7696,
+                    meta: {
+                      book_name: "شرح زاد المستقنع",
+                      author_name: "الشنقيطي",
+                      page_id: 1252,
+                      page: 2,
+                      vol: "66",
+                    },
+                    text: "تابع أحكام صلاة المسافر",
+                    link: "https://app.turath.io/book/7696?page=1252",
+                  },
+                ],
+              }),
+            },
+          ],
+        },
+        "Turath",
+        { providerId: "turath" }
+      );
+      const turathSc = turathNormalized.structuredContent as {
+        results: Array<{
+          work: { id: string | null; title: string | null; author: string | null };
+          location: { volume_label: string | null; printed_page_label: string | null; page_id: string | null };
+        }>;
+      };
+      expect(turathSc.results[0].work).toEqual({
+        id: "7696",
+        title: "شرح زاد المستقنع",
+        author: "الشنقيطي",
+        edition: null,
+      });
+      expect(turathSc.results[0].location.volume_label).toBe("66");
+      expect(turathSc.results[0].location.printed_page_label).toBe("2");
+      expect(turathSc.results[0].location.page_id).toBe("1252");
+
+      const badQuran = await new FederationRouter(new ProviderRegistry([]), normalizer).callTool(
+        "waqf_quran_get_ayah",
+        { surah: 150, ayah: 1 }
+      );
+      expect(badQuran.result.isError).toBe(true);
+      expect(badQuran.result.error?.code).toBe("INVALID_ARGUMENT");
+    });
+
     it("enforces limit on waqf_hadith_search so oversized Turath responses are bounded", async () => {
       const registry = new ProviderRegistry([]);
       const turath = new JsonRpcMcpAdapter({

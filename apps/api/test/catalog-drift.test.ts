@@ -140,6 +140,14 @@ describe("published host split", () => {
     }
   });
 
+  it("keeps the auth guide's security claims honest", () => {
+    expect(publicAuthMd).toContain("OAuth discovery is provided for client compatibility");
+    expect(publicAuthMd).toContain("ADMIN_API_KEY");
+    expect(publicAuthMd).toContain("does not implement per-IP rate limiting");
+    expect(publicAuthMd).not.toContain("120 req/min");
+    expect(publicAuthMd).not.toContain("60 req/min");
+  });
+
   it("publishes the protocol endpoint in every agent artifact", () => {
     for (const artifact of [LLMS_TXT, LLMS_FULL_TXT, publicServerCard]) {
       expect(artifact).toContain(GATEWAY_MCP_URL);

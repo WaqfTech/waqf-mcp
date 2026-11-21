@@ -2,6 +2,12 @@
 export const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  "X-Frame-Options": "DENY",
+  "Content-Security-Policy":
+    "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Cross-Origin-Resource-Policy": "cross-origin",
 };
 
 export const CORS_HEADERS = {

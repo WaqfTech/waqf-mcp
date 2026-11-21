@@ -5,6 +5,7 @@ import { AGENT_DISCOVERY_LINK_HEADER, CORS_HEADERS, DISCOVERY_HEADERS } from "./
 import { checkAdminAuth } from "./admin";
 import { handleCacheStatsRequest } from "./routes/cache-stats";
 import { handleStatsAggregateRequest } from "./routes/stats-aggregate";
+import { proxyWebRequest } from "./routes/web-proxy";
 import { runScheduledAggregation } from "./services/stats";
 import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
@@ -457,8 +458,8 @@ export default {
           { status: 201, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
         );
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        return new Response(JSON.stringify({ error: msg }), {
+        console.error("[submissions] insert failed:", err);
+        return new Response(JSON.stringify({ error: "Submission could not be saved" }), {
           status: 500,
           headers: { "Content-Type": "application/json", ...CORS_HEADERS },
         });
@@ -956,29 +957,16 @@ export default {
         const resData = jsonResponse({
           jsonrpc: "2.0",
           id: reqId,
-          error: { code: -32603, message: `Internal error: ${errorMsg}` },
+          error: { code: -32603, message: "Internal error" },
         });
         logExecution(rpc.method, null, null, null, false, 500, errorMsg, resData.bytes);
         return resData.response;
       }
     }
 
-    // Delegate non-API web routes (e.g. /en, /tr, /id, /ms, /_astro/*) to Astro web worker
+    // Delegate non-API web routes (e.g. /en, /tr, /id, /ms, /_astro/*) to Astro web worker.
     if (env.WEB) {
-      const res = await env.WEB.fetch(request);
-      if (
-        pathname === "/" ||
-        pathname === "/ar" ||
-        pathname === "/en" ||
-        pathname === "/tr" ||
-        pathname === "/id" ||
-        pathname === "/ms"
-      ) {
-        const headers = new Headers(res.headers);
-        headers.set("Link", AGENT_DISCOVERY_LINK_HEADER);
-        return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
-      }
-      return res;
+      return proxyWebRequest(request, env.WEB, pathname);
     }
 
     return new Response(JSON.stringify({ error: "Not Found" }), {

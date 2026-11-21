@@ -96,6 +96,17 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.status).toBe("healthy");
   });
 
+  it("sets browser security headers on API responses", async () => {
+    const req = new Request("http://localhost:8787/mcp");
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(res.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
+    expect(res.headers.get("Strict-Transport-Security")).toContain("max-age=31536000");
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(res.headers.get("Permissions-Policy")).toContain("camera=()");
+  });
+
   it("GET /mcp with Accept: text/event-stream returns a finite SSE endpoint event", async () => {
     const req = new Request("http://localhost:8787/mcp", {
       headers: { Accept: "text/event-stream" },
@@ -555,6 +566,8 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.issuer).toBe("https://mcp.waqf.app");
     expect(data.token_endpoint).toBe("https://mcp.waqf.app/oauth/token");
     expect(data.scopes_supported).toContain("mcp:read");
+    expect(data.scopes_supported).not.toContain("admin");
+    expect(data.scopes_supported).not.toContain("telemetry:read");
     expect(data.agent_auth?.public_access).toBe(true);
   });
 
@@ -568,6 +581,8 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(data.resource).toBe("https://mcp.waqf.app");
     expect(data.authorization_servers).toContain("https://mcp.waqf.app");
     expect(data.scopes_supported).toContain("mcp:read");
+    expect(data.scopes_supported).not.toContain("admin");
+    expect(data.scopes_supported).not.toContain("telemetry:read");
   });
 
   it("GET /auth.md returns agent authentication and registration instructions", async () => {
@@ -580,6 +595,9 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(text).toContain("Agent Authentication & Registration Guide");
     expect(text).toContain("Open Waqf");
     expect(text).toContain("mcp.waqf.app");
+    expect(text).toContain("OAuth discovery is provided for client compatibility");
+    expect(text).toContain("ADMIN_API_KEY");
+    expect(text).toContain("does not implement per-IP rate limiting");
   });
 
   it("POST /oauth/register implements RFC 7591 Dynamic Client Registration", async () => {
@@ -611,6 +629,19 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(location).toContain("gemini.google.com/callback");
     expect(location).toContain("code=waqf_code_");
     expect(location).toContain("state=xyz123");
+  });
+
+  it("GET /oauth/authorize refuses an unknown redirect origin", async () => {
+    const req = new Request(
+      "http://localhost:8787/oauth/authorize?redirect_uri=https%3A%2F%2Fevil.example%2Fcallback&state=abc"
+    );
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Location")).toBeNull();
+    const text = await res.text();
+    expect(text).toContain("Redirect target not allowed");
+    expect(text).not.toContain("waqf_code_");
   });
 
   it("POST /oauth/token returns bearer access token", async () => {

@@ -17,7 +17,7 @@ export const OAUTH_AUTH_SERVER_JSON = JSON.stringify(
       "client_secret_post",
       "client_secret_basic",
     ],
-    scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
+    scopes_supported: ["mcp:read", "mcp:tools"],
     service_documentation: "https://mcp.waqf.app/auth.md",
     ui_locales_supported: ["ar", "en", "tr", "id", "ms"],
     agent_auth: {
@@ -35,7 +35,7 @@ export const OAUTH_PROTECTED_RESOURCE_JSON = JSON.stringify(
   {
     resource: "https://mcp.waqf.app",
     authorization_servers: ["https://mcp.waqf.app"],
-    scopes_supported: ["mcp:read", "mcp:tools", "telemetry:read", "admin"],
+    scopes_supported: ["mcp:read", "mcp:tools"],
     bearer_methods_supported: ["header"],
     resource_documentation: "https://mcp.waqf.app/auth.md",
   },
@@ -83,33 +83,57 @@ export async function handleOAuthRegister(request: Request, corsHeaders: Record<
 }
 
 /**
- * Handle OAuth 2.0 / 2.1 Authorization Endpoint (/oauth/authorize)
- * Automatically approves authorization for public Islamic knowledge access.
+ * OAuth is a compatibility surface, not an authorization boundary: every MCP
+ * endpoint is public. Only known client callback origins may receive a code.
  */
-export function handleOAuthAuthorize(request: Request, corsHeaders: Record<string, string>): Response {
-  const url = new URL(request.url);
-  const redirectUri = url.searchParams.get("redirect_uri");
-  const state = url.searchParams.get("state");
-  const authCode = `waqf_code_${crypto.randomUUID().replace(/-/g, "")}`;
+const ALLOWED_REDIRECT_ORIGINS = new Set([
+  "https://claude.ai",
+  "https://claude.com",
+  "https://www.claude.com",
+  "https://chatgpt.com",
+  "https://chat.openai.com",
+  "https://gemini.google.com",
+  "https://cursor.com",
+  "https://www.cursor.com",
+  "https://vscode.dev",
+  "https://insiders.vscode.dev",
+  "https://perplexity.ai",
+  "https://www.perplexity.ai",
+  "https://grok.com",
+  "https://opencode.ai",
+  "https://mcp.waqf.app",
+  "https://mcp.waqf.dev",
+]);
 
-  if (redirectUri) {
-    try {
-      const target = new URL(redirectUri);
-      target.searchParams.set("code", authCode);
-      if (state) {
-        target.searchParams.set("state", state);
-      }
-      return Response.redirect(target.toString(), 302);
-    } catch {
-      // Invalid URL provided in redirect_uri
+function isAllowedRedirect(uri: string): boolean {
+  try {
+    const target = new URL(uri);
+    if (target.protocol === "http:") {
+      return target.hostname === "localhost" || target.hostname === "127.0.0.1";
     }
+    if (target.protocol !== "https:") {
+      return false;
+    }
+    return ALLOWED_REDIRECT_ORIGINS.has(target.origin);
+  } catch {
+    return false;
   }
+}
 
-  // Fallback: render HTML consent confirmation if accessed directly in a browser
+function consentPage(corsHeaders: Record<string, string>, blocked: boolean): Response {
+  const title = blocked ? "Redirect target not allowed" : "Open Access";
+  const message = blocked
+    ? "This redirect target is not on the gateway's client allowlist. The MCP endpoint is public, so call it directly without OAuth."
+    : "This MCP server provides unrestricted public read access to authentic Islamic knowledge sources (Quran, Tafsir, Hadith, Scholarly Search).";
+  const note = blocked
+    ? "No authorization code was issued."
+    : "Authorization is not required. Connect directly to /mcp.";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Waqf MCP — Authorization</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; padding: 24px; text-align: center; color: #112b38; background: #eef5f2; }
@@ -121,10 +145,10 @@ export function handleOAuthAuthorize(request: Request, corsHeaders: Record<strin
 </head>
 <body>
   <div class="card">
-    <div class="badge">Open Access</div>
+    <div class="badge">${title}</div>
     <h1>Islamic Sources (@IslamicSources)</h1>
-    <p>This MCP server provides unrestricted public read access to authentic Islamic knowledge sources (Quran, Tafsir, Hadith, Scholarly Search).</p>
-    <p>Authorization is granted automatically.</p>
+    <p>${message}</p>
+    <p>${note}</p>
   </div>
 </body>
 </html>`;
@@ -136,6 +160,34 @@ export function handleOAuthAuthorize(request: Request, corsHeaders: Record<strin
       ...corsHeaders,
     },
   });
+}
+
+/**
+ * Handle OAuth 2.0 / 2.1 Authorization Endpoint (/oauth/authorize)
+ * Public access does not need a token; known client callbacks receive one.
+ */
+export function handleOAuthAuthorize(request: Request, corsHeaders: Record<string, string>): Response {
+  const url = new URL(request.url);
+  const redirectUri = url.searchParams.get("redirect_uri");
+  const state = url.searchParams.get("state");
+
+  if (redirectUri) {
+    if (!isAllowedRedirect(redirectUri)) {
+      return consentPage(corsHeaders, true);
+    }
+    try {
+      const target = new URL(redirectUri);
+      target.searchParams.set("code", `waqf_code_${crypto.randomUUID().replace(/-/g, "")}`);
+      if (state) {
+        target.searchParams.set("state", state);
+      }
+      return Response.redirect(target.toString(), 302);
+    } catch {
+      return consentPage(corsHeaders, true);
+    }
+  }
+
+  return consentPage(corsHeaders, false);
 }
 
 /**

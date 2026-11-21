@@ -19,7 +19,32 @@ const VALUE_EXPRESSIONS: Record<StatsDimension, string> = {
   provider: "COALESCE(upstream_provider, 'gateway')",
   tool: "COALESCE(tool_name, '(non-tool)')",
   country: "COALESCE(country, 'unknown')",
-  client: "COALESCE(client_app, 'unknown')",
+  // Keep this in step with D1TelemetryService.detectClientApp. The raw logs
+  // store a coarser historical label; the rollup reclassifies from user_agent
+  // so old days can be rebuilt without rewriting mcp_logs.
+  client: `CASE
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%openai-mcp%' OR lower(COALESCE(user_agent, '')) LIKE '%codex%' THEN 'codex'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%claude%' THEN 'claude'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%cursor%' THEN 'cursor'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%antigravity%' OR lower(COALESCE(user_agent, '')) LIKE '%gemini%' THEN 'antigravity'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%cline%' OR lower(COALESCE(user_agent, '')) LIKE '%roo%' THEN 'cline'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%continue%' THEN 'continue'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%mistral%' THEN 'mistral'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%opencode%' THEN 'opencode'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%grok%' THEN 'grok'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%wabi%' THEN 'wabi'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%mcpregistry%' THEN 'mcp-registry'
+    WHEN lower(COALESCE(user_agent, '')) = 'google' THEN 'google'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%go-http-client%' THEN 'go-client'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%okhttp%' THEN 'okhttp'
+    WHEN lower(COALESCE(user_agent, '')) = 'node' OR lower(COALESCE(user_agent, '')) LIKE '%undici%' THEN 'node'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%censys%' OR lower(COALESCE(user_agent, '')) LIKE '%agent-index%' OR lower(COALESCE(user_agent, '')) LIKE '%mcp-ad-measurement%' OR lower(COALESCE(user_agent, '')) LIKE '%mcp-discovery-measurement%' THEN 'crawler'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%islamic-mcp-gateway%' THEN 'gateway'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%waqfdeploycheck%' THEN 'deploy-check'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%python%' THEN 'python-sdk'
+    WHEN lower(COALESCE(user_agent, '')) LIKE '%curl%' THEN 'curl'
+    ELSE COALESCE(client_app, 'unknown')
+  END`,
   method: "method",
   status: "CAST(status_code AS TEXT)",
   colo: "COALESCE(colo, 'unknown')",
@@ -83,13 +108,20 @@ export function buildDimensionInsert(
   from: string,
   to: string
 ): D1PreparedStatement {
+  // Country and client views answer "who uses the tools", not "who sends
+  // handshakes". Keep protocol traffic out of those two dimensions.
+  const toolOnly =
+    dimension === "country" || dimension === "client"
+      ? " AND tool_name IS NOT NULL"
+      : "";
+
   return db
     .prepare(
       `INSERT INTO mcp_stats_daily
          (day, dimension, value, calls, errors, cache_hits, latency_sum_ms, latency_max_ms, response_bytes, unique_clients)
        SELECT ?, ?, ${VALUE_EXPRESSIONS[dimension]}, ${METRICS}
        FROM mcp_logs
-       WHERE timestamp >= ? AND timestamp < ?
+       WHERE timestamp >= ? AND timestamp < ?${toolOnly}
        GROUP BY 3
        ${UPSERT}`
     )

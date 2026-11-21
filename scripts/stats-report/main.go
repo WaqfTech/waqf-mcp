@@ -26,8 +26,15 @@ type metricRow struct {
 	Calls    int64   `json:"calls"`
 	Errors   int64   `json:"errors"`
 	CacheHit int64   `json:"cache_hits"`
+	Clients  int64   `json:"clients"`
 	AvgMs    float64 `json:"avg_ms"`
 	MaxMs    int64   `json:"max_ms"`
+}
+
+type topicRow struct {
+	Name  string  `json:"name"`
+	Calls int64   `json:"calls"`
+	Share float64 `json:"share"`
 }
 
 type summary struct {
@@ -43,9 +50,12 @@ type report struct {
 	GeneratedAt string                 `json:"generated_at"`
 	Source      string                 `json:"source"`
 	Since       string                 `json:"since"`
+	LatestDay   string                 `json:"latest_day"`
 	Days        int                    `json:"days"`
 	Public      bool                   `json:"public"`
+	MinCalls    int64                  `json:"min_calls"`
 	Summary     summary                `json:"summary"`
+	Topics      []topicRow             `json:"topics"`
 	Dimensions  map[string][]metricRow `json:"dimensions"`
 }
 
@@ -66,7 +76,8 @@ func main() {
 	sinceFlag := flag.String("since", "", "RFC3339 start timestamp; overrides -days")
 	source := flag.String("source", "rollup", "rollup (mcp_stats_daily) or raw (mcp_logs)")
 	dimension := flag.String("dimension", "all", "provider, country, client, tool, method, status, colo, trend, or all")
-	format := flag.String("format", "table", "table, markdown, csv, or json")
+	format := flag.String("format", "table", "table, markdown, csv, json, or html")
+	output := flag.String("output", "", "write html or json to a file instead of stdout")
 	database := flag.String("db", "waqf-app", "D1 database name")
 	remote := flag.Bool("remote", true, "query the remote database (false uses local D1)")
 	public := flag.Bool("public", false, "public-safe view: drop method/status and suppress small rows")
@@ -76,8 +87,8 @@ func main() {
 	if *days < 1 || *days > 3650 {
 		fail("-days must be between 1 and 3650")
 	}
-	if *format != "table" && *format != "markdown" && *format != "csv" && *format != "json" {
-		fail("-format must be table, markdown, csv, or json")
+	if *format != "table" && *format != "markdown" && *format != "csv" && *format != "json" && *format != "html" {
+		fail("-format must be table, markdown, csv, json, or html")
 	}
 	if *source != "rollup" && *source != "raw" {
 		fail("-source must be rollup or raw")
@@ -108,6 +119,7 @@ func main() {
 		Since:       since,
 		Days:        int(time.Since(sinceTime).Hours() / 24),
 		Public:      *public,
+		MinCalls:    *minCalls,
 		Dimensions:  map[string][]metricRow{},
 	}
 
@@ -125,10 +137,20 @@ func main() {
 			continue
 		}
 		rows := mustRows(*database, *remote, *source, since, sinceDay, name)
-		if *public {
+		if name == "tool" {
+			// Handshakes and listings are not demand; keep them out of the
+			// topic mix even though they are useful in the tool table.
+			result.Topics = topicMix(filterToolRows(rows))
+		}
+		// The daily trend is ordered by date, not volume. Suppressing low
+		// days or re-sorting by calls would break the time axis.
+		if *public && name != "trend" {
 			rows = publicFilter(rows, *minCalls)
 		}
 		result.Dimensions[name] = rows
+	}
+	if trend := result.Dimensions["trend"]; len(trend) > 0 {
+		result.LatestDay = trend[len(trend)-1].Value
 	}
 
 	switch *format {
@@ -137,12 +159,72 @@ func main() {
 		if err != nil {
 			fail("encode json: " + err.Error())
 		}
-		fmt.Println(string(encoded))
+		writeOutput(*output, append(encoded, '\n'))
+	case "html":
+		writeOutput(*output, []byte(renderHTML(result)))
 	case "table", "markdown", "csv":
+		if *output != "" {
+			fail("-output is supported for html and json only")
+		}
 		printReport(result, *format, *public)
 	default:
 		fail("unsupported format")
 	}
+}
+
+func writeOutput(path string, data []byte) {
+	if path == "" {
+		_, _ = os.Stdout.Write(data)
+		return
+	}
+	if dir := filepath.Dir(path); dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			fail("create output directory: " + err.Error())
+		}
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		fail("write output: " + err.Error())
+	}
+	fmt.Fprintf(os.Stderr, "wrote %s\n", path)
+}
+
+func topicForTool(tool string) string {
+	switch {
+	case strings.HasPrefix(tool, "waqf_quran"),
+		strings.HasPrefix(tool, "tafsir_net__"),
+		strings.HasPrefix(tool, "bahouth__"):
+		return "Quran & tafsir"
+	case strings.HasPrefix(tool, "waqf_hadith"),
+		strings.HasPrefix(tool, "shamela__"):
+		return "Hadith"
+	case strings.HasPrefix(tool, "waqf_books"),
+		strings.HasPrefix(tool, "waqf_turath"),
+		strings.HasPrefix(tool, "aljam3__"),
+		strings.HasPrefix(tool, "turath__"),
+		strings.HasPrefix(tool, "maheralfahel__"):
+		return "Books & heritage"
+	case strings.HasPrefix(tool, "waqf_search"),
+		strings.HasPrefix(tool, "fihris__"):
+		return "Scholarship search"
+	default:
+		return "Other"
+	}
+}
+
+func topicMix(rows []metricRow) []topicRow {
+	totals := map[string]int64{}
+	var total int64
+	for _, row := range rows {
+		topic := topicForTool(row.Value)
+		totals[topic] += row.Calls
+		total += row.Calls
+	}
+	out := make([]topicRow, 0, len(totals))
+	for name, calls := range totals {
+		out = append(out, topicRow{Name: name, Calls: calls, Share: percent(calls, total)})
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Calls > out[j].Calls })
+	return out
 }
 
 func mustSummary(database string, remote bool, source, since, sinceDay string) summary {
@@ -176,6 +258,7 @@ func mustRows(database string, remote bool, source, since, sinceDay, dimension s
 			Calls:    intValue(row["calls"]),
 			Errors:   intValue(row["errors"]),
 			CacheHit: intValue(row["cache_hits"]),
+			Clients:  intValue(row["clients"]),
 			AvgMs:    floatValue(row["avg_ms"]),
 			MaxMs:    intValue(row["max_ms"]),
 		})
@@ -217,6 +300,7 @@ func dimensionSQL(source, dimension, since, sinceDay string) string {
 				       calls,
 				       errors,
 				       cache_hits,
+				       unique_clients AS clients,
 				       ROUND(latency_sum_ms * 1.0 / NULLIF(calls, 0), 1) AS avg_ms,
 				       latency_max_ms AS max_ms
 				FROM mcp_stats_daily
@@ -230,6 +314,7 @@ func dimensionSQL(source, dimension, since, sinceDay string) string {
 			       SUM(calls) AS calls,
 			       SUM(errors) AS errors,
 			       SUM(cache_hits) AS cache_hits,
+			       SUM(unique_clients) AS clients,
 			       ROUND(SUM(latency_sum_ms) * 1.0 / NULLIF(SUM(calls), 0), 1) AS avg_ms,
 			       MAX(latency_max_ms) AS max_ms
 			FROM mcp_stats_daily
@@ -253,6 +338,7 @@ func dimensionSQL(source, dimension, since, sinceDay string) string {
 		       COUNT(*) AS calls,
 		       SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) AS errors,
 		       SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) AS cache_hits,
+		       COUNT(DISTINCT client_ip_hash) AS clients,
 		       ROUND(AVG(latency_ms), 1) AS avg_ms,
 		       MAX(latency_ms) AS max_ms
 		FROM mcp_logs

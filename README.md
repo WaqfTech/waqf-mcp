@@ -267,8 +267,10 @@ aube run dev
 aube run build
 
 # Aggregated usage report from production D1 (Go, read-only)
-go run ./scripts/stats-report/main.go -days 30
+go run ./scripts/stats-report/ -days 30
 ```
+
+Usage snapshot: [analytics/index.html](analytics/index.html) (public-safe, generated from daily rollups).
 
 ---
 

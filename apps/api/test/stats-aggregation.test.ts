@@ -69,6 +69,15 @@ describe("Daily stats aggregation", () => {
       "2026-11-20T00:00:00.000Z",
       "2026-11-21T00:00:00.000Z",
     ]);
+
+    const client = statements.find((statement) => statement.bindings.includes("client"));
+    expect(client?.sql).toContain("openai-mcp");
+    expect(client?.sql).toContain("codex");
+    expect(client?.sql).toContain("tool_name IS NOT NULL");
+
+    const country = statements.find((statement) => statement.bindings.includes("country"));
+    expect(country?.sql).toContain("tool_name IS NOT NULL");
+    expect(provider?.sql).not.toContain("tool_name IS NOT NULL");
     expect(result).toEqual({ day: "2026-11-20", changedRows: 9 });
   });
 

@@ -60,6 +60,67 @@ func TestSQLSources(t *testing.T) {
 	}
 }
 
+func TestTopicMixGroupsTools(t *testing.T) {
+	rows := []metricRow{
+		{Value: "aljam3__search", Calls: 10},
+		{Value: "waqf_quran_get_ayah", Calls: 5},
+		{Value: "shamela__shamela_find", Calls: 2},
+		{Value: "waqf_search_scholarship", Calls: 1},
+	}
+	topics := topicMix(rows)
+	if len(topics) != 4 {
+		t.Fatalf("expected 4 topics, got %d: %+v", len(topics), topics)
+	}
+	if topics[0].Name != "Books & heritage" || topics[0].Calls != 10 {
+		t.Fatalf("unexpected first topic: %+v", topics[0])
+	}
+}
+
+func TestRenderHTMLHasCoreSections(t *testing.T) {
+	r := report{
+		GeneratedAt: "2026-11-21T08:00:00Z",
+		Source:      "rollup",
+		Since:       "2026-10-22T00:00:00.000Z",
+		LatestDay:   "2026-11-21",
+		Public:      true,
+		MinCalls:    10,
+		Summary: summary{
+			Calls: 100, Errors: 5, CacheHits: 10, UniqueClients: 20, AvgMs: 120, MaxMs: 300,
+		},
+		Topics: []topicRow{
+			{Name: "Books & heritage", Calls: 80, Share: 80},
+			{Name: "Hadith", Calls: 20, Share: 20},
+		},
+		Dimensions: map[string][]metricRow{
+			"provider": {{Value: "aljam3", Calls: 100, Clients: 10}},
+			"country":  {{Value: "US", Calls: 100, Clients: 10}},
+			"client":   {{Value: "claude", Calls: 100, Clients: 10}},
+			"tool":     {{Value: "aljam3__get_page", Calls: 100, Clients: 10}},
+			"trend":    {{Value: "2026-11-21", Calls: 100, Errors: 5}},
+		},
+	}
+	page := renderHTML(r)
+	for _, want := range []string{
+		"<!doctype html",
+		"Usage",
+		"Calls and errors",
+		"Providers",
+		"Countries",
+		"AI agents",
+		"Top tools",
+		"What people ask for",
+		"Books &amp; heritage",
+		"stats.json",
+	} {
+		if !strings.Contains(page, want) {
+			t.Fatalf("rendered HTML missing %q", want)
+		}
+	}
+	if strings.Contains(page, "<script") {
+		t.Fatal("rendered HTML must not require client-side JavaScript")
+	}
+}
+
 func TestNumericParsing(t *testing.T) {
 	if got := intValue(json.Number("42")); got != 42 {
 		t.Fatalf("intValue: expected 42, got %d", got)

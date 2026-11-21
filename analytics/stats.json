@@ -1,0 +1,1055 @@
+{
+  "generated_at": "2026-11-21T10:46:12Z",
+  "source": "rollup",
+  "since": "2026-10-22T00:00:00.000Z",
+  "latest_day": "2026-11-21",
+  "days": 30,
+  "public": true,
+  "min_calls": 10,
+  "summary": {
+    "calls": 59789,
+    "errors": 17731,
+    "cache_hits": 1029,
+    "unique_clients": 3452,
+    "avg_ms": 290.8,
+    "max_ms": 116210
+  },
+  "topics": [
+    {
+      "name": "Books \u0026 heritage",
+      "calls": 10911,
+      "share": 71.89167819727219
+    },
+    {
+      "name": "Hadith",
+      "calls": 2318,
+      "share": 15.273110627923833
+    },
+    {
+      "name": "Quran \u0026 tafsir",
+      "calls": 1374,
+      "share": 9.053172563747776
+    },
+    {
+      "name": "Scholarship search",
+      "calls": 542,
+      "share": 3.5711932529485404
+    },
+    {
+      "name": "Other",
+      "calls": 32,
+      "share": 0.21084535810766292
+    }
+  ],
+  "dimensions": {
+    "client": [
+      {
+        "value": "claude",
+        "calls": 9839,
+        "errors": 140,
+        "cache_hits": 282,
+        "clients": 1829,
+        "avg_ms": 611.6,
+        "max_ms": 116210
+      },
+      {
+        "value": "codex",
+        "calls": 3666,
+        "errors": 478,
+        "cache_hits": 510,
+        "clients": 629,
+        "avg_ms": 416,
+        "max_ms": 6785
+      },
+      {
+        "value": "other",
+        "calls": 758,
+        "errors": 30,
+        "cache_hits": 50,
+        "clients": 87,
+        "avg_ms": 417.5,
+        "max_ms": 4375
+      },
+      {
+        "value": "okhttp",
+        "calls": 521,
+        "errors": 19,
+        "cache_hits": 9,
+        "clients": 17,
+        "avg_ms": 883.7,
+        "max_ms": 6602
+      },
+      {
+        "value": "mistral",
+        "calls": 318,
+        "errors": 1,
+        "cache_hits": 23,
+        "clients": 14,
+        "avg_ms": 312.5,
+        "max_ms": 2183
+      },
+      {
+        "value": "go-client",
+        "calls": 265,
+        "errors": 1,
+        "cache_hits": 22,
+        "clients": 5,
+        "avg_ms": 592.5,
+        "max_ms": 3520
+      },
+      {
+        "value": "node",
+        "calls": 164,
+        "errors": 4,
+        "cache_hits": 5,
+        "clients": 5,
+        "avg_ms": 792.8,
+        "max_ms": 3641
+      },
+      {
+        "value": "crawler",
+        "calls": 140,
+        "errors": 6,
+        "cache_hits": 76,
+        "clients": 13,
+        "avg_ms": 188.9,
+        "max_ms": 1257
+      },
+      {
+        "value": "google",
+        "calls": 92,
+        "errors": 5,
+        "cache_hits": 1,
+        "clients": 35,
+        "avg_ms": 779.4,
+        "max_ms": 1996
+      },
+      {
+        "value": "grok",
+        "calls": 85,
+        "errors": 0,
+        "cache_hits": 3,
+        "clients": 12,
+        "avg_ms": 625.4,
+        "max_ms": 1489
+      },
+      {
+        "value": "curl",
+        "calls": 65,
+        "errors": 10,
+        "cache_hits": 15,
+        "clients": 3,
+        "avg_ms": 176.4,
+        "max_ms": 1253
+      },
+      {
+        "value": "gateway",
+        "calls": 64,
+        "errors": 0,
+        "cache_hits": 24,
+        "clients": 2,
+        "avg_ms": 174.8,
+        "max_ms": 663
+      },
+      {
+        "value": "opencode",
+        "calls": 33,
+        "errors": 0,
+        "cache_hits": 2,
+        "clients": 2,
+        "avg_ms": 196.5,
+        "max_ms": 597
+      },
+      {
+        "value": "wabi",
+        "calls": 22,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 22,
+        "avg_ms": 618.3,
+        "max_ms": 1276
+      },
+      {
+        "value": "deploy-check",
+        "calls": 13,
+        "errors": 2,
+        "cache_hits": 5,
+        "clients": 1,
+        "avg_ms": 205.2,
+        "max_ms": 608
+      }
+    ],
+    "country": [
+      {
+        "value": "US",
+        "calls": 11044,
+        "errors": 164,
+        "cache_hits": 446,
+        "clients": 2185,
+        "avg_ms": 620.1,
+        "max_ms": 116210
+      },
+      {
+        "value": "PL",
+        "calls": 1570,
+        "errors": 464,
+        "cache_hits": 248,
+        "clients": 22,
+        "avg_ms": 165.8,
+        "max_ms": 6785
+      },
+      {
+        "value": "IN",
+        "calls": 1015,
+        "errors": 1,
+        "cache_hits": 65,
+        "clients": 113,
+        "avg_ms": 775.2,
+        "max_ms": 4161
+      },
+      {
+        "value": "ID",
+        "calls": 632,
+        "errors": 15,
+        "cache_hits": 34,
+        "clients": 48,
+        "avg_ms": 680.3,
+        "max_ms": 4375
+      },
+      {
+        "value": "DK",
+        "calls": 423,
+        "errors": 1,
+        "cache_hits": 46,
+        "clients": 88,
+        "avg_ms": 223.5,
+        "max_ms": 2341
+      },
+      {
+        "value": "SE",
+        "calls": 416,
+        "errors": 5,
+        "cache_hits": 60,
+        "clients": 24,
+        "avg_ms": 287.8,
+        "max_ms": 2183
+      },
+      {
+        "value": "EG",
+        "calls": 218,
+        "errors": 18,
+        "cache_hits": 45,
+        "clients": 5,
+        "avg_ms": 160.7,
+        "max_ms": 665
+      },
+      {
+        "value": "IE",
+        "calls": 166,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 2,
+        "avg_ms": 188.2,
+        "max_ms": 692
+      },
+      {
+        "value": "CH",
+        "calls": 134,
+        "errors": 11,
+        "cache_hits": 6,
+        "clients": 71,
+        "avg_ms": 609.1,
+        "max_ms": 3464
+      },
+      {
+        "value": "SG",
+        "calls": 96,
+        "errors": 0,
+        "cache_hits": 9,
+        "clients": 1,
+        "avg_ms": 842.3,
+        "max_ms": 2765
+      },
+      {
+        "value": "JO",
+        "calls": 83,
+        "errors": 12,
+        "cache_hits": 20,
+        "clients": 3,
+        "avg_ms": 178.2,
+        "max_ms": 1253
+      },
+      {
+        "value": "DE",
+        "calls": 73,
+        "errors": 4,
+        "cache_hits": 25,
+        "clients": 34,
+        "avg_ms": 239.6,
+        "max_ms": 1512
+      },
+      {
+        "value": "ES",
+        "calls": 36,
+        "errors": 1,
+        "cache_hits": 3,
+        "clients": 18,
+        "avg_ms": 469.6,
+        "max_ms": 1275
+      },
+      {
+        "value": "KE",
+        "calls": 26,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 1,
+        "avg_ms": 530.2,
+        "max_ms": 1244
+      },
+      {
+        "value": "JP",
+        "calls": 24,
+        "errors": 0,
+        "cache_hits": 13,
+        "clients": 14,
+        "avg_ms": 768.6,
+        "max_ms": 2178
+      },
+      {
+        "value": "GB",
+        "calls": 21,
+        "errors": 0,
+        "cache_hits": 2,
+        "clients": 17,
+        "avg_ms": 381.4,
+        "max_ms": 859
+      },
+      {
+        "value": "PK",
+        "calls": 18,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 1,
+        "avg_ms": 1099.4,
+        "max_ms": 1824
+      },
+      {
+        "value": "MX",
+        "calls": 16,
+        "errors": 0,
+        "cache_hits": 4,
+        "clients": 1,
+        "avg_ms": 630.4,
+        "max_ms": 1058
+      },
+      {
+        "value": "SA",
+        "calls": 10,
+        "errors": 0,
+        "cache_hits": 2,
+        "clients": 3,
+        "avg_ms": 190.1,
+        "max_ms": 805
+      }
+    ],
+    "provider": [
+      {
+        "value": "internal",
+        "calls": 27450,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 2835,
+        "avg_ms": 308.8,
+        "max_ms": 97651
+      },
+      {
+        "value": "gateway",
+        "calls": 17123,
+        "errors": 17123,
+        "cache_hits": 0,
+        "clients": 1673,
+        "avg_ms": 9.2,
+        "max_ms": 18102
+      },
+      {
+        "value": "aljam3",
+        "calls": 6303,
+        "errors": 470,
+        "cache_hits": 372,
+        "clients": 1646,
+        "avg_ms": 478.9,
+        "max_ms": 116210
+      },
+      {
+        "value": "turath",
+        "calls": 4877,
+        "errors": 12,
+        "cache_hits": 207,
+        "clients": 1601,
+        "avg_ms": 643.4,
+        "max_ms": 11607
+      },
+      {
+        "value": "shamela",
+        "calls": 1907,
+        "errors": 118,
+        "cache_hits": 12,
+        "clients": 790,
+        "avg_ms": 877.3,
+        "max_ms": 9608
+      },
+      {
+        "value": "tafsir_net",
+        "calls": 1148,
+        "errors": 1,
+        "cache_hits": 115,
+        "clients": 485,
+        "avg_ms": 402.2,
+        "max_ms": 4161
+      },
+      {
+        "value": "fihris",
+        "calls": 517,
+        "errors": 1,
+        "cache_hits": 21,
+        "clients": 229,
+        "avg_ms": 700.1,
+        "max_ms": 6602
+      },
+      {
+        "value": "bahouth",
+        "calls": 203,
+        "errors": 5,
+        "cache_hits": 78,
+        "clients": 108,
+        "avg_ms": 299.2,
+        "max_ms": 2166
+      },
+      {
+        "value": "canonical",
+        "calls": 201,
+        "errors": 1,
+        "cache_hits": 200,
+        "clients": 118,
+        "avg_ms": 92.7,
+        "max_ms": 1277
+      },
+      {
+        "value": "maheralfahel",
+        "calls": 60,
+        "errors": 0,
+        "cache_hits": 24,
+        "clients": 36,
+        "avg_ms": 258.8,
+        "max_ms": 686
+      }
+    ],
+    "tool": [
+      {
+        "value": "(non-tool)",
+        "calls": 44572,
+        "errors": 17122,
+        "cache_hits": 0,
+        "clients": 2884,
+        "avg_ms": 193.7,
+        "max_ms": 97651
+      },
+      {
+        "value": "aljam3__get_page",
+        "calls": 3010,
+        "errors": 465,
+        "cache_hits": 289,
+        "clients": 775,
+        "avg_ms": 221,
+        "max_ms": 3977
+      },
+      {
+        "value": "turath__search_turath",
+        "calls": 2860,
+        "errors": 8,
+        "cache_hits": 78,
+        "clients": 1221,
+        "avg_ms": 703.3,
+        "max_ms": 8481
+      },
+      {
+        "value": "aljam3__search",
+        "calls": 1807,
+        "errors": 0,
+        "cache_hits": 41,
+        "clients": 957,
+        "avg_ms": 883.3,
+        "max_ms": 116210
+      },
+      {
+        "value": "turath__get_page",
+        "calls": 897,
+        "errors": 1,
+        "cache_hits": 52,
+        "clients": 526,
+        "avg_ms": 508.1,
+        "max_ms": 4974
+      },
+      {
+        "value": "shamela__shamela_find",
+        "calls": 653,
+        "errors": 6,
+        "cache_hits": 3,
+        "clients": 418,
+        "avg_ms": 1636.7,
+        "max_ms": 9608
+      },
+      {
+        "value": "waqf_quran_get_ayah",
+        "calls": 644,
+        "errors": 4,
+        "cache_hits": 86,
+        "clients": 284,
+        "avg_ms": 390,
+        "max_ms": 2453
+      },
+      {
+        "value": "waqf_books_search",
+        "calls": 556,
+        "errors": 1,
+        "cache_hits": 27,
+        "clients": 343,
+        "avg_ms": 853,
+        "max_ms": 10106
+      },
+      {
+        "value": "aljam3__list_books",
+        "calls": 515,
+        "errors": 0,
+        "cache_hits": 12,
+        "clients": 364,
+        "avg_ms": 333.3,
+        "max_ms": 3131
+      },
+      {
+        "value": "shamela__shamela_find_scoped",
+        "calls": 504,
+        "errors": 105,
+        "cache_hits": 1,
+        "clients": 286,
+        "avg_ms": 534.2,
+        "max_ms": 2660
+      },
+      {
+        "value": "shamela__shamela_open",
+        "calls": 463,
+        "errors": 3,
+        "cache_hits": 4,
+        "clients": 260,
+        "avg_ms": 418.1,
+        "max_ms": 4399
+      },
+      {
+        "value": "waqf_hadith_search",
+        "calls": 411,
+        "errors": 3,
+        "cache_hits": 32,
+        "clients": 275,
+        "avg_ms": 852.6,
+        "max_ms": 11607
+      },
+      {
+        "value": "fihris__search_islamic_sources",
+        "calls": 381,
+        "errors": 1,
+        "cache_hits": 8,
+        "clients": 168,
+        "avg_ms": 741.4,
+        "max_ms": 6602
+      },
+      {
+        "value": "turath__get_book",
+        "calls": 304,
+        "errors": 0,
+        "cache_hits": 65,
+        "clients": 188,
+        "avg_ms": 402.5,
+        "max_ms": 2282
+      },
+      {
+        "value": "waqf_books_read_page",
+        "calls": 296,
+        "errors": 4,
+        "cache_hits": 12,
+        "clients": 179,
+        "avg_ms": 240.7,
+        "max_ms": 768
+      },
+      {
+        "value": "turath__discover_turath",
+        "calls": 292,
+        "errors": 0,
+        "cache_hits": 11,
+        "clients": 238,
+        "avg_ms": 451.9,
+        "max_ms": 2479
+      },
+      {
+        "value": "shamela__shamela_open_many",
+        "calls": 287,
+        "errors": 4,
+        "cache_hits": 4,
+        "clients": 219,
+        "avg_ms": 492.4,
+        "max_ms": 2574
+      },
+      {
+        "value": "tafsir_net__fetch_tafsir",
+        "calls": 230,
+        "errors": 1,
+        "cache_hits": 29,
+        "clients": 167,
+        "avg_ms": 525.6,
+        "max_ms": 4161
+      },
+      {
+        "value": "waqf_turath_search_books",
+        "calls": 156,
+        "errors": 0,
+        "cache_hits": 18,
+        "clients": 127,
+        "avg_ms": 437.3,
+        "max_ms": 1342
+      },
+      {
+        "value": "waqf_search_scholarship",
+        "calls": 147,
+        "errors": 0,
+        "cache_hits": 25,
+        "clients": 72,
+        "avg_ms": 528.7,
+        "max_ms": 1606
+      },
+      {
+        "value": "tafsir_net__fetch_ayah",
+        "calls": 139,
+        "errors": 0,
+        "cache_hits": 19,
+        "clients": 53,
+        "avg_ms": 269.4,
+        "max_ms": 776
+      },
+      {
+        "value": "bahouth__get_verse",
+        "calls": 106,
+        "errors": 0,
+        "cache_hits": 67,
+        "clients": 81,
+        "avg_ms": 256,
+        "max_ms": 1096
+      },
+      {
+        "value": "aljam3__get_book",
+        "calls": 91,
+        "errors": 0,
+        "cache_hits": 11,
+        "clients": 81,
+        "avg_ms": 314.4,
+        "max_ms": 1464
+      },
+      {
+        "value": "tafsir_net__search_quran_text",
+        "calls": 58,
+        "errors": 0,
+        "cache_hits": 2,
+        "clients": 23,
+        "avg_ms": 282.3,
+        "max_ms": 867
+      },
+      {
+        "value": "bahouth__list_topic_verses",
+        "calls": 52,
+        "errors": 0,
+        "cache_hits": 11,
+        "clients": 23,
+        "avg_ms": 193.4,
+        "max_ms": 1276
+      },
+      {
+        "value": "maheralfahel__search-content",
+        "calls": 33,
+        "errors": 0,
+        "cache_hits": 4,
+        "clients": 24,
+        "avg_ms": 325.1,
+        "max_ms": 556
+      },
+      {
+        "value": "tafsir_net__search_in_tafsir",
+        "calls": 30,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 23,
+        "avg_ms": 450.1,
+        "max_ms": 1014
+      },
+      {
+        "value": "aljam3__list_categories",
+        "calls": 26,
+        "errors": 0,
+        "cache_hits": 9,
+        "clients": 22,
+        "avg_ms": 186,
+        "max_ms": 335
+      },
+      {
+        "value": "aljam3__list_authors",
+        "calls": 25,
+        "errors": 0,
+        "cache_hits": 1,
+        "clients": 22,
+        "avg_ms": 249.8,
+        "max_ms": 626
+      },
+      {
+        "value": "tafsir_net__fetch_nuzool_reason",
+        "calls": 17,
+        "errors": 0,
+        "cache_hits": 2,
+        "clients": 11,
+        "avg_ms": 329.8,
+        "max_ms": 879
+      },
+      {
+        "value": "aljam3__list_libraries",
+        "calls": 16,
+        "errors": 0,
+        "cache_hits": 9,
+        "clients": 14,
+        "avg_ms": 201.3,
+        "max_ms": 428
+      },
+      {
+        "value": "tafsir_net__find_root_occurrences",
+        "calls": 15,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 11,
+        "avg_ms": 322.7,
+        "max_ms": 823
+      },
+      {
+        "value": "fihris__list_indexed_sources",
+        "calls": 14,
+        "errors": 0,
+        "cache_hits": 13,
+        "clients": 13,
+        "avg_ms": 156.5,
+        "max_ms": 852
+      },
+      {
+        "value": "bahouth__list_verse_topics",
+        "calls": 14,
+        "errors": 0,
+        "cache_hits": 0,
+        "clients": 11,
+        "avg_ms": 353.1,
+        "max_ms": 698
+      },
+      {
+        "value": "tafsir_net__list_tafsir_sources",
+        "calls": 13,
+        "errors": 0,
+        "cache_hits": 13,
+        "clients": 8,
+        "avg_ms": 74.4,
+        "max_ms": 180
+      },
+      {
+        "value": "maheralfahel__get-site-info",
+        "calls": 12,
+        "errors": 0,
+        "cache_hits": 11,
+        "clients": 11,
+        "avg_ms": 108,
+        "max_ms": 245
+      }
+    ],
+    "trend": [
+      {
+        "value": "2026-10-22",
+        "calls": 743,
+        "errors": 87,
+        "cache_hits": 8,
+        "clients": 55,
+        "avg_ms": 388.8,
+        "max_ms": 4701
+      },
+      {
+        "value": "2026-10-23",
+        "calls": 507,
+        "errors": 61,
+        "cache_hits": 2,
+        "clients": 70,
+        "avg_ms": 399.8,
+        "max_ms": 4584
+      },
+      {
+        "value": "2026-10-24",
+        "calls": 533,
+        "errors": 62,
+        "cache_hits": 1,
+        "clients": 59,
+        "avg_ms": 351.3,
+        "max_ms": 2234
+      },
+      {
+        "value": "2026-10-25",
+        "calls": 621,
+        "errors": 75,
+        "cache_hits": 5,
+        "clients": 73,
+        "avg_ms": 349.8,
+        "max_ms": 2076
+      },
+      {
+        "value": "2026-10-26",
+        "calls": 601,
+        "errors": 81,
+        "cache_hits": 1,
+        "clients": 59,
+        "avg_ms": 398.3,
+        "max_ms": 4200
+      },
+      {
+        "value": "2026-10-27",
+        "calls": 744,
+        "errors": 72,
+        "cache_hits": 8,
+        "clients": 67,
+        "avg_ms": 370.3,
+        "max_ms": 2267
+      },
+      {
+        "value": "2026-10-28",
+        "calls": 5959,
+        "errors": 2127,
+        "cache_hits": 274,
+        "clients": 122,
+        "avg_ms": 176.5,
+        "max_ms": 11607
+      },
+      {
+        "value": "2026-10-29",
+        "calls": 714,
+        "errors": 83,
+        "cache_hits": 13,
+        "clients": 73,
+        "avg_ms": 456.5,
+        "max_ms": 10001
+      },
+      {
+        "value": "2026-10-30",
+        "calls": 813,
+        "errors": 73,
+        "cache_hits": 5,
+        "clients": 85,
+        "avg_ms": 328.1,
+        "max_ms": 2436
+      },
+      {
+        "value": "2026-10-31",
+        "calls": 1104,
+        "errors": 79,
+        "cache_hits": 25,
+        "clients": 105,
+        "avg_ms": 296.6,
+        "max_ms": 3467
+      },
+      {
+        "value": "2026-11-01",
+        "calls": 1513,
+        "errors": 159,
+        "cache_hits": 36,
+        "clients": 96,
+        "avg_ms": 208.5,
+        "max_ms": 2288
+      },
+      {
+        "value": "2026-11-02",
+        "calls": 1445,
+        "errors": 170,
+        "cache_hits": 36,
+        "clients": 147,
+        "avg_ms": 224.5,
+        "max_ms": 5300
+      },
+      {
+        "value": "2026-11-03",
+        "calls": 1819,
+        "errors": 197,
+        "cache_hits": 80,
+        "clients": 153,
+        "avg_ms": 925.7,
+        "max_ms": 97651
+      },
+      {
+        "value": "2026-11-04",
+        "calls": 1046,
+        "errors": 195,
+        "cache_hits": 1,
+        "clients": 96,
+        "avg_ms": 355.9,
+        "max_ms": 10000
+      },
+      {
+        "value": "2026-11-05",
+        "calls": 1336,
+        "errors": 166,
+        "cache_hits": 7,
+        "clients": 79,
+        "avg_ms": 325.2,
+        "max_ms": 8000
+      },
+      {
+        "value": "2026-11-06",
+        "calls": 1574,
+        "errors": 175,
+        "cache_hits": 45,
+        "clients": 92,
+        "avg_ms": 389.8,
+        "max_ms": 6602
+      },
+      {
+        "value": "2026-11-07",
+        "calls": 2003,
+        "errors": 133,
+        "cache_hits": 47,
+        "clients": 96,
+        "avg_ms": 377,
+        "max_ms": 10004
+      },
+      {
+        "value": "2026-11-08",
+        "calls": 1371,
+        "errors": 130,
+        "cache_hits": 15,
+        "clients": 79,
+        "avg_ms": 357.9,
+        "max_ms": 2866
+      },
+      {
+        "value": "2026-11-09",
+        "calls": 1295,
+        "errors": 177,
+        "cache_hits": 28,
+        "clients": 138,
+        "avg_ms": 291.7,
+        "max_ms": 1996
+      },
+      {
+        "value": "2026-11-10",
+        "calls": 1446,
+        "errors": 147,
+        "cache_hits": 30,
+        "clients": 163,
+        "avg_ms": 371.4,
+        "max_ms": 7321
+      },
+      {
+        "value": "2026-11-11",
+        "calls": 1451,
+        "errors": 140,
+        "cache_hits": 17,
+        "clients": 113,
+        "avg_ms": 391.3,
+        "max_ms": 9987
+      },
+      {
+        "value": "2026-11-12",
+        "calls": 1464,
+        "errors": 174,
+        "cache_hits": 13,
+        "clients": 109,
+        "avg_ms": 423.6,
+        "max_ms": 2904
+      },
+      {
+        "value": "2026-11-13",
+        "calls": 1378,
+        "errors": 163,
+        "cache_hits": 35,
+        "clients": 118,
+        "avg_ms": 306.1,
+        "max_ms": 7523
+      },
+      {
+        "value": "2026-11-14",
+        "calls": 1482,
+        "errors": 197,
+        "cache_hits": 23,
+        "clients": 135,
+        "avg_ms": 349.5,
+        "max_ms": 6477
+      },
+      {
+        "value": "2026-11-15",
+        "calls": 1556,
+        "errors": 251,
+        "cache_hits": 11,
+        "clients": 133,
+        "avg_ms": 337.8,
+        "max_ms": 2336
+      },
+      {
+        "value": "2026-11-16",
+        "calls": 1961,
+        "errors": 297,
+        "cache_hits": 18,
+        "clients": 105,
+        "avg_ms": 378.7,
+        "max_ms": 8001
+      },
+      {
+        "value": "2026-11-17",
+        "calls": 5009,
+        "errors": 2688,
+        "cache_hits": 48,
+        "clients": 169,
+        "avg_ms": 221.8,
+        "max_ms": 8001
+      },
+      {
+        "value": "2026-11-18",
+        "calls": 10955,
+        "errors": 8121,
+        "cache_hits": 43,
+        "clients": 184,
+        "avg_ms": 108.7,
+        "max_ms": 10000
+      },
+      {
+        "value": "2026-11-19",
+        "calls": 3040,
+        "errors": 642,
+        "cache_hits": 37,
+        "clients": 140,
+        "avg_ms": 303.1,
+        "max_ms": 4471
+      },
+      {
+        "value": "2026-11-20",
+        "calls": 2936,
+        "errors": 515,
+        "cache_hits": 54,
+        "clients": 135,
+        "avg_ms": 350.7,
+        "max_ms": 116210
+      },
+      {
+        "value": "2026-11-21",
+        "calls": 1370,
+        "errors": 94,
+        "cache_hits": 63,
+        "clients": 204,
+        "avg_ms": 326.4,
+        "max_ms": 4375
+      }
+    ]
+  }
+}

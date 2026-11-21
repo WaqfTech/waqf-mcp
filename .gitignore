@@ -36,6 +36,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Go workspace for the local stats report
+!go.work
+
 # Local stats-report build output
 scripts/stats-report/stats-report
 

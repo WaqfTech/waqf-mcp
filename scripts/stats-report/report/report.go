@@ -78,6 +78,7 @@ func Run(args []string) {
 	source := fs.String("source", "rollup", "rollup (mcp_stats_daily) or raw (mcp_logs)")
 	dimension := fs.String("dimension", "all", "provider, country, client, tool, method, status, colo, trend, or all")
 	format := fs.String("format", "table", "table, markdown, csv, json, or html")
+	lang := fs.String("lang", "ar", "html language: ar or en")
 	output := fs.String("output", "", "write html or json to a file instead of stdout")
 	database := fs.String("db", "waqf-app", "D1 database name")
 	remote := fs.Bool("remote", true, "query the remote database (false uses local D1)")
@@ -100,6 +101,9 @@ func Run(args []string) {
 	}
 	if *source != "rollup" && *source != "raw" {
 		fail("-source must be rollup or raw")
+	}
+	if *lang != "ar" && *lang != "en" {
+		fail("-lang must be ar or en")
 	}
 	if *dimension != "all" {
 		if _, ok := dimensions[*dimension]; !ok && *dimension != "trend" {
@@ -176,7 +180,7 @@ func Run(args []string) {
 		}
 		writeOutput(*output, append(encoded, '\n'))
 	case "html":
-		writeOutput(*output, []byte(renderHTML(result)))
+		writeOutput(*output, []byte(renderHTML(result, *lang)))
 	case "table", "markdown", "csv":
 		if *output != "" {
 			fail("-output is supported for html and json only")

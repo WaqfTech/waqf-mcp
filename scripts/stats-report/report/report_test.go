@@ -99,7 +99,7 @@ func TestRenderHTMLHasCoreSections(t *testing.T) {
 			"trend":    {{Value: "2026-11-21", Calls: 100, Errors: 5}},
 		},
 	}
-	page := renderHTML(r)
+	page := renderHTML(r, "en")
 	for _, want := range []string{
 		"<!doctype html",
 		"Usage",
@@ -118,6 +118,46 @@ func TestRenderHTMLHasCoreSections(t *testing.T) {
 	}
 	if strings.Contains(page, "<script") {
 		t.Fatal("rendered HTML must not require client-side JavaScript")
+	}
+}
+
+func TestRenderHTMLArabic(t *testing.T) {
+	r := report{
+		GeneratedAt: "2026-11-21T08:00:00Z",
+		Source:      "rollup",
+		Since:       "2026-10-22T00:00:00.000Z",
+		LatestDay:   "2026-11-21",
+		Public:      true,
+		MinCalls:    10,
+		Summary:     summary{Calls: 100, Errors: 5, CacheHits: 10, UniqueClients: 20, AvgMs: 120, MaxMs: 300},
+		Topics: []topicRow{
+			{Name: "Books & heritage", Calls: 80, Share: 80},
+			{Name: "Hadith", Calls: 20, Share: 20},
+		},
+		Dimensions: map[string][]metricRow{
+			"provider": {{Value: "aljam3", Calls: 100, Clients: 10}},
+			"country":  {{Value: "US", Calls: 100, Clients: 10}},
+			"client":   {{Value: "claude", Calls: 100, Clients: 10}},
+			"tool":     {{Value: "aljam3__get_page", Calls: 100, Clients: 10}},
+			"trend":    {{Value: "2026-11-21", Calls: 100, Errors: 5}},
+		},
+	}
+	page := renderHTML(r, "ar")
+	for _, want := range []string{
+		`lang="ar"`,
+		`dir="rtl"`,
+		"تحليلات",
+		"الاستدعاءات",
+		"الكتب والتراث",
+		"English",
+		"stats.json",
+	} {
+		if !strings.Contains(page, want) {
+			t.Fatalf("rendered Arabic HTML missing %q", want)
+		}
+	}
+	if strings.Contains(page, "<script") {
+		t.Fatal("rendered Arabic HTML must not require client-side JavaScript")
 	}
 }
 

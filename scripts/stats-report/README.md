@@ -18,9 +18,11 @@ go run ./scripts/stats-report/main.go
 # One dimension as Markdown
 go run ./scripts/stats-report/main.go -dimension provider -format markdown
 
-# Public-safe HTML page and JSON snapshot
+# Public-safe Arabic page, English page and JSON snapshot
 go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
-  -format html -output analytics/index.html
+  -lang ar -format html -output analytics/index.html
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
+  -lang en -format html -output analytics/en/index.html
 go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format json -output analytics/stats.json
 
@@ -43,6 +45,7 @@ A non-midnight `-since` automatically uses raw logs, because daily rollups
 cannot answer a precise time. Pass `-source rollup` to force daily granularity.
 | `-dimension` | all | provider, country, client, tool, method, status, trend, all |
 | `-format` | table | table, markdown, csv, json, html |
+| `-lang` | ar | html language: ar or en |
 | `-output` | empty | Write html or json to a file |
 | `-db` | waqf-app | D1 database name |
 | `-remote` | true | Use remote D1; false uses local |
@@ -69,8 +72,8 @@ client IP. It never reads query text, user agents, or cache payloads.
 
 `-format html` writes a self-contained page with KPIs, daily trend, provider,
 country, client and tool tables, and a topic donut. It uses the same public-safe
-data as the JSON snapshot. The checked-in page lives at `analytics/index.html`
-and the data at `analytics/stats.json`.
+data as the JSON snapshot. Arabic is the default at `analytics/index.html`;
+English is at `analytics/en/index.html`; the data is at `analytics/stats.json`.
 
 ## Lifecycle
 

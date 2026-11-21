@@ -2,14 +2,17 @@
 
 Static, public-safe snapshot of gateway usage generated from `mcp_stats_daily`.
 
-- `index.html`: self-contained dashboard, no external JavaScript or fonts
+- `index.html`: Arabic self-contained dashboard, no external JavaScript or fonts
+- `en/index.html`: English dashboard
 - `stats.json`: the same public-safe data as JSON
 
 ## Regenerate
 
 ```bash
 go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
-  -format html -output analytics/index.html
+  -lang ar -format html -output analytics/index.html
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
+  -lang en -format html -output analytics/en/index.html
 go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format json -output analytics/stats.json
 ```

@@ -5,7 +5,6 @@ import (
 	"html"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const htmlStyles = `
@@ -23,6 +22,8 @@ const htmlStyles = `
   --shadow: 0 24px 60px -44px rgba(17, 43, 56, .55);
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --arabic: "Noto Sans Arabic", "Noto Kufi Arabic", "Segoe UI", Tahoma, sans-serif;
+  --arabic-display: "Noto Naskh Arabic", "Amiri", "Noto Kufi Arabic", serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
@@ -35,12 +36,13 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
+html[lang="ar"] body { font-family: var(--arabic); }
 a { color: var(--tide); text-underline-offset: 3px; }
 .wrap { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
 .hero {
   position: relative;
   overflow: hidden;
-  color: var(--paper);
+  color: #eef5f2;
   background:
     radial-gradient(900px 320px at 88% -18%, rgba(198, 238, 103, .18), transparent 62%),
     radial-gradient(620px 360px at 0% 118%, rgba(46, 125, 118, .45), transparent 60%),
@@ -63,6 +65,13 @@ a { color: var(--tide); text-underline-offset: 3px; }
   letter-spacing: -.04em;
   margin: .18em 0 .25em;
 }
+html[lang="ar"] .hero h1,
+html[lang="ar"] .panel h2,
+html[lang="ar"] .method-card h3 {
+  font-family: var(--arabic-display);
+  letter-spacing: 0;
+}
+html[lang="ar"] .hero h1 { line-height: 1.18; font-size: clamp(2.4rem, 5.4vw, 4.1rem); }
 .eyebrow {
   display: inline-block;
   font-size: .72rem;
@@ -71,6 +80,7 @@ a { color: var(--tide); text-underline-offset: 3px; }
   text-transform: uppercase;
   color: var(--tide);
 }
+html[lang="ar"] .eyebrow { letter-spacing: .04em; }
 .hero .eyebrow { color: var(--lime); }
 .lede { max-width: 62ch; color: rgba(238, 245, 242, .78); font-size: 1.05rem; margin: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
@@ -81,7 +91,21 @@ a { color: var(--tide); text-underline-offset: 3px; }
   font-size: .78rem;
   color: rgba(238, 245, 242, .8);
 }
-.chip strong { color: var(--paper); font-weight: 600; }
+.chip strong { color: #eef5f2; font-weight: 600; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(238, 245, 242, .25);
+  color: #eef5f2;
+  text-decoration: none;
+  font-size: .82rem;
+  padding: 10px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.lang-switch:hover { border-color: var(--lime); color: var(--lime); }
 .download {
   display: inline-flex;
   align-items: center;
@@ -138,11 +162,12 @@ tbody tr:hover { background: rgba(46, 125, 118, .045); }
 tr:last-child td { border-bottom: 0; }
 .num { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .name { font-weight: 600; }
+html[lang="ar"] .name { direction: ltr; unicode-bidi: isolate; }
 .err { color: var(--clay-ink); }
 .share { min-width: 110px; }
 .share-track { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; }
 .share-fill { height: 100%; background: linear-gradient(90deg, var(--tide), var(--lime)); border-radius: 999px; }
-.chart { width: 100%; height: auto; display: block; }
+.chart { width: 100%; height: auto; display: block; direction: ltr; }
 .grid { stroke: var(--line); stroke-width: 1; }
 .axis { fill: var(--muted); font-size: 11px; font-family: var(--sans); }
 .legend-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; color: var(--muted); font-size: .78rem; }
@@ -185,6 +210,8 @@ tr:last-child td { border-bottom: 0; }
   font-size: .72rem;
   overflow-wrap: anywhere;
   color: var(--ink);
+  direction: ltr;
+  text-align: start;
 }
 .footer { margin-top: 40px; padding: 22px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
 .footer code { font-family: var(--mono); font-size: .74rem; }
@@ -219,6 +246,7 @@ tr:last-child td { border-bottom: 0; }
     --surface: #112b38;
     --ink: #eef5f2;
     --ink-2: #d7e7e2;
+    --tide: #5fb7ae;
     --muted: #9fb8b2;
     --line: rgba(238, 245, 242, .13);
     --clay-ink: #f0a57c;
@@ -230,38 +258,57 @@ tr:last-child td { border-bottom: 0; }
 @media print {
   body { background: #fff; }
   .hero { background: #fff; color: #000; padding: 24px 0; }
-  .hero::after, .download { display: none; }
+  .hero::after, .download, .lang-switch { display: none; }
   .lede, .chip { color: #333; }
   .panel, .kpi, .method-card { box-shadow: none; border-color: #ddd; break-inside: avoid; }
 }
 `
 
-func renderHTML(r report) string {
+func renderHTML(r report, lang string) string {
+	loc := localeFor(lang)
 	source := r.Source
 	if source == "" {
 		source = "rollup"
 	}
 	latest := r.LatestDay
 	if latest == "" {
-		latest = "not rolled up yet"
+		latest = tr(lang, "latest_empty")
 	}
-	view := "Internal view"
+	view := tr(lang, "internal_view")
 	if r.Public {
-		view = fmt.Sprintf("Public-safe view · cells below %d calls omitted", r.MinCalls)
+		view = fmt.Sprintf(tr(lang, "public_safe"), r.MinCalls)
 	}
 
 	var b strings.Builder
 	b.WriteString(`<!doctype html>
-<html lang="en">
+<html lang="`)
+	b.WriteString(html.EscapeString(loc.code))
+	b.WriteString(`" dir="`)
+	b.WriteString(html.EscapeString(loc.dir))
+	b.WriteString(`">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Waqf MCP Gateway — Usage Analytics</title>
-<meta name="description" content="Aggregated daily usage across the Waqf MCP federation. No personal data.">
-<meta property="og:title" content="Waqf MCP Gateway — Usage Analytics">
-<meta property="og:description" content="Provider, country, client and tool usage across the Waqf MCP federation.">
+`)
+	fmt.Fprintf(&b, `<title>%s</title>
+<meta name="description" content="%s">
+<meta property="og:title" content="%s">
+<meta property="og:description" content="%s">
+<meta property="og:locale" content="%s">
+<meta property="og:locale:alternate" content="%s">
 <meta name="theme-color" content="#112b38">
-<style>`)
+<link rel="alternate" hreflang="%s" href="%s">
+<link rel="alternate" hreflang="%s" href="%s">
+<style>`,
+		html.EscapeString(tr(lang, "title")),
+		html.EscapeString(tr(lang, "description")),
+		html.EscapeString(tr(lang, "og_title")),
+		html.EscapeString(tr(lang, "og_description")),
+		html.EscapeString(loc.ogLocale),
+		html.EscapeString(loc.ogLocaleForOther()),
+		html.EscapeString(loc.code), html.EscapeString(loc.selfHref),
+		html.EscapeString(loc.otherCode), html.EscapeString(loc.otherHref),
+	)
 	b.WriteString(htmlStyles)
 	b.WriteString(`</style>
 </head>
@@ -270,33 +317,42 @@ func renderHTML(r report) string {
   <div class="wrap">
     <div class="hero-row">
       <div>
-        <span class="eyebrow">Waqf MCP Federation Gateway</span>
-        <h1>Usage<br>analytics</h1>
-        <p class="lede">Aggregated daily usage across federated Islamic MCP providers. Built for understanding demand and sharing the shape of the network without exposing personal data.</p>
-      </div>
-      <a class="download" href="stats.json">Download JSON</a>
+`)
+	fmt.Fprintf(&b, `<span class="eyebrow">%s</span>`, html.EscapeString(tr(lang, "eyebrow")))
+	fmt.Fprintf(&b, `<h1>%s<br>%s</h1>`, html.EscapeString(tr(lang, "h1a")), html.EscapeString(tr(lang, "h1b")))
+	fmt.Fprintf(&b, `<p class="lede">%s</p>`, html.EscapeString(tr(lang, "lede")))
+	b.WriteString(`      </div>
+      <div class="hero-actions">
+`)
+	fmt.Fprintf(&b, `<a class="lang-switch" href="%s" lang="%s" dir="%s">%s</a>`,
+		html.EscapeString(loc.otherHref), html.EscapeString(loc.otherCode), html.EscapeString(loc.otherDir), html.EscapeString(loc.otherName))
+	fmt.Fprintf(&b, `<a class="download" href="%s">%s</a>`, html.EscapeString(loc.jsonHref), html.EscapeString(tr(lang, "download")))
+	b.WriteString(`      </div>
     </div>
 `)
-	fmt.Fprintf(&b, `<div class="chips"><span class="chip">Window <strong>%s</strong></span><span class="chip">Latest rollup <strong>%s</strong></span><span class="chip">Cron <strong>00:15 UTC</strong></span><span class="chip">%s</span></div>`,
-		html.EscapeString(r.Since), html.EscapeString(latest), html.EscapeString(view))
+	fmt.Fprintf(&b, `<div class="chips"><span class="chip">%s <strong>%s</strong></span><span class="chip">%s <strong>%s</strong></span><span class="chip">%s <strong>%s</strong></span><span class="chip">%s</span></div>`,
+		html.EscapeString(tr(lang, "window")), ltr(lang, r.Since),
+		html.EscapeString(tr(lang, "latest")), ltr(lang, latest),
+		html.EscapeString(tr(lang, "cron")), ltr(lang, "00:15 UTC"),
+		html.EscapeString(view))
 	b.WriteString(`
   </div>
 </header>
 <main class="wrap">
 `)
-	writeKPIs(&b, r)
-	b.WriteString(`<p class="data-note">Top-line calls and the daily trend include protocol traffic. Country and agent tables count tool calls only. This window includes historical protocol errors from before the notification fix.</p>`)
-	writeTrend(&b, r)
-	writeBarsSection(&b, r, "provider", "Providers", "Calls by provider route", "Upstream servers plus the gateway's internal and protocol paths.", 12)
-	writeBarsSection(&b, r, "country", "Countries", "Tool calls by client country", "Edge IP geography, not language. Small cells are omitted in the public view.", 15)
-	writeBarsSection(&b, r, "client", "AI agents", "Tool calls by client application", "Recognised from user-agent families; generic SDKs are grouped separately.", 12)
-	writeBarsSection(&b, r, "tool", "Top tools", "Most-called tools", "Namespaced upstream tools and canonical waqf_* tools.", 15)
-	writeTopics(&b, r)
-	writeMethod(&b, r)
+	writeKPIs(&b, r, lang)
+	fmt.Fprintf(&b, `<p class="data-note">%s</p>`, html.EscapeString(tr(lang, "data_note")))
+	writeTrend(&b, r, lang)
+	writeBarsSection(&b, r, "provider", tr(lang, "providers_eyebrow"), tr(lang, "providers_title"), tr(lang, "providers_note"), lang, 12)
+	writeBarsSection(&b, r, "country", tr(lang, "countries_eyebrow"), tr(lang, "countries_title"), tr(lang, "countries_note"), lang, 15)
+	writeBarsSection(&b, r, "client", tr(lang, "agents_eyebrow"), tr(lang, "agents_title"), tr(lang, "agents_note"), lang, 12)
+	writeBarsSection(&b, r, "tool", tr(lang, "tools_eyebrow"), tr(lang, "tools_title"), tr(lang, "tools_note"), lang, 15)
+	writeTopics(&b, r, lang)
+	writeMethod(&b, r, lang)
 	b.WriteString(`</main>
 `)
-	fmt.Fprintf(&b, `<footer class="footer"><div class="wrap">Generated %s · Source <code>%s</code> · <a href="stats.json">stats.json</a> · <a href="https://github.com/waqftech/waqf-mcp">Repository</a></div></footer>`,
-		html.EscapeString(r.GeneratedAt), html.EscapeString(source))
+	fmt.Fprintf(&b, `<footer class="footer"><div class="wrap">%s</div></footer>`,
+		fmt.Sprintf(tr(lang, "footer"), ltr(lang, r.GeneratedAt), html.EscapeString(source), html.EscapeString(loc.jsonHref)))
 	b.WriteString(`
 </body>
 </html>
@@ -304,30 +360,37 @@ func renderHTML(r report) string {
 	return b.String()
 }
 
-func writeKPIs(b *strings.Builder, r report) {
-	cards := []struct{ label, value, note string }{
-		{"Calls", formatInt(r.Summary.Calls), "tool and protocol"},
-		{"Error rate", formatPct(r.Summary.Errors, r.Summary.Calls), formatInt(r.Summary.Errors) + " errors"},
-		{"Cache hit rate", formatPct(r.Summary.CacheHits, r.Summary.Calls), formatInt(r.Summary.CacheHits) + " hits"},
-		{"Unique client-days", formatInt(r.Summary.UniqueClients), "distinct hashed clients"},
-		{"Avg latency", formatMs(r.Summary.AvgMs), "end-to-end"},
-		{"Max latency", formatMs(float64(r.Summary.MaxMs)), "worst single call"},
-		{"Providers", formatInt(int64(len(r.Dimensions["provider"]))), "with visible calls"},
-		{"Countries", formatInt(int64(len(r.Dimensions["country"]))), "with visible calls"},
+func (loc locale) ogLocaleForOther() string {
+	if loc.otherCode == "ar" {
+		return "ar_AR"
 	}
-	b.WriteString(`<section class="kpis" aria-label="Key metrics">`)
+	return "en_US"
+}
+
+func writeKPIs(b *strings.Builder, r report, lang string) {
+	cards := []struct{ label, value, note string }{
+		{tr(lang, "kpi_calls"), formatInt(r.Summary.Calls), tr(lang, "kpi_calls_note")},
+		{tr(lang, "kpi_errors"), formatPct(r.Summary.Errors, r.Summary.Calls), fmt.Sprintf(tr(lang, "kpi_errors_note"), formatInt(r.Summary.Errors))},
+		{tr(lang, "kpi_cache"), formatPct(r.Summary.CacheHits, r.Summary.Calls), fmt.Sprintf(tr(lang, "kpi_cache_note"), formatInt(r.Summary.CacheHits))},
+		{tr(lang, "kpi_clients"), formatInt(r.Summary.UniqueClients), tr(lang, "kpi_clients_note")},
+		{tr(lang, "kpi_avg"), formatMs(r.Summary.AvgMs), tr(lang, "kpi_avg_note")},
+		{tr(lang, "kpi_max"), formatMs(float64(r.Summary.MaxMs)), tr(lang, "kpi_max_note")},
+		{tr(lang, "kpi_providers"), formatInt(int64(len(r.Dimensions["provider"]))), tr(lang, "kpi_providers_note")},
+		{tr(lang, "kpi_countries"), formatInt(int64(len(r.Dimensions["country"]))), tr(lang, "kpi_countries_note")},
+	}
+	b.WriteString(`<section class="kpis" aria-label="` + html.EscapeString(tr(lang, "kpi_calls")) + `">`)
 	for _, card := range cards {
 		fmt.Fprintf(b, `<div class="kpi"><div class="label">%s</div><div class="value">%s</div><div class="note">%s</div></div>`,
-			html.EscapeString(card.label), html.EscapeString(card.value), html.EscapeString(card.note))
+			html.EscapeString(card.label), ltr(lang, card.value), html.EscapeString(card.note))
 	}
 	b.WriteString(`</section>`)
 }
 
-func writeTrend(b *strings.Builder, r report) {
+func writeTrend(b *strings.Builder, r report, lang string) {
 	rows := r.Dimensions["trend"]
-	b.WriteString(`<section class="panel"><div class="panel-head"><div><span class="eyebrow">Daily shape</span><h2>Calls and errors</h2></div><p class="note">Each bar is a day. The clay base is errors; the teal body is successful traffic.</p></div>`)
+	b.WriteString(`<section class="panel"><div class="panel-head"><div><span class="eyebrow">` + html.EscapeString(tr(lang, "trend_eyebrow")) + `</span><h2>` + html.EscapeString(tr(lang, "trend_title")) + `</h2></div><p class="note">` + html.EscapeString(tr(lang, "trend_note")) + `</p></div>`)
 	if len(rows) == 0 {
-		b.WriteString(`<p class="empty">No daily rows in this window.</p></section>`)
+		b.WriteString(`<p class="empty">` + html.EscapeString(tr(lang, "no_daily")) + `</p></section>`)
 		return
 	}
 
@@ -342,7 +405,7 @@ func writeTrend(b *strings.Builder, r report) {
 		}
 	}
 
-	fmt.Fprintf(b, `<svg class="chart" viewBox="0 0 %.0f %.0f" role="img" aria-label="Daily calls with errors at the base of each bar">`, width, height)
+	fmt.Fprintf(b, `<svg class="chart" viewBox="0 0 %.0f %.0f" role="img" aria-label="%s">`, width, height, html.EscapeString(tr(lang, "trend_aria")))
 	for i := 0; i <= 4; i++ {
 		y := top + plotH - plotH*float64(i)/4
 		value := float64(maxCalls) * float64(i) / 4
@@ -374,22 +437,24 @@ func writeTrend(b *strings.Builder, r report) {
 			fmt.Fprintf(b, `<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="2" fill="var(--clay)"/>`, x, top+plotH-hErrors, barW, hErrors)
 		}
 		if i == 0 || i == len(rows)-1 || i%7 == 0 {
-			fmt.Fprintf(b, `<text class="axis" x="%.1f" y="%.1f" text-anchor="middle">%s</text>`, x+barW/2, height-10, shortDay(row.Value))
+			fmt.Fprintf(b, `<text class="axis" x="%.1f" y="%.1f" text-anchor="middle">%s</text>`, x+barW/2, height-10, html.EscapeString(shortDay(row.Value, lang)))
 		}
 	}
 	b.WriteString(`</svg>`)
-	fmt.Fprintf(b, `<div class="legend-row"><span><span class="dot tide"></span> Calls</span><span><span class="dot clay"></span> Errors</span><span>Peak day: %s calls</span></div>`, formatInt(maxCalls))
+	fmt.Fprintf(b, `<div class="legend-row"><span><span class="dot tide"></span> %s</span><span><span class="dot clay"></span> %s</span><span>%s</span></div>`,
+		html.EscapeString(tr(lang, "legend_calls")), html.EscapeString(tr(lang, "legend_errors")),
+		fmt.Sprintf(tr(lang, "peak_day"), ltr(lang, formatInt(maxCalls))))
 	b.WriteString(`</section>`)
 }
 
-func writeBarsSection(b *strings.Builder, r report, dimension, eyebrow, title, note string, limit int) {
+func writeBarsSection(b *strings.Builder, r report, dimension, eyebrow, title, note, lang string, limit int) {
 	rows := r.Dimensions[dimension]
 	if dimension == "tool" {
 		rows = filterToolRows(rows)
 	}
 	b.WriteString(`<section class="panel"><div class="panel-head"><div><span class="eyebrow">` + html.EscapeString(eyebrow) + `</span><h2>` + html.EscapeString(title) + `</h2></div><p class="note">` + html.EscapeString(note) + `</p></div>`)
 	if len(rows) == 0 {
-		b.WriteString(`<p class="empty">No rows in this window.</p></section>`)
+		b.WriteString(`<p class="empty">` + html.EscapeString(tr(lang, "no_rows")) + `</p></section>`)
 		return
 	}
 	if len(rows) > limit {
@@ -402,15 +467,17 @@ func writeBarsSection(b *strings.Builder, r report, dimension, eyebrow, title, n
 		}
 	}
 
-	nameHeader := map[string]string{"provider": "Provider", "country": "Country", "client": "Client", "tool": "Tool"}[dimension]
-	clientHeader := "Clients"
+	nameHeader := tr(lang, "table_name_"+dimension)
+	clientHeader := tr(lang, "table_clients")
 	if r.Source == "rollup" {
-		clientHeader = "Client-days"
+		clientHeader = tr(lang, "table_client_days")
 	}
 
 	b.WriteString(`<div class="table-wrap"><table><caption class="sr-only">` + html.EscapeString(title) + `</caption><thead><tr>`)
-	fmt.Fprintf(b, `<th>%s</th><th class="num">Calls</th><th>Volume</th><th class="num">%s</th><th class="num">Errors</th><th class="num hide-sm">Cache</th><th class="num hide-sm">Avg</th>`,
-		html.EscapeString(nameHeader), html.EscapeString(clientHeader))
+	fmt.Fprintf(b, `<th>%s</th><th class="num">%s</th><th>%s</th><th class="num">%s</th><th class="num">%s</th><th class="num hide-sm">%s</th><th class="num hide-sm">%s</th>`,
+		html.EscapeString(nameHeader), html.EscapeString(tr(lang, "table_calls")), html.EscapeString(tr(lang, "table_volume")),
+		html.EscapeString(clientHeader), html.EscapeString(tr(lang, "table_errors")),
+		html.EscapeString(tr(lang, "table_cache")), html.EscapeString(tr(lang, "table_avg")))
 	b.WriteString(`</tr></thead><tbody>`)
 	for _, row := range rows {
 		share := float64(row.Calls) / float64(maxCalls) * 100
@@ -419,23 +486,23 @@ func writeBarsSection(b *strings.Builder, r report, dimension, eyebrow, title, n
 			errClass = "num err"
 		}
 		fmt.Fprintf(b, `<tr><td><span class="name">%s</span></td><td class="num">%s</td><td><div class="share"><div class="share-track"><div class="share-fill" style="width:%.1f%%"></div></div></div></td><td class="num">%s</td><td class="%s">%s</td><td class="num hide-sm">%s</td><td class="num hide-sm">%s</td></tr>`,
-			html.EscapeString(row.Value),
-			formatInt(row.Calls),
+			html.EscapeString(displayValue(lang, dimension, row.Value)),
+			ltr(lang, formatInt(row.Calls)),
 			share,
-			formatInt(row.Clients),
+			ltr(lang, formatInt(row.Clients)),
 			errClass,
-			formatInt(row.Errors),
-			formatPct(row.CacheHit, row.Calls),
-			formatMs(row.AvgMs),
+			ltr(lang, formatInt(row.Errors)),
+			ltr(lang, formatPct(row.CacheHit, row.Calls)),
+			ltr(lang, formatMs(row.AvgMs)),
 		)
 	}
 	b.WriteString(`</tbody></table></div></section>`)
 }
 
-func writeTopics(b *strings.Builder, r report) {
-	b.WriteString(`<section class="panel"><div class="panel-head"><div><span class="eyebrow">Demand</span><h2>What people ask for</h2></div><p class="note">Derived from tool families, not raw query text.</p></div>`)
+func writeTopics(b *strings.Builder, r report, lang string) {
+	b.WriteString(`<section class="panel"><div class="panel-head"><div><span class="eyebrow">` + html.EscapeString(tr(lang, "topics_eyebrow")) + `</span><h2>` + html.EscapeString(tr(lang, "topics_title")) + `</h2></div><p class="note">` + html.EscapeString(tr(lang, "topics_note")) + `</p></div>`)
 	if len(r.Topics) == 0 {
-		b.WriteString(`<p class="empty">Topic mix requires the tool dimension.</p></section>`)
+		b.WriteString(`<p class="empty">` + html.EscapeString(tr(lang, "no_topics")) + `</p></section>`)
 		return
 	}
 
@@ -455,34 +522,37 @@ func writeTopics(b *strings.Builder, r report) {
 	gradient := "conic-gradient(" + strings.Join(stops, ", ") + ")"
 
 	b.WriteString(`<div class="topic-grid"><div>`)
-	fmt.Fprintf(b, `<div class="donut" style="background:%s" role="img" aria-label="Tool calls by topic"><div class="donut-hole"><strong>%s</strong><span>tool calls</span></div></div>`, gradient, formatInt(total))
+	fmt.Fprintf(b, `<div class="donut" style="background:%s" role="img" aria-label="%s"><div class="donut-hole"><strong>%s</strong><span>%s</span></div></div>`,
+		gradient, html.EscapeString(tr(lang, "topics_title")), formatInt(total), html.EscapeString(tr(lang, "topic_calls_short")))
 	b.WriteString(`</div><div class="topic-list">`)
 	for i, topic := range r.Topics {
-		fmt.Fprintf(b, `<div class="topic-row"><span class="dot" style="background:%s"></span><span class="topic-name">%s</span><span class="topic-calls">%s calls</span><span class="topic-calls">%.1f%%</span></div>`,
-			colors[i%len(colors)], html.EscapeString(topic.Name), formatInt(topic.Calls), topic.Share)
+		fmt.Fprintf(b, `<div class="topic-row"><span class="dot" style="background:%s"></span><span class="topic-name">%s</span><span class="topic-calls">%s</span><span class="topic-calls">%s</span></div>`,
+			colors[i%len(colors)], html.EscapeString(topicLabel(lang, topic.Name)),
+			fmt.Sprintf(tr(lang, "topic_calls"), ltr(lang, formatInt(topic.Calls))),
+			ltr(lang, fmt.Sprintf("%.1f%%", topic.Share)))
 	}
 	b.WriteString(`</div></div></section>`)
 }
 
-func writeMethod(b *strings.Builder, r report) {
+func writeMethod(b *strings.Builder, r report, lang string) {
 	latest := r.LatestDay
 	if latest == "" {
-		latest = "not rolled up yet"
+		latest = tr(lang, "latest_empty")
 	}
 	minCalls := r.MinCalls
 	if minCalls == 0 {
 		minCalls = 10
 	}
-	suppression := "Internal view; no suppression."
+	suppression := tr(lang, "suppression_internal")
 	if r.Public {
-		suppression = fmt.Sprintf("Cells below %d calls are omitted in this public view.", minCalls)
+		suppression = fmt.Sprintf(tr(lang, "suppression_public"), minCalls)
 	}
 
-	b.WriteString(`<section class="method"><div class="panel-head"><div><span class="eyebrow">Method</span><h2>How to read this page</h2></div></div><div class="method-grid">`)
-	fmt.Fprintf(b, `<div class="method-card"><h3>Source</h3><p>Daily rollups in <code>mcp_stats_daily</code>, generated by the <code>waqf-mcp-api</code> Worker.</p></div>`)
-	fmt.Fprintf(b, `<div class="method-card"><h3>Freshness</h3><p>The cron runs daily at 00:15 UTC. Latest rollup: <strong>%s</strong>.</p></div>`, html.EscapeString(latest))
-	fmt.Fprintf(b, `<div class="method-card"><h3>Privacy</h3><p>No raw queries, IP hashes, user agents, city or region. %s</p><p>Country and agent tables count tool calls only; the top-line calls and trend include protocol traffic.</p></div>`, html.EscapeString(suppression))
-	fmt.Fprintf(b, `<div class="method-card"><h3>Regenerate</h3><p>Rebuild this page from the rollup.</p><code>go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 -format html -output analytics/index.html</code></div>`)
+	b.WriteString(`<section class="method"><div class="panel-head"><div><span class="eyebrow">` + html.EscapeString(tr(lang, "method_eyebrow")) + `</span><h2>` + html.EscapeString(tr(lang, "method_title")) + `</h2></div></div><div class="method-grid">`)
+	fmt.Fprintf(b, `<div class="method-card"><h3>%s</h3><p>%s</p></div>`, html.EscapeString(tr(lang, "source_title")), tr(lang, "source_text"))
+	fmt.Fprintf(b, `<div class="method-card"><h3>%s</h3><p>%s</p></div>`, html.EscapeString(tr(lang, "freshness_title")), fmt.Sprintf(tr(lang, "freshness_text"), ltr(lang, latest)))
+	fmt.Fprintf(b, `<div class="method-card"><h3>%s</h3><p>%s</p><p>%s</p></div>`, html.EscapeString(tr(lang, "privacy_title")), fmt.Sprintf(tr(lang, "privacy_text"), html.EscapeString(suppression)), html.EscapeString(tr(lang, "tool_only_note")))
+	fmt.Fprintf(b, `<div class="method-card"><h3>%s</h3><p>%s</p><code>%s</code></div>`, html.EscapeString(tr(lang, "regenerate_title")), html.EscapeString(tr(lang, "regenerate_text")), html.EscapeString(tr(lang, "regenerate_command")))
 	b.WriteString(`</div></section>`)
 }
 
@@ -496,12 +566,11 @@ func filterToolRows(rows []metricRow) []metricRow {
 	return out
 }
 
-func shortDay(day string) string {
-	parsed, err := time.Parse("2006-01-02", day)
-	if err != nil {
-		return day
+func ltr(lang, value string) string {
+	if lang == "ar" {
+		return `<bdi dir="ltr">` + html.EscapeString(value) + `</bdi>`
 	}
-	return parsed.Format("Jan 2")
+	return html.EscapeString(value)
 }
 
 func formatInt(n int64) string {

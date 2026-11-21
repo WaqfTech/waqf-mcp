@@ -270,7 +270,7 @@ aube run build
 go run ./scripts/stats-report/main.go -days 30
 ```
 
-Usage snapshot: [analytics/index.html](analytics/index.html) (public-safe, generated from daily rollups).
+Usage snapshot: [العربية](analytics/index.html) · [English](analytics/en/index.html) (public-safe, generated from daily rollups).
 
 ---
 

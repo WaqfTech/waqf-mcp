@@ -1,0 +1,40 @@
+# mcp-smoke
+
+Full-surface, read-only smoke test for the public MCP gateway.
+
+It initializes a session, lists every tool, calls all 55 advertised tools with
+sample arguments, reads all resources, runs all prompts, and checks the public
+transport paths:
+
+- `POST /mcp` and `notifications/initialized`
+- `GET /mcp` discovery JSON and finite SSE
+- CORS preflight
+- both protocol hosts, `.app` and `.dev`
+- scanner paths and the unauthenticated admin endpoint
+
+No credentials are used. No admin endpoint is called with a key. Tool arguments
+come from live discovery: Aljam3 file/book IDs, Turath book/page/author IDs,
+Shamela book/page IDs, a Bahouth topic ID, and Maher Al-Fahel's `ilal` book.
+
+## Usage
+
+```bash
+go run ./scripts/mcp-smoke/main.go -delay 250ms -json /tmp/mcp-smoke.json
+```
+
+Flags:
+
+| Flag | Default | Meaning |
+|------|---------|---------|
+| `-base` | `https://mcp.waqf.app/mcp` | MCP endpoint |
+| `-delay` | `200ms` | Pause between tool calls |
+| `-timeout` | `45s` | Per-request timeout |
+| `-json` | empty | Optional JSON report path |
+
+The script classifies each attempt as `OK`, `TOOL_ERROR`, `PROTOCOL_ERROR`, or
+`HTTP_ERROR`. A `TOOL_ERROR` is a valid MCP result with `isError: true`, not a
+gateway failure. The intentional `waqf_search` probe should be the only tool
+error when everything is healthy.
+
+A run takes about 30 seconds at the default pacing. Use a longer `-delay` when
+testing a rate-limited or fragile upstream.

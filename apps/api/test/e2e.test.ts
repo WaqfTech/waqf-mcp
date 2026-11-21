@@ -181,6 +181,116 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.error.code).toBe(-32601);
   });
 
+  it("POST /mcp accepts notifications with 202 and an empty body", async () => {
+    for (const method of [
+      "notifications/initialized",
+      "notifications/roots/list_changed",
+      "notifications/cancelled",
+    ]) {
+      const req = new Request("http://localhost:8787/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", method }),
+      });
+
+      const res = await worker.fetch(req, mockEnv, mockCtx);
+      expect(res.status).toBe(202);
+      expect(await res.text()).toBe("");
+    }
+  });
+
+  it("POST /mcp implements server/discover for version negotiation", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 7,
+        method: "server/discover",
+        params: {},
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      result: {
+        supportedVersions: string[];
+        capabilities: { tools?: unknown };
+        _meta: Record<string, { name?: string }>;
+      };
+    };
+    expect(body.result.supportedVersions).toContain("2024-11-05");
+    expect(body.result.capabilities.tools).toBeDefined();
+    expect(body.result._meta["io.modelcontextprotocol/serverInfo"].name).toBe(
+      "IslamicSources"
+    );
+  });
+
+  it("POST /mcp resources/templates/list returns an empty template set", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 8,
+        method: "resources/templates/list",
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { result: { resourceTemplates: unknown[] } };
+    expect(body.result.resourceTemplates).toEqual([]);
+  });
+
+  it("POST /mcp returns a tool error for an unknown canonical tool", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 9,
+        method: "tools/call",
+        params: { name: "waqf_search", arguments: { query: "zakat" } },
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      error?: unknown;
+      result: { isError?: boolean; content: Array<{ type: string; text?: string }> };
+    };
+    expect(body.error).toBeUndefined();
+    expect(body.result.isError).toBe(true);
+    expect(body.result.content[0]?.text).toContain("Unknown canonical tool 'waqf_search'");
+    expect(body.result.content[0]?.text).toContain("waqf_search_scholarship");
+  });
+
+  it("POST /mcp returns a tool error for a malformed tool name", async () => {
+    const req = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 10,
+        method: "tools/call",
+        params: { name: "search", arguments: { query: "zakat" } },
+      }),
+    });
+
+    const res = await worker.fetch(req, mockEnv, mockCtx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      error?: unknown;
+      result: { isError?: boolean; content: Array<{ type: string; text?: string }> };
+    };
+    expect(body.error).toBeUndefined();
+    expect(body.result.isError).toBe(true);
+    expect(body.result.content[0]?.text).toContain("Invalid tool name 'search'");
+  });
+
   it("POST /api/submissions accepts community MCP submissions", async () => {
     const req = new Request("http://localhost:8787/api/submissions", {
       method: "POST",

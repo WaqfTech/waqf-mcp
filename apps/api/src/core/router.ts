@@ -1,3 +1,4 @@
+import { CANONICAL_TOOL_NAMES } from "@waqf/types";
 import type {
   GetPromptResult,
   PromptDefinition,
@@ -21,6 +22,26 @@ export interface ReadResourceResponse {
   providerId: string;
   result: ReadResourceResult;
   isCacheHit: boolean;
+}
+
+const CANONICAL_TOOL_HINT = `Available canonical tools: ${CANONICAL_TOOL_NAMES.join(", ")}.`;
+
+/**
+ * Invalid or unknown tool names are caller errors, not gateway failures. The
+ * MCP contract asks for a tool result with isError so the model can correct
+ * itself; throwing here produced an internal-error response and a 500 log for
+ * every stale or typo'd tool name.
+ */
+function toolError(providerId: string, toolName: string, message: string): CallToolResponse {
+  return {
+    providerId,
+    originalToolName: toolName,
+    isCacheHit: false,
+    result: {
+      isError: true,
+      content: [{ type: "text", text: message }],
+    },
+  };
 }
 
 export interface GetPromptResponse {
@@ -141,21 +162,48 @@ export class FederationRouter {
   ): Promise<CallToolResponse> {
     // 1. Check Canonical Tool Dispatch
     if (fullName.startsWith("waqf_")) {
+      if (!CANONICAL_TOOL_NAMES.includes(fullName)) {
+        return toolError(
+          "canonical",
+          fullName,
+          `Unknown canonical tool '${fullName}'. ${CANONICAL_TOOL_HINT}`
+        );
+      }
       return this.handleCanonicalCall(fullName, args, cacheService, ctx);
     }
 
     // 2. Namespaced Tool Dispatch
     const separatorIndex = fullName.indexOf("__");
     if (separatorIndex === -1) {
-      throw new Error(`Invalid tool name format: '${fullName}'. Expected 'waqf_*' or '{provider}__{toolName}'`);
+      return toolError(
+        "gateway",
+        fullName,
+        `Invalid tool name '${fullName}'. Use 'waqf_<tool>' or '<provider>__<tool>'. ${CANONICAL_TOOL_HINT}`
+      );
     }
 
     const providerId = fullName.slice(0, separatorIndex);
     const originalToolName = fullName.slice(separatorIndex + 2);
 
+    if (!providerId || !originalToolName) {
+      return toolError(
+        providerId || "gateway",
+        fullName,
+        `Invalid tool name '${fullName}'. Provider and tool segments cannot be empty.`
+      );
+    }
+
     const provider = this.registry.get(providerId);
     if (!provider) {
-      throw new Error(`Unknown upstream provider: '${providerId}' in tool '${fullName}'`);
+      const providerIds = this.registry
+        .getAll()
+        .map((entry) => entry.id)
+        .join(", ");
+      return toolError(
+        providerId,
+        fullName,
+        `Unknown upstream provider '${providerId}' in tool '${fullName}'. Available providers: ${providerIds}.`
+      );
     }
 
     const sanitizedArgs = this.normalizer.sanitizeProviderArgs(providerId, originalToolName, args);
@@ -180,7 +228,17 @@ export class FederationRouter {
       }
     }
 
-    const result = await provider.callTool(originalToolName, sanitizedArgs);
+    let result: ToolResult;
+    try {
+      result = await provider.callTool(originalToolName, sanitizedArgs);
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err);
+      return toolError(
+        providerId,
+        fullName,
+        `Upstream '${providerId}' failed while calling '${originalToolName}': ${detail}`
+      );
+    }
 
     // Save to cache asynchronously if valid and non-empty
     if (cacheService && cacheKey && !result.isError && !this.isEmptyResult(result)) {
@@ -283,7 +341,11 @@ export class FederationRouter {
         }
 
         if (!fetched) {
-          throw new Error("No Quran provider available or all upstreams failed");
+          return toolError(
+            "canonical",
+            toolName,
+            "No Quran provider is available right now; retry in a moment."
+          );
         }
         break;
       }
@@ -376,7 +438,11 @@ export class FederationRouter {
         }
 
         if (!fetched) {
-          throw new Error("No scholarship search provider available or all upstreams failed");
+          return toolError(
+            "canonical",
+            toolName,
+            "No scholarship search provider is available right now; retry in a moment."
+          );
         }
         break;
       }
@@ -439,7 +505,11 @@ export class FederationRouter {
         }
 
         if (!fetched) {
-          throw new Error("No books search provider available or all upstreams failed");
+          return toolError(
+            "canonical",
+            toolName,
+            "No books search provider is available right now; retry in a moment."
+          );
         }
         break;
       }

@@ -77,7 +77,7 @@ export class D1TelemetryService {
         COUNT(*) as total_requests,
         SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) as cache_hits,
         AVG(latency_ms) as avg_latency_ms,
-        SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as error_count
+        SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) as error_count
       FROM mcp_logs INDEXED BY idx_mcp_logs_timestamp
       WHERE timestamp >= ?
     `).bind(since);

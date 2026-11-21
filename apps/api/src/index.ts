@@ -1,5 +1,7 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
+import { buildDiscoverResult, buildInitializeResult } from "./core/server-metadata";
+import { AGENT_DISCOVERY_LINK_HEADER, CORS_HEADERS, DISCOVERY_HEADERS } from "./http";
 import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
@@ -53,18 +55,6 @@ export function resetSubmissionRateLimits(): void {
   submissionRateLimits.clear();
 }
 
-const SECURITY_HEADERS = {
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-};
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With",
-  ...SECURITY_HEADERS,
-};
-
 function checkAdminAuth(request: Request, env: Env): Response | null {
   const expectedKey = env.ADMIN_API_KEY;
   if (!expectedKey) {
@@ -87,18 +77,6 @@ function checkAdminAuth(request: Request, env: Env): Response | null {
 }
 
 // Not exported: the Worker entry module may only export handlers.
-const AGENT_DISCOVERY_LINK_HEADER = [
-  '</.well-known/api-catalog>; rel="api-catalog"',
-  '</llms.txt>; rel="service-doc"; type="text/markdown"',
-  '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
-  '</.well-known/ai-catalog.json>; rel="item"; type="application/json"',
-].join(", ");
-
-const DISCOVERY_HEADERS = {
-  ...CORS_HEADERS,
-  Link: AGENT_DISCOVERY_LINK_HEADER,
-};
-
 interface JsonRpcRequest {
   jsonrpc?: string;
   id?: string | number | null;
@@ -730,38 +708,33 @@ export default {
 
       try {
         switch (rpc.method) {
+          case "server/discover": {
+            // MCP 2026 clients probe discovery before initialize. Answer with
+            // the versions this gateway actually implements instead of a
+            // method-not-found, so clients can negotiate down cleanly.
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: buildDiscoverResult(),
+            });
+            logExecution("server/discover", null, null, "internal", false, 200, null, resData.bytes);
+            return resData.response;
+          }
+
           case "initialize": {
             const resData = jsonResponse({
               jsonrpc: "2.0",
               id: reqId,
-              result: {
-                protocolVersion: "2024-11-05",
-                capabilities: {
-                  tools: {
-                    listChanged: false,
-                  },
-                  resources: {
-                    subscribe: false,
-                    listChanged: false,
-                  },
-                  prompts: {
-                    listChanged: false,
-                  },
-                },
-                serverInfo: {
-                  name: "IslamicSources",
-                  title: "WaqfTech-MCP",
-                  version: "1.0.0",
-                  websiteUrl: "https://waqftech.org",
-                },
-              },
+              result: buildInitializeResult(),
             });
             logExecution("initialize", null, null, "internal", false, 200, null, resData.bytes);
             return resData.response;
           }
 
           case "notifications/initialized": {
-            return new Response(null, { status: 204, headers: CORS_HEADERS });
+            // The Streamable HTTP transport requires 202 Accepted with no body
+            // for a notification the server accepts.
+            return new Response(null, { status: 202, headers: CORS_HEADERS });
           }
 
           case "ping": {
@@ -808,17 +781,52 @@ export default {
               result,
             });
 
+            // Tool execution errors are valid MCP results (HTTP 200 with
+            // isError), not gateway failures. Record the real status and keep
+            // the reason in error_message so error-rate counts stay honest.
+            const toolErrorText = result.isError
+              ? result.content
+                  .filter((block) => block.type === "text")
+                  .map((block) => (block.type === "text" ? block.text : ""))
+                  .join(" ")
+                  .slice(0, 1000) || "Tool execution error"
+              : null;
+
             logExecution(
               "tools/call",
               params.name,
               params.arguments ?? {},
               providerId,
               isCacheHit,
-              result.isError ? 500 : 200,
-              result.isError ? "Tool execution error" : null,
+              200,
+              toolErrorText,
               resData.bytes
             );
 
+            return resData.response;
+          }
+
+          case "resources/templates/list": {
+            // No provider in the catalog declares parameterized resource
+            // templates. Advertise the empty set rather than method-not-found:
+            // clients probe this method unconditionally after initialize.
+            const resData = jsonResponse({
+              jsonrpc: "2.0",
+              id: reqId,
+              result: {
+                resourceTemplates: [],
+              },
+            });
+            logExecution(
+              "resources/templates/list",
+              null,
+              null,
+              "internal",
+              false,
+              200,
+              null,
+              resData.bytes
+            );
             return resData.response;
           }
 
@@ -924,6 +932,14 @@ export default {
           }
 
           default: {
+            // Every notification the gateway accepts gets 202 with no body.
+            // Returning a JSON-RPC error here made clients retry and inflated
+            // protocol-error counts (notifications/roots/list_changed alone
+            // produced 10,251 false 404s in seven days).
+            if (rpc.method.startsWith("notifications/")) {
+              return new Response(null, { status: 202, headers: CORS_HEADERS });
+            }
+
             const resData = jsonResponse({
               jsonrpc: "2.0",
               id: reqId,

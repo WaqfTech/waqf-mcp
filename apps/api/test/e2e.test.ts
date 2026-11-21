@@ -306,10 +306,20 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     const callRes = await worker.fetch(callReq, mockEnv, mockCtx);
     expect(callRes.status).toBe(200);
     const callBody = (await callRes.json()) as {
-      result: { resultType: string; isError?: boolean; content: Array<{ text?: string }> };
+      result: {
+        resultType: string;
+        isError?: boolean;
+        content: Array<{ text?: string }>;
+        error?: { code: string };
+        _meta?: { responseTimeMs?: number; cacheHit?: boolean; errorCode?: string };
+      };
     };
     expect(callBody.result.resultType).toBe("complete");
     expect(callBody.result.isError).toBe(true);
+    expect(callBody.result.error?.code).toBe("INVALID_ARGUMENT");
+    expect(typeof callBody.result._meta?.responseTimeMs).toBe("number");
+    expect(callBody.result._meta?.cacheHit).toBe(false);
+    expect(callBody.result._meta?.errorCode).toBe("INVALID_ARGUMENT");
     expect(callBody.result.content[0]?.text).toContain("Unknown canonical tool");
   });
 

@@ -1,11 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JsonRpcMcpAdapter } from "../src/adapters/jsonrpc";
 import { SseMcpAdapter } from "../src/adapters/sse";
-import { clearRequestFetchers, setRequestFetcher } from "../src/adapters/base";
+import { clearRequestFetchers, resetCircuitBreakers, setRequestFetcher } from "../src/adapters/base";
 import { ProviderRegistry } from "../src/core/registry";
 import { FederationRouter } from "../src/core/router";
 
 describe("MCP Adapters & Federation Router", () => {
+  beforeEach(() => {
+    resetCircuitBreakers();
+  });
   it("JsonRpcMcpAdapter parses tools/list response correctly", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -432,5 +435,117 @@ describe("MCP Adapters & Federation Router", () => {
       type: "text",
       text: "Analyze Surah 1 Ayah 1",
     });
+  });
+
+  it("retries transient 503 once and succeeds on recovery", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        headers: new Headers(),
+        text: async () => "Temporarily unavailable",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          jsonrpc: "2.0",
+          result: { content: [{ type: "text", text: "recovered" }] },
+        }),
+      });
+    globalThis.fetch = mockFetch;
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "turath",
+      name: "Turath",
+      baseUrl: "https://mcp.turath.io/mcp/",
+      transport: "json-rpc",
+      description: "Turath",
+    });
+    const res = await adapter.callTool("search_turath", { q: "test" });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(res.isError).toBeUndefined();
+    expect(res.content[0]).toEqual({ type: "text", text: "recovered" });
+  });
+
+  it("never retries HTTP 400 validation errors and classifies INVALID_ARGUMENT", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: new Headers(),
+      text: async () => "Bad request",
+    });
+    globalThis.fetch = mockFetch;
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "aljam3",
+      name: "Aljam3",
+      baseUrl: "https://aljam3.com/mcp",
+      transport: "json-rpc",
+      description: "Aljam3",
+    });
+    const res = await adapter.callTool("search", { q: "test" });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(res.isError).toBe(true);
+    expect(res.error?.code).toBe("INVALID_ARGUMENT");
+    expect(res.error?.retryable).toBe(false);
+  });
+
+  it("maps HTTP 429 to RATE_LIMITED and opens the circuit breaker after 3 failures", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      headers: new Headers({ "Retry-After": "0" }),
+      text: async () => "Rate limit",
+    });
+    globalThis.fetch = mockFetch;
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "fihris",
+      name: "Fihris",
+      baseUrl: "https://search.waqf.app/api/mcp",
+      transport: "json-rpc",
+      description: "Fihris",
+    });
+
+    const registry = new ProviderRegistry([]);
+    registry.register(adapter);
+    const router = new FederationRouter(registry);
+
+    for (let i = 0; i < 3; i++) {
+      const r = await router.callTool("fihris__search_islamic_sources", { query: "zakat" });
+      expect(r.result.isError).toBe(true);
+      expect(r.result.error?.code).toBe("RATE_LIMITED");
+      expect(r.result.error?.retryable).toBe(true);
+    }
+
+    const callsBeforeOpen = mockFetch.mock.calls.length;
+    const fastFail = await router.callTool("fihris__search_islamic_sources", { query: "zakat" });
+    expect(mockFetch.mock.calls.length).toBe(callsBeforeOpen);
+    expect(fastFail.result.isError).toBe(true);
+    expect(fastFail.result.error?.code).toBe("SOURCE_UNAVAILABLE");
+  });
+
+  it("maps AbortError timeouts to UPSTREAM_TIMEOUT in router", async () => {
+    const abortErr = new Error("The operation was aborted");
+    abortErr.name = "AbortError";
+    globalThis.fetch = vi.fn().mockRejectedValue(abortErr);
+
+    const adapter = new JsonRpcMcpAdapter({
+      id: "bahouth",
+      name: "Bahouth",
+      baseUrl: "https://bahouth.tafsir.net/mcp",
+      transport: "json-rpc",
+      description: "Bahouth",
+    });
+    const registry = new ProviderRegistry([]);
+    registry.register(adapter);
+    const router = new FederationRouter(registry);
+
+    const res = await router.callTool("bahouth__get_verse", { verse_key: "1-1" });
+    expect(res.result.isError).toBe(true);
+    expect(res.result.error?.code).toBe("UPSTREAM_TIMEOUT");
+    expect(res.result.error?.retryable).toBe(true);
   });
 });

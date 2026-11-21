@@ -1,4 +1,4 @@
-import { BaseMcpAdapter } from "./base";
+import { BaseMcpAdapter, classifyHttpStatus } from "./base";
 import type {
   GetPromptResult,
   PromptDefinition,
@@ -78,14 +78,12 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
 
     if (!res.ok) {
       const errorText = await res.text();
+      const { code, retryable } = classifyHttpStatus(res.status);
+      const message = `[${this.id}] Upstream HTTP ${res.status} error: ${errorText}`;
       return {
         isError: true,
-        content: [
-          {
-            type: "text",
-            text: `[${this.id}] Upstream HTTP ${res.status} error: ${errorText}`,
-          },
-        ],
+        error: { code, message, source: this.id, retryable },
+        content: [{ type: "text", text: message }],
       };
     }
 
@@ -95,14 +93,17 @@ export class JsonRpcMcpAdapter extends BaseMcpAdapter {
     };
 
     if (data.error) {
+      const code =
+        data.error.code === -32602
+          ? "INVALID_ARGUMENT"
+          : data.error.code === -32601
+            ? "SOURCE_NOT_FOUND"
+            : "SOURCE_UNAVAILABLE";
+      const message = `[${this.id}] Upstream RPC error: ${data.error.message ?? "Unknown error"}`;
       return {
         isError: true,
-        content: [
-          {
-            type: "text",
-            text: `[${this.id}] Upstream RPC error: ${data.error.message ?? "Unknown error"}`,
-          },
-        ],
+        error: { code, message, source: this.id, retryable: false },
+        content: [{ type: "text", text: message }],
       };
     }
 

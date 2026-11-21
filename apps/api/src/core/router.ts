@@ -1,5 +1,6 @@
 import { CANONICAL_TOOL_NAMES, PROVIDER_CATALOG } from "@waqf/types";
 import type {
+  GatewayErrorCode,
   GetPromptResult,
   PromptDefinition,
   ReadResourceResult,
@@ -7,6 +8,7 @@ import type {
   ToolDefinition,
   ToolResult,
 } from "@waqf/types";
+import { classifyThrownError } from "../adapters/base";
 import { ProviderRegistry } from "./registry";
 import { SchemaNormalizer } from "./normalizer";
 import { DEFAULT_CACHE_TTL_SECONDS, type D1CacheService } from "../services/cache";
@@ -53,13 +55,20 @@ const CANONICAL_PRIMARY_PROVIDER: Record<string, string> = {
  * itself; throwing here produced an internal-error response and a 500 log for
  * every stale or typo'd tool name.
  */
-function toolError(providerId: string, toolName: string, message: string): CallToolResponse {
+function toolError(
+  providerId: string,
+  toolName: string,
+  message: string,
+  code: GatewayErrorCode = "INVALID_ARGUMENT",
+  retryable = false
+): CallToolResponse {
   return {
     providerId,
     originalToolName: toolName,
     isCacheHit: false,
     result: {
       isError: true,
+      error: { code, message, source: providerId, retryable },
       content: [{ type: "text", text: message }],
     },
   };
@@ -254,11 +263,13 @@ export class FederationRouter {
     try {
       result = await provider.callTool(originalToolName, sanitizedArgs);
     } catch (err: unknown) {
-      const detail = err instanceof Error ? err.message : String(err);
+      const classified = classifyThrownError(providerId, err);
       return toolError(
         providerId,
         fullName,
-        `Upstream '${providerId}' failed while calling '${originalToolName}': ${detail}`
+        `Upstream '${providerId}' failed while calling '${originalToolName}': ${classified.message}`,
+        classified.code,
+        classified.retryable
       );
     }
 
@@ -384,7 +395,9 @@ export class FederationRouter {
           return toolError(
             "canonical",
             toolName,
-            "No Quran provider is available right now; retry in a moment."
+            "No Quran provider is available right now; retry in a moment.",
+            "SOURCE_UNAVAILABLE",
+            true
           );
         }
         break;
@@ -393,26 +406,43 @@ export class FederationRouter {
       case "waqf_turath_search_books": {
         const turathProvider = this.registry.get("turath");
         if (!turathProvider) {
-          throw new Error("Turath provider not configured");
+          return toolError(
+            "turath",
+            toolName,
+            "Turath provider not configured",
+            "SOURCE_UNAVAILABLE",
+            false
+          );
         }
         targetProvider = "turath";
         const query = String(args.query ?? "");
-        const raw = await turathProvider.callTool("discover_turath", {
-          q: query,
-          kind: args.kind ?? "books",
-        });
-        result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
-          providerId: "turath",
-          query,
-          mode: String(args.kind ?? "books"),
-        });
+        try {
+          const raw = await turathProvider.callTool("discover_turath", {
+            q: query,
+            kind: args.kind ?? "books",
+          });
+          result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
+            providerId: "turath",
+            query,
+            mode: String(args.kind ?? "books"),
+          });
+        } catch (err: unknown) {
+          const classified = classifyThrownError("turath", err);
+          return toolError("turath", toolName, classified.message, classified.code, classified.retryable);
+        }
         break;
       }
 
       case "waqf_hadith_search": {
         const turathProvider = this.registry.get("turath");
         if (!turathProvider) {
-          throw new Error("Hadith/Turath provider not configured");
+          return toolError(
+            "turath",
+            toolName,
+            "Hadith/Turath provider not configured",
+            "SOURCE_UNAVAILABLE",
+            false
+          );
         }
         targetProvider = "turath";
         const query = String(args.query ?? "");
@@ -420,17 +450,22 @@ export class FederationRouter {
         const limit = Number.isFinite(parsedLimit)
           ? Math.min(20, Math.max(1, Math.trunc(parsedLimit)))
           : 5;
-        const raw = await turathProvider.callTool("search_turath", {
-          q: query,
-        });
-        const bounded = this.normalizer.boundResultList(raw, limit);
-        result = this.normalizer.normalizeToolResult(bounded.result, "Hadith Sources (Turath)", {
-          providerId: "turath",
-          query,
-          mode: "hadith_search",
-          limit,
-          hasMore: bounded.hasMore,
-        });
+        try {
+          const raw = await turathProvider.callTool("search_turath", {
+            q: query,
+          });
+          const bounded = this.normalizer.boundResultList(raw, limit);
+          result = this.normalizer.normalizeToolResult(bounded.result, "Hadith Sources (Turath)", {
+            providerId: "turath",
+            query,
+            mode: "hadith_search",
+            limit,
+            hasMore: bounded.hasMore,
+          });
+        } catch (err: unknown) {
+          const classified = classifyThrownError("turath", err);
+          return toolError("turath", toolName, classified.message, classified.code, classified.retryable);
+        }
         break;
       }
 
@@ -514,7 +549,9 @@ export class FederationRouter {
           return toolError(
             "canonical",
             toolName,
-            "No scholarship search provider is available right now; retry in a moment."
+            "No scholarship search provider is available right now; retry in a moment.",
+            "SOURCE_UNAVAILABLE",
+            true
           );
         }
         break;
@@ -601,7 +638,9 @@ export class FederationRouter {
           return toolError(
             "canonical",
             toolName,
-            "No books search provider is available right now; retry in a moment."
+            "No books search provider is available right now; retry in a moment.",
+            "SOURCE_UNAVAILABLE",
+            true
           );
         }
         break;
@@ -610,15 +649,26 @@ export class FederationRouter {
       case "waqf_books_read_page": {
         const aljam3Provider = this.registry.get("aljam3");
         if (!aljam3Provider) {
-          throw new Error("Aljam3 books provider not configured");
+          return toolError(
+            "aljam3",
+            toolName,
+            "Aljam3 books provider not configured",
+            "SOURCE_UNAVAILABLE",
+            false
+          );
         }
         targetProvider = "aljam3";
-        const raw = await aljam3Provider.callTool("get_page", bookArgs ?? {});
-        result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
-          providerId: "aljam3",
-          query: `${bookArgs?.file_id ?? ""}:${bookArgs?.page_number ?? ""}`,
-          mode: "books_read_page",
-        });
+        try {
+          const raw = await aljam3Provider.callTool("get_page", bookArgs ?? {});
+          result = this.normalizer.normalizeToolResult(raw, "Aljam3 Library", {
+            providerId: "aljam3",
+            query: `${bookArgs?.file_id ?? ""}:${bookArgs?.page_number ?? ""}`,
+            mode: "books_read_page",
+          });
+        } catch (err: unknown) {
+          const classified = classifyThrownError("aljam3", err);
+          return toolError("aljam3", toolName, classified.message, classified.code, classified.retryable);
+        }
         break;
       }
 

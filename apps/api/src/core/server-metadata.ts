@@ -41,30 +41,34 @@ export function buildInitializeResult() {
  * serverInfo in each result's _meta. Earlier clients treat absent resultType
  * as complete, so adding both is backward compatible.
  */
-export function withCompleteResult(payload: unknown): unknown {
+export function withCompleteResult(
+  payload: unknown,
+  extraMeta?: Record<string, unknown>
+): unknown {
   if (!payload || typeof payload !== "object") {
     return payload;
   }
   const record = payload as Record<string, unknown>;
   const result = record.result;
-  if (
-    !result ||
-    typeof result !== "object" ||
-    Array.isArray(result) ||
-    "resultType" in (result as Record<string, unknown>)
-  ) {
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
     return payload;
   }
 
+  const resultRecord = result as Record<string, unknown>;
+  const existingMeta =
+    resultRecord._meta && typeof resultRecord._meta === "object" && !Array.isArray(resultRecord._meta)
+      ? (resultRecord._meta as Record<string, unknown>)
+      : {};
+
   const normalizedResult: Record<string, unknown> = {
     resultType: "complete",
-    ...(result as Record<string, unknown>),
-  };
-  if (!normalizedResult._meta) {
-    normalizedResult._meta = {
+    ...resultRecord,
+    _meta: {
       "io.modelcontextprotocol/serverInfo": SERVER_INFO,
-    };
-  }
+      ...existingMeta,
+      ...(extraMeta ?? {}),
+    },
+  };
   return { ...record, result: normalizedResult };
 }
 

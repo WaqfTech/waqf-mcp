@@ -694,8 +694,12 @@ export default {
         );
       };
 
-      const jsonResponse = (payload: unknown, status = 200) => {
-        const bodyStr = JSON.stringify(withCompleteResult(payload));
+      const jsonResponse = (
+        payload: unknown,
+        status = 200,
+        extraMeta?: Record<string, unknown>
+      ) => {
+        const bodyStr = JSON.stringify(withCompleteResult(payload, extraMeta));
         const bytes = textEncoder.encode(bodyStr).length;
         return {
           response: new Response(bodyStr, {
@@ -775,11 +779,20 @@ export default {
               ctx
             );
 
-            const resData = jsonResponse({
-              jsonrpc: "2.0",
-              id: reqId,
-              result,
-            });
+            const responseTimeMs = Math.round(performance.now() - startTime);
+            const resData = jsonResponse(
+              {
+                jsonrpc: "2.0",
+                id: reqId,
+                result,
+              },
+              200,
+              {
+                responseTimeMs,
+                cacheHit: isCacheHit,
+                ...(result.error ? { errorCode: result.error.code } : {}),
+              }
+            );
 
             // Tool execution errors are valid MCP results (HTTP 200 with
             // isError), not gateway failures. Record the real status and keep

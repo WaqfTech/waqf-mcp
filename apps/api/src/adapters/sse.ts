@@ -1,4 +1,4 @@
-import { BaseMcpAdapter } from "./base";
+import { BaseMcpAdapter, classifyHttpStatus } from "./base";
 import type {
   GetPromptResult,
   PromptDefinition,
@@ -96,32 +96,33 @@ export class SseMcpAdapter extends BaseMcpAdapter {
 
     if (!res.ok) {
       const errorText = await res.text();
+      const { code, retryable } = classifyHttpStatus(res.status);
+      const message = `[${this.id}] SSE upstream HTTP ${res.status} error: ${errorText}`;
       return {
         isError: true,
-        content: [
-          {
-            type: "text",
-            text: `[${this.id}] SSE upstream HTTP ${res.status} error: ${errorText}`,
-          },
-        ],
+        error: { code, message, source: this.id, retryable },
+        content: [{ type: "text", text: message }],
       };
     }
 
     const text = await res.text();
     const parsed = this.parseResponsePayload(text) as {
       result?: ToolResult;
-      error?: { message?: string };
+      error?: { code?: number; message?: string };
     };
 
     if (parsed.error) {
+      const code =
+        parsed.error.code === -32602
+          ? "INVALID_ARGUMENT"
+          : parsed.error.code === -32601
+            ? "SOURCE_NOT_FOUND"
+            : "SOURCE_UNAVAILABLE";
+      const message = `[${this.id}] SSE upstream error: ${parsed.error.message ?? "Unknown error"}`;
       return {
         isError: true,
-        content: [
-          {
-            type: "text",
-            text: `[${this.id}] SSE upstream error: ${parsed.error.message ?? "Unknown error"}`,
-          },
-        ],
+        error: { code, message, source: this.id, retryable: false },
+        content: [{ type: "text", text: message }],
       };
     }
 

@@ -28,10 +28,33 @@ export interface ResourceContent {
 
 export type ContentBlock = TextContent | ImageContent | ResourceContent;
 
+export type GatewayErrorCode =
+  | "INVALID_ARGUMENT"
+  | "SOURCE_UNAVAILABLE"
+  | "UPSTREAM_TIMEOUT"
+  | "RATE_LIMITED"
+  | "UNAUTHORISED"
+  | "FORBIDDEN"
+  | "SOURCE_NOT_FOUND"
+  | "NO_RESULTS"
+  | "SCHEMA_INVALID"
+  | "CITATION_UNRESOLVED"
+  | "PARTIAL_RESULTS"
+  | "INTERNAL_ERROR";
+
+export interface GatewayToolError {
+  code: GatewayErrorCode;
+  message: string;
+  source: string;
+  retryable: boolean;
+}
+
 export interface ToolResult {
   content: ContentBlock[];
   structuredContent?: Record<string, unknown>;
   isError?: boolean;
+  error?: GatewayToolError;
+  _meta?: Record<string, unknown>;
 }
 
 export interface ResourceDefinition {

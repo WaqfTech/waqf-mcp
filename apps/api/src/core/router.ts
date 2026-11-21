@@ -12,8 +12,73 @@ import type {
 } from "@waqf/types";
 import { classifyThrownError } from "../adapters/base";
 import { ProviderRegistry } from "./registry";
-import { SchemaNormalizer } from "./normalizer";
+import { SchemaNormalizer, stripDisplayDirective } from "./normalizer";
 import { DEFAULT_CACHE_TTL_SECONDS, type D1CacheService } from "../services/cache";
+
+const SURAH_AYAH_COUNTS = [
+  7, 286, 200, 176, 120, 165, 206, 75, 129, 109,
+  123, 111, 43, 52, 99, 128, 111, 110, 98, 135,
+  112, 78, 118, 64, 77, 227, 93, 88, 69, 60,
+  34, 30, 73, 54, 45, 83, 182, 88, 75, 85,
+  54, 53, 89, 59, 37, 35, 38, 29, 18, 45,
+  60, 49, 62, 55, 78, 96, 29, 22, 24, 13,
+  14, 11, 11, 18, 12, 12, 30, 52, 52, 44,
+  28, 28, 20, 56, 40, 31, 50, 40, 46, 42,
+  29, 19, 36, 25, 22, 17, 19, 26, 30, 20,
+  15, 21, 11, 8, 8, 19, 5, 8, 8, 11,
+  11, 8, 3, 9, 5, 4, 7, 3, 6, 3,
+  5, 4, 5, 6,
+] as const;
+
+function refineUpstreamToolDefinition(
+  providerId: string,
+  providerName: string,
+  tool: ToolDefinition
+): ToolDefinition {
+  const fullName = `${providerId}__${tool.name}`;
+  let description = `[${providerName}] ${tool.description ?? ""}`.trim().replace(/38\+/g, "curated");
+  let inputSchema = tool.inputSchema;
+
+  if (fullName === "bahouth__find_root" && inputSchema.properties && typeof inputSchema.properties === "object") {
+    const props = { ...(inputSchema.properties as Record<string, Record<string, unknown>>) };
+    if (props.root_text && !props.root_text.description) {
+      props.root_text = {
+        ...props.root_text,
+        description: "Arabic root letters to look up (diacritic-sensitive exact match).",
+      };
+      inputSchema = { ...inputSchema, properties: props };
+    }
+  } else if (fullName === "tafsir_net__search_quran_text" && inputSchema.properties && typeof inputSchema.properties === "object") {
+    const props = { ...(inputSchema.properties as Record<string, Record<string, unknown>>) };
+    if (props.query) {
+      props.query = {
+        ...props.query,
+        description: "Arabic search text inside Quranic verses (FTS5 full-text search; diacritics normalized automatically).",
+      };
+      inputSchema = { ...inputSchema, properties: props };
+    }
+    if (!/[a-zA-Z]{6}/.test(description)) {
+      description = `[${providerName}] Full-text FTS5 search in Quranic verses (normalizes diacritics automatically). ${tool.description ?? ""}`.trim();
+    }
+  } else if (fullName === "aljam3__list_categories") {
+    description = `[${providerName}] List or filter subject category IDs (categories only, not books); pass category_id to aljam3__list_books or waqf_books_search.`;
+  } else if (fullName === "aljam3__search") {
+    description = `[${providerName}] Direct raw Aljam3 full-text book search (pass-through payload). Prefer waqf_books_search for normalized citations and fallback resilience. ${tool.description ?? ""}`.trim();
+  }
+
+  return {
+    ...tool,
+    name: fullName,
+    description,
+    inputSchema,
+    annotations: tool.annotations ?? {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: providerId === "fihris",
+    },
+  };
+}
 
 export interface CallToolResponse {
   providerId: string;
@@ -140,17 +205,7 @@ export class FederationRouter {
     const settled = await Promise.allSettled(
       providers.map(async (provider) => {
         const tools = await this.registry.getProviderTools(provider);
-        return tools.map((tool) => ({
-          ...tool,
-          name: `${provider.id}__${tool.name}`,
-          description: `[${provider.name}] ${tool.description ?? ""}`.trim(),
-          annotations: tool.annotations ?? {
-            readOnlyHint: true,
-            destructiveHint: false,
-            idempotentHint: true,
-            openWorldHint: provider.id === "fihris",
-          },
-        }));
+        return tools.map((tool) => refineUpstreamToolDefinition(provider.id, provider.name, tool));
       })
     );
 
@@ -274,7 +329,7 @@ export class FederationRouter {
         return {
           providerId,
           originalToolName,
-          result: cached,
+          result: providerId === "tafsir_net" ? stripDisplayDirective(cached) : cached,
           isCacheHit: true,
         };
       }
@@ -282,7 +337,8 @@ export class FederationRouter {
 
     let result: ToolResult;
     try {
-      result = await provider.callTool(originalToolName, sanitizedArgs);
+      const raw = await provider.callTool(originalToolName, sanitizedArgs);
+      result = providerId === "tafsir_net" ? stripDisplayDirective(raw) : raw;
     } catch (err: unknown) {
       const classified = classifyThrownError(providerId, err);
       return toolError(
@@ -340,7 +396,7 @@ export class FederationRouter {
     if (cacheService) {
       cacheKey = await cacheService.computeKey("canonical", toolName, bookArgs ?? args);
       const cached = await cacheService.get(cacheKey);
-      if (cached) {
+      if (cached?.structuredContent) {
         const hitTtl = this.canonicalCacheTtl(toolName);
         if (ctx) {
           ctx.waitUntil(cacheService.recordHit(cacheKey, hitTtl));
@@ -373,6 +429,16 @@ export class FederationRouter {
             false
           );
         }
+        const maxAyah = SURAH_AYAH_COUNTS[surah - 1];
+        if (ayah > maxAyah) {
+          return toolError(
+            "canonical",
+            toolName,
+            `Invalid Quran reference: Surah ${surah} only has ${maxAyah} ayahs (requested ayah ${ayah}).`,
+            "INVALID_ARGUMENT",
+            false
+          );
+        }
         const tafsirProvider = this.registry.get("tafsir_net");
         const bahouthProvider = this.registry.get("bahouth");
 
@@ -392,7 +458,7 @@ export class FederationRouter {
                 ? (args.includeSciences as string[])
                 : undefined,
             });
-            const raw = await tafsirProvider.callTool("fetch_ayah", upstreamArgs);
+            const raw = stripDisplayDirective(await tafsirProvider.callTool("fetch_ayah", upstreamArgs));
             if (!raw.isError) {
               result = this.normalizer.normalizeToolResult(raw, "Tafsir.net", {
                 providerId: "tafsir_net",
@@ -400,6 +466,14 @@ export class FederationRouter {
                 mode: "quran_ayah",
               });
               fetched = true;
+            } else {
+              const errMsg = raw.content
+                .filter((b): b is { type: "text"; text: string } => b.type === "text")
+                .map((b) => b.text)
+                .join(" ");
+              if (/invalid|not found|unsupported|unknown|must be|between/i.test(errMsg)) {
+                return toolError("tafsir_net", toolName, errMsg || "Invalid Quran lookup arguments.", "INVALID_ARGUMENT", false);
+              }
             }
           } catch {
             // Fall through to Bahouth fallback

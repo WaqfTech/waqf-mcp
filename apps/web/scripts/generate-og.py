@@ -361,7 +361,7 @@ html_ar = f"""<!doctype html>
   </div>
   <div class="pillar-card">
     <div class="pillar-title"><span>🔍</span> <span class="accent">الفهرس والبحث العلمي</span></div>
-    <div class="pillar-desc">بحث دلالي فوري وموثق عبر 38+ بوابة ومكتبة ومجمعاً إسلامياً موثوقاً دون وسائط أو تحريف.</div>
+    <div class="pillar-desc">بحث دلالي فوري وموثق عبر بوابات ومكتبات ومجامع إسلامية موثوقة دون وسائط أو تحريف.</div>
   </div>
 </div>
 
@@ -443,7 +443,7 @@ body {{
   </div>
   <div class="pillar-card">
     <div class="pillar-title"><span>🔍</span> <span class="accent">Fihris & Search</span></div>
-    <div class="pillar-desc">Direct semantic scholarly search across 38+ verified Islamic portals, fatwa councils, and encyclopedias.</div>
+    <div class="pillar-desc">Direct semantic scholarly search across curated verified Islamic portals, fatwa councils, and encyclopedias.</div>
   </div>
 </div>
 

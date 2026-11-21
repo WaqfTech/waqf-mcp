@@ -143,6 +143,89 @@ function asInt(value: unknown): number | null {
   return null;
 }
 
+interface ParsedFihrisMarkdown {
+  matched: boolean;
+  total: number;
+  items: Array<Record<string, unknown>>;
+}
+
+function parseFihrisMarkdown(rawText: string): ParsedFihrisMarkdown {
+  const trimmed = rawText.trim();
+  if (
+    /^No search results found for query:/i.test(trimmed) ||
+    /^Found\s+0\s+results\s+for\s+/i.test(trimmed)
+  ) {
+    return { matched: true, total: 0, items: [] };
+  }
+
+  const totalMatch = trimmed.match(/^Found\s+([\d,]+)\s+results?\s+for\s+/i);
+  const headingRegex = /^###\s+\d+\.\s+\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gm;
+  const matches = [...trimmed.matchAll(headingRegex)];
+  if (matches.length === 0) {
+    return { matched: false, total: 0, items: [] };
+  }
+
+  const total = totalMatch
+    ? Number(totalMatch[1].replace(/,/g, "")) || matches.length
+    : matches.length;
+  const items: Array<Record<string, unknown>> = [];
+
+  for (let i = 0; i < matches.length; i++) {
+    const match = matches[i];
+    const start = (match.index ?? 0) + match[0].length;
+    const end = i + 1 < matches.length ? (matches[i + 1].index ?? trimmed.length) : trimmed.length;
+    let body = trimmed.slice(start, end).replace(/\n-{3,}\s*$/, "").trim();
+
+    let sourceDomain: string | null = null;
+    const sourceMatch = body.match(/^\*Source:\*\s*`([^`]+)`\s*/i);
+    if (sourceMatch) {
+      sourceDomain = sourceMatch[1].trim();
+      body = body.slice(sourceMatch[0].length).trim();
+    }
+
+    items.push({
+      title: match[1].trim(),
+      url: match[2].trim(),
+      ...(sourceDomain ? { displayUrl: sourceDomain } : {}),
+      snippet: body,
+    });
+  }
+
+  return { matched: true, total, items };
+}
+
+export function stripDisplayDirective(raw: ToolResult): ToolResult {
+  const cleanRecord = (obj: Record<string, unknown>): Record<string, unknown> => {
+    if (!("_display" in obj)) return obj;
+    const { _display: _omitted, ...rest } = obj;
+    return rest;
+  };
+
+  let changed = false;
+  const content = raw.content.map((block) => {
+    if (block.type !== "text") return block;
+    try {
+      const parsed = JSON.parse(block.text) as unknown;
+      const rec = asRecord(parsed);
+      if (rec && "_display" in rec) {
+        changed = true;
+        return { ...block, text: JSON.stringify(cleanRecord(rec), null, 2) };
+      }
+    } catch {
+      // Non-JSON text block stays untouched
+    }
+    return block;
+  });
+
+  let structuredContent = raw.structuredContent;
+  if (structuredContent && "_display" in structuredContent) {
+    changed = true;
+    structuredContent = cleanRecord(structuredContent);
+  }
+
+  return changed ? { ...raw, content, ...(structuredContent ? { structuredContent } : {}) } : raw;
+}
+
 function detectOcrStatus(record: Record<string, unknown>, rawText: string): OcrStatus {
   const explicit = asString(record.ocr_status);
   if (explicit === "verified_clean" || explicit === "possible_ocr_errors") {
@@ -1099,7 +1182,7 @@ export class SchemaNormalizer {
         source_version: asString(rec.source_version),
         content_hash: null,
       },
-      raw: rec,
+      ...(kind === "raw_text" ? { raw: rec } : {}),
     };
   }
 
@@ -1129,6 +1212,7 @@ export class SchemaNormalizer {
 
     const parsedObj = asRecord(parsed);
     let rawItems: unknown[] = [];
+    let parsedTotalOverride: number | null = null;
     if (Array.isArray(parsed)) {
       rawItems = parsed;
     } else if (parsedObj) {
@@ -1137,6 +1221,14 @@ export class SchemaNormalizer {
       const parsedTextObj = asRecord(parsedObj.text);
       if (Array.isArray(list)) {
         rawItems = list;
+      } else if (
+        parsedObj.found === false &&
+        !parsedObj.verse &&
+        !parsedObj.text &&
+        !parsedObj.text_uthmani
+      ) {
+        rawItems = [];
+        parsedTotalOverride = 0;
       } else if (pageObj) {
         const navObj = asRecord(parsedObj.navigation);
         rawItems = [
@@ -1161,7 +1253,13 @@ export class SchemaNormalizer {
         rawItems = [parsedObj];
       }
     } else if (combinedText.trim() !== "") {
-      rawItems = [combinedText];
+      const fihrisParsed = parseFihrisMarkdown(combinedText);
+      if (fihrisParsed.matched) {
+        rawItems = fihrisParsed.items;
+        parsedTotalOverride = fihrisParsed.total;
+      } else {
+        rawItems = [combinedText];
+      }
     }
 
     const results = rawItems.map((item, idx) =>
@@ -1179,6 +1277,7 @@ export class SchemaNormalizer {
           ? String(results[0].location.next_offset)
           : null);
     const total =
+      parsedTotalOverride ??
       asInt(parsedObj?.total_available) ??
       asInt(parsedObj?.total) ??
       asInt(parsedObj?.count) ??
@@ -1209,7 +1308,6 @@ export class SchemaNormalizer {
         next_cursor: nextCursor,
       },
       warnings: [...(context.warnings ?? [])],
-      ...(raw.structuredContent ? { raw: raw.structuredContent } : {}),
     };
 
     return {

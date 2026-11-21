@@ -143,7 +143,10 @@ describe("Canonical Tools & Schema Normalization", () => {
 
     const cache = {
       computeKey: vi.fn().mockResolvedValue("cache-key"),
-      get: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "cached" }] }),
+      get: vi.fn().mockResolvedValue({
+        content: [{ type: "text", text: "cached" }],
+        structuredContent: { schema_version: "1.0.0", status: "ok", results: [] },
+      }),
       set: vi.fn(),
       recordHit: vi.fn().mockResolvedValue(undefined),
     } as unknown as D1CacheService;
@@ -169,7 +172,10 @@ describe("Canonical Tools & Schema Normalization", () => {
 
     const cache = {
       computeKey: vi.fn().mockResolvedValue("cache-key"),
-      get: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "cached" }] }),
+      get: vi.fn().mockResolvedValue({
+        content: [{ type: "text", text: "cached" }],
+        structuredContent: { schema_version: "1.0.0", status: "ok", results: [] },
+      }),
       set: vi.fn(),
       recordHit: vi.fn().mockResolvedValue(undefined),
     } as unknown as D1CacheService;
@@ -901,6 +907,214 @@ describe("Canonical Tools & Schema Normalization", () => {
       });
       expect(res.result.isError).toBe(true);
       expect(res.result.error?.code).toBe("SOURCE_UNAVAILABLE");
+    });
+
+    it("rejects out-of-range ayah (1:99) immediately without calling Bahouth and handles found=false safely", async () => {
+      const registry = new ProviderRegistry([]);
+      const tafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir.net",
+      });
+      const bahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+      const tafsirSpy = vi.spyOn(tafsir, "callTool");
+      const bahouthSpy = vi.spyOn(bahouth, "callTool");
+      registry.register(tafsir);
+      registry.register(bahouth);
+
+      const router = new FederationRouter(registry, normalizer);
+      const errRes = await router.callTool("waqf_quran_get_ayah", { surah: 1, ayah: 99 });
+      expect(errRes.result.isError).toBe(true);
+      expect(errRes.result.error?.code).toBe("INVALID_ARGUMENT");
+      expect(tafsirSpy).not.toHaveBeenCalled();
+      expect(bahouthSpy).not.toHaveBeenCalled();
+
+      const emptyBahouth = normalizer.normalizeToolResult(
+        { content: [{ type: "text", text: JSON.stringify({ found: false, verse: null }) }] },
+        "Bahouth",
+        { providerId: "bahouth", query: "1:99" }
+      );
+      const emptySc = emptyBahouth.structuredContent as { status: string; results: unknown[]; pagination: { total: number } };
+      expect(emptySc.status).toBe("no_results");
+      expect(emptySc.results).toEqual([]);
+      expect(emptySc.pagination.total).toBe(0);
+    });
+
+    it("parses empty and populated Fihris Markdown into canonical web_result records", async () => {
+      const registry = new ProviderRegistry([]);
+      const fihris = new JsonRpcMcpAdapter({
+        id: "fihris",
+        name: "Fihris",
+        baseUrl: "https://search.waqf.app/api/mcp",
+        transport: "json-rpc",
+        description: "Fihris",
+      });
+      const fihrisSpy = vi
+        .spyOn(fihris, "callTool")
+        .mockResolvedValueOnce({
+          content: [
+            {
+              type: "text",
+              text: 'No search results found for query: "xyzqwvnotarealfiqhterm" across indexed Islamic sources.',
+            },
+          ],
+        })
+        .mockResolvedValueOnce({
+          content: [
+            {
+              type: "text",
+              text: [
+                'Found 3980000 results for "أحكام الصلاة":',
+                "",
+                "### 1. [المختصر في أحكام الصلاة](https://www.alukah.net/sharia/0/43449/)",
+                "*Source:* `www.alukah.net`",
+                "",
+                "مختصر أحكام الصلاة وشروطها.",
+                "",
+                "---",
+                "",
+                "### 2. [شروط الصلاة](https://binbaz.org.sa/audios/3006/)",
+                "*Source:* `binbaz.org.sa`",
+                "",
+                "شرح شروط الصلاة وأركانها.",
+              ].join("\n"),
+            },
+          ],
+        });
+      registry.register(fihris);
+      const router = new FederationRouter(registry, normalizer);
+
+      const emptyRes = await router.callTool("waqf_search_scholarship", { query: "xyzqwvnotarealfiqhterm" });
+      const emptySc = emptyRes.result.structuredContent as {
+        status: string;
+        results: unknown[];
+        pagination: { total: number; has_more: boolean };
+      };
+      expect(emptySc.status).toBe("no_results");
+      expect(emptySc.results).toEqual([]);
+      expect(emptySc.pagination.total).toBe(0);
+      expect(emptySc.pagination.has_more).toBe(false);
+
+      const popRes = await router.callTool("waqf_search_scholarship", { query: "أحكام الصلاة" });
+      expect(fihrisSpy).toHaveBeenCalledTimes(2);
+      const popSc = popRes.result.structuredContent as {
+        status: string;
+        results: Array<{
+          kind: string;
+          work: { title: string | null };
+          content: { verbatim: string; is_excerpt: boolean };
+          citation: { source_url: string | null; citation_markdown: string | null };
+        }>;
+        pagination: { total: number };
+      };
+      expect(popSc.status).toBe("ok");
+      expect(popSc.results).toHaveLength(2);
+      expect(popSc.pagination.total).toBe(3980000);
+      expect(popSc.results[0].kind).toBe("web_result");
+      expect(popSc.results[0].work.title).toBe("المختصر في أحكام الصلاة");
+      expect(popSc.results[0].citation.source_url).toBe("https://www.alukah.net/sharia/0/43449/");
+      expect(popSc.results[0].citation.citation_markdown).toBe(
+        "[المختصر في أحكام الصلاة](https://www.alukah.net/sharia/0/43449/)"
+      );
+      expect(popSc.results[0].content.verbatim).toBe("مختصر أحكام الصلاة وشروطها.");
+    });
+
+    it("bypasses stale pre-v1 cache entries lacking structuredContent and strips _display from Tafsir.net", async () => {
+      const registry = new ProviderRegistry([]);
+      const tafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir.net",
+      });
+      vi.spyOn(tafsir, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              surah: 1,
+              ayah: 1,
+              text_uthmani: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+              _display: "Display instructions to strip",
+            }),
+          },
+        ],
+      });
+      registry.register(tafsir);
+
+      const cache = {
+        computeKey: vi.fn().mockResolvedValue("stale-key"),
+        get: vi.fn().mockResolvedValue({
+          content: [{ type: "text", text: "[Source: Tafsir.net]\n{}" }],
+        }),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
+
+      const router = new FederationRouter(registry, normalizer);
+      const res = await router.callTool("waqf_quran_get_ayah", { surah: 1, ayah: 1 }, cache);
+      expect(res.isCacheHit).toBe(false);
+      expect(res.result.structuredContent).toBeDefined();
+      expect((res.result.content[0] as { text: string }).text).not.toContain("_display");
+      expect((res.result.content[0] as { text: string }).text).toContain("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ");
+      expect(cache.set).toHaveBeenCalled();
+
+      const namespaced = await router.callTool("tafsir_net__fetch_ayah", { surah: 1, ayah: 1 });
+      expect((namespaced.result.content[0] as { text: string }).text).not.toContain("_display");
+    });
+
+    it("cleans 38+ claims and enriches missing upstream schema descriptions in tools/list", async () => {
+      const registry = new ProviderRegistry([]);
+      const fihris = new JsonRpcMcpAdapter({
+        id: "fihris",
+        name: "Fihris",
+        baseUrl: "https://search.waqf.app/api/mcp",
+        transport: "json-rpc",
+        description: "Fihris",
+      });
+      const bahouth = new JsonRpcMcpAdapter({
+        id: "bahouth",
+        name: "Bahouth",
+        baseUrl: "https://bahouth.tafsir.net/mcp",
+        transport: "json-rpc",
+        description: "Bahouth",
+      });
+      const tafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir.net",
+      });
+      vi.spyOn(fihris, "listTools").mockResolvedValue([
+        { name: "search_islamic_sources", description: "Search across 38+ portals", inputSchema: { type: "object", properties: {} } },
+      ]);
+      vi.spyOn(bahouth, "listTools").mockResolvedValue([
+        { name: "find_root", description: "Find root", inputSchema: { type: "object", properties: { root_text: { type: "string" } } } },
+      ]);
+      vi.spyOn(tafsir, "listTools").mockResolvedValue([
+        { name: "search_quran_text", description: "بحث نصي", inputSchema: { type: "object", properties: { query: { type: "string" } } } },
+      ]);
+      registry.register(fihris);
+      registry.register(bahouth);
+      registry.register(tafsir);
+
+      const tools = await new FederationRouter(registry, normalizer).listAllTools("all");
+      const fihrisTool = tools.find((t) => t.name === "fihris__search_islamic_sources");
+      const bahouthTool = tools.find((t) => t.name === "bahouth__find_root");
+      const tafsirTool = tools.find((t) => t.name === "tafsir_net__search_quran_text");
+      expect(fihrisTool?.description).not.toContain("38+");
+      expect((bahouthTool?.inputSchema.properties as Record<string, { description?: string }>).root_text.description).toBeTruthy();
+      expect((tafsirTool?.inputSchema.properties as Record<string, { description?: string }>).query.description).toContain("FTS5");
     });
   });
 });

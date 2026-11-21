@@ -3,26 +3,32 @@
 Local usage report for the MCP gateway. It reads production D1 through the
 operator's existing `wrangler` login. No secret is read or printed.
 
+## Layout
+
+`main.go` is a thin entry point. The implementation and tests live in
+`report/`; the repository `go.work` resolves the package when the command is
+run from the repository root.
+
 ## Usage
 
 ```bash
 # 30-day table report from the daily rollup
-go run ./scripts/stats-report/
+go run ./scripts/stats-report/main.go
 
 # One dimension as Markdown
-go run ./scripts/stats-report/ -dimension provider -format markdown
+go run ./scripts/stats-report/main.go -dimension provider -format markdown
 
 # Public-safe HTML page and JSON snapshot
-go run ./scripts/stats-report/ -days 30 -public -min-calls 10 \
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format html -output analytics/index.html
-go run ./scripts/stats-report/ -days 30 -public -min-calls 10 \
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format json -output analytics/stats.json
 
 # Raw logs for an exact window, or while the rollup is empty
-go run ./scripts/stats-report/ -source raw -since 2026-11-21T07:09:30Z
+go run ./scripts/stats-report/main.go -since 2026-11-21T07:09:30Z -dimension country
 
 # Local D1 instead of remote
-go run ./scripts/stats-report/ -remote=false -days 7
+go run ./scripts/stats-report/main.go -remote=false -days 7
 ```
 
 Flags:
@@ -32,6 +38,9 @@ Flags:
 | `-days` | 30 | Lookback window in days |
 | `-since` | empty | RFC3339 start; overrides `-days` |
 | `-source` | rollup | rollup reads `mcp_stats_daily`; raw reads `mcp_logs` |
+
+A non-midnight `-since` automatically uses raw logs, because daily rollups
+cannot answer a precise time. Pass `-source rollup` to force daily granularity.
 | `-dimension` | all | provider, country, client, tool, method, status, trend, all |
 | `-format` | table | table, markdown, csv, json, html |
 | `-output` | empty | Write html or json to a file |

@@ -8,9 +8,9 @@ Static, public-safe snapshot of gateway usage generated from `mcp_stats_daily`.
 ## Regenerate
 
 ```bash
-go run ./scripts/stats-report/ -days 30 -public -min-calls 10 \
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format html -output analytics/index.html
-go run ./scripts/stats-report/ -days 30 -public -min-calls 10 \
+go run ./scripts/stats-report/main.go -days 30 -public -min-calls 10 \
   -format json -output analytics/stats.json
 ```
 

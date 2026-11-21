@@ -173,6 +173,10 @@ func main() {
 		report.Initialize = init
 	}
 
+	// ChatGPT and other modern clients use 2026 stateless discovery instead of
+	// initialize. Check that path explicitly before exercising the legacy surface.
+	report.Attempts = append(report.Attempts, c.modernSmoke()...)
+
 	// A notification must be accepted with 202 and no body.
 	notification, err := c.notification()
 	if err != nil {
@@ -698,13 +702,145 @@ type httpResult struct {
 	latency time.Duration
 }
 
+func (c *client) modernSmoke() []attempt {
+	var out []attempt
+	meta := map[string]any{
+		"io.modelcontextprotocol/protocolVersion":    "2026-07-28",
+		"io.modelcontextprotocol/clientCapabilities": map[string]any{},
+	}
+	baseHeaders := map[string]string{"MCP-Protocol-Version": "2026-07-28"}
+
+	discover, err := c.postHeaders(c.base, map[string]any{
+		"jsonrpc": "2.0",
+		"id":      100,
+		"method":  "server/discover",
+		"params":  map[string]any{"_meta": meta},
+	}, withHeader(baseHeaders, "Mcp-Method", "server/discover"))
+	if err != nil {
+		return append(out, attempt{Kind: "modern", Name: "server/discover 2026", Class: "HTTP_ERROR", Detail: err.Error()})
+	}
+	discoverAttempt := c.toAttempt("modern", "server/discover 2026", discover)
+	var discoverRPC rpcResponse
+	if discoverAttempt.Class == "OK" && json.Unmarshal(discover.body, &discoverRPC) == nil && discoverRPC.Error == nil {
+		var result struct {
+			ResultType        string   `json:"resultType"`
+			SupportedVersions []string `json:"supportedVersions"`
+		}
+		if json.Unmarshal(discoverRPC.Result, &result) == nil &&
+			result.ResultType == "complete" &&
+			contains(result.SupportedVersions, "2026-07-28") {
+			discoverAttempt.Detail = "2026-07-28 advertised with resultType complete"
+		} else {
+			discoverAttempt.Class = "PROTOCOL_ERROR"
+			discoverAttempt.Detail = "missing 2026-07-28 or resultType in discover result"
+		}
+	} else if discoverAttempt.Class == "OK" {
+		discoverAttempt.Class = "PROTOCOL_ERROR"
+		discoverAttempt.Detail = "invalid discover response"
+	}
+	out = append(out, discoverAttempt)
+
+	list, err := c.postHeaders(c.base, map[string]any{
+		"jsonrpc": "2.0",
+		"id":      101,
+		"method":  "tools/list",
+		"params":  map[string]any{"_meta": meta},
+	}, withHeader(baseHeaders, "Mcp-Method", "tools/list"))
+	if err != nil {
+		return append(out, attempt{Kind: "modern", Name: "tools/list 2026", Class: "HTTP_ERROR", Detail: err.Error()})
+	}
+	listAttempt := c.toAttempt("modern", "tools/list 2026", list)
+	var listRPC rpcResponse
+	if listAttempt.Class == "OK" && json.Unmarshal(list.body, &listRPC) == nil && listRPC.Error == nil {
+		var result struct {
+			ResultType string           `json:"resultType"`
+			Tools      []toolDefinition `json:"tools"`
+		}
+		if json.Unmarshal(listRPC.Result, &result) == nil && result.ResultType == "complete" && len(result.Tools) >= 6 {
+			listAttempt.Detail = fmt.Sprintf("%d tools with resultType complete", len(result.Tools))
+		} else {
+			listAttempt.Class = "PROTOCOL_ERROR"
+			listAttempt.Detail = "missing resultType or tools in 2026 tools/list"
+		}
+	} else if listAttempt.Class == "OK" {
+		listAttempt.Class = "PROTOCOL_ERROR"
+		listAttempt.Detail = "invalid tools/list response"
+	}
+	out = append(out, listAttempt)
+
+	call, err := c.postHeaders(c.base, map[string]any{
+		"jsonrpc": "2.0",
+		"id":      102,
+		"method":  "tools/call",
+		"params": map[string]any{
+			"name":      "waqf_quran_get_ayah",
+			"arguments": map[string]any{"surah": 1, "ayah": 1},
+			"_meta":     meta,
+		},
+	}, withHeader(withHeader(baseHeaders, "Mcp-Method", "tools/call"), "Mcp-Name", "waqf_quran_get_ayah"))
+	if err != nil {
+		return append(out, attempt{Kind: "modern", Name: "tools/call 2026", Class: "HTTP_ERROR", Detail: err.Error()})
+	}
+	callAttempt := c.toAttempt("modern", "tools/call 2026", call)
+	var callRPC rpcResponse
+	if callAttempt.Class == "OK" && json.Unmarshal(call.body, &callRPC) == nil && callRPC.Error == nil {
+		var result struct {
+			ResultType string `json:"resultType"`
+			IsError    bool   `json:"isError"`
+			Content    []struct {
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		if json.Unmarshal(callRPC.Result, &result) == nil && result.ResultType == "complete" {
+			if len(result.Content) > 0 {
+				callAttempt.Detail = truncate(result.Content[0].Text, 120)
+			} else {
+				callAttempt.Detail = "empty content"
+			}
+		} else {
+			callAttempt.Class = "PROTOCOL_ERROR"
+			callAttempt.Detail = "missing resultType in 2026 tools/call"
+		}
+	} else if callAttempt.Class == "OK" {
+		callAttempt.Class = "PROTOCOL_ERROR"
+		callAttempt.Detail = "invalid tools/call response"
+	}
+	out = append(out, callAttempt)
+	return out
+}
+
+func withHeader(headers map[string]string, key, value string) map[string]string {
+	out := make(map[string]string, len(headers)+1)
+	for k, v := range headers {
+		out[k] = v
+	}
+	out[key] = value
+	return out
+}
+
+func contains(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *client) post(url string, body map[string]any) (*httpResult, error) {
+	return c.postHeaders(url, body, nil)
+}
+
+func (c *client) postHeaders(url string, body map[string]any, extra map[string]string) (*httpResult, error) {
 	start := time.Now()
 	req, err := http.NewRequest("POST", url, bytes.NewReader(mustJSON(body)))
 	if err != nil {
 		return nil, err
 	}
 	c.setHeaders(req)
+	for key, value := range extra {
+		req.Header.Set(key, value)
+	}
 	res, err := c.http.Do(req)
 	if err != nil {
 		return nil, err

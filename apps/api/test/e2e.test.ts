@@ -213,15 +213,24 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     }
   });
 
-  it("POST /mcp implements server/discover for version negotiation", async () => {
+  it("POST /mcp implements server/discover for 2026 version negotiation", async () => {
     const req = new Request("http://localhost:8787/mcp", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "MCP-Protocol-Version": "2026-07-28",
+        "Mcp-Method": "server/discover",
+      },
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: 7,
         method: "server/discover",
-        params: {},
+        params: {
+          _meta: {
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientCapabilities": {},
+          },
+        },
       }),
     });
 
@@ -229,16 +238,71 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       result: {
+        resultType: string;
         supportedVersions: string[];
         capabilities: { tools?: unknown };
         _meta: Record<string, { name?: string }>;
       };
     };
+    expect(body.result.resultType).toBe("complete");
+    expect(body.result.supportedVersions).toContain("2026-07-28");
     expect(body.result.supportedVersions).toContain("2024-11-05");
     expect(body.result.capabilities.tools).toBeDefined();
     expect(body.result._meta["io.modelcontextprotocol/serverInfo"].name).toBe(
       "IslamicSources"
     );
+  });
+
+  it("POST /mcp supports 2026 stateless tools/list and tool error results", async () => {
+    const headers = {
+      "Content-Type": "application/json",
+      "MCP-Protocol-Version": "2026-07-28",
+    };
+    const meta = {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientCapabilities": {},
+    };
+
+    const listReq = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: { ...headers, "Mcp-Method": "tools/list" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 70,
+        method: "tools/list",
+        params: { _meta: meta },
+      }),
+    });
+    const listRes = await worker.fetch(listReq, mockEnv, mockCtx);
+    expect(listRes.status).toBe(200);
+    const listBody = (await listRes.json()) as {
+      result: { resultType: string; tools: Array<{ name: string }> };
+    };
+    expect(listBody.result.resultType).toBe("complete");
+    expect(listBody.result.tools.length).toBeGreaterThanOrEqual(6);
+
+    const callReq = new Request("http://localhost:8787/mcp", {
+      method: "POST",
+      headers: {
+        ...headers,
+        "Mcp-Method": "tools/call",
+        "Mcp-Name": "waqf_search",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 71,
+        method: "tools/call",
+        params: { name: "waqf_search", arguments: { query: "test" }, _meta: meta },
+      }),
+    });
+    const callRes = await worker.fetch(callReq, mockEnv, mockCtx);
+    expect(callRes.status).toBe(200);
+    const callBody = (await callRes.json()) as {
+      result: { resultType: string; isError?: boolean; content: Array<{ text?: string }> };
+    };
+    expect(callBody.result.resultType).toBe("complete");
+    expect(callBody.result.isError).toBe(true);
+    expect(callBody.result.content[0]?.text).toContain("Unknown canonical tool");
   });
 
   it("POST /mcp resources/templates/list returns an empty template set", async () => {

@@ -3,7 +3,12 @@
  * advertises. `initialize` and `server/discover` must not drift apart: clients
  * cache either response and use it to choose how to talk to the server.
  */
-export const SUPPORTED_PROTOCOL_VERSIONS = ["2024-11-05"] as const;
+export const MODERN_PROTOCOL_VERSION = "2026-07-28";
+export const LEGACY_PROTOCOL_VERSION = "2024-11-05";
+export const SUPPORTED_PROTOCOL_VERSIONS = [
+  MODERN_PROTOCOL_VERSION,
+  LEGACY_PROTOCOL_VERSION,
+] as const;
 
 export const SERVER_CAPABILITIES = {
   tools: { listChanged: false },
@@ -25,10 +30,42 @@ const SERVER_INSTRUCTIONS =
 /** MCP 2024-11-05 lifecycle result used by the legacy initialize handshake. */
 export function buildInitializeResult() {
   return {
-    protocolVersion: SUPPORTED_PROTOCOL_VERSIONS[0],
+    protocolVersion: LEGACY_PROTOCOL_VERSION,
     capabilities: SERVER_CAPABILITIES,
     serverInfo: SERVER_INFO,
   };
+}
+
+/**
+ * MCP 2026 requires resultType on every successful result and recommends
+ * serverInfo in each result's _meta. Earlier clients treat absent resultType
+ * as complete, so adding both is backward compatible.
+ */
+export function withCompleteResult(payload: unknown): unknown {
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+  const record = payload as Record<string, unknown>;
+  const result = record.result;
+  if (
+    !result ||
+    typeof result !== "object" ||
+    Array.isArray(result) ||
+    "resultType" in (result as Record<string, unknown>)
+  ) {
+    return payload;
+  }
+
+  const normalizedResult: Record<string, unknown> = {
+    resultType: "complete",
+    ...(result as Record<string, unknown>),
+  };
+  if (!normalizedResult._meta) {
+    normalizedResult._meta = {
+      "io.modelcontextprotocol/serverInfo": SERVER_INFO,
+    };
+  }
+  return { ...record, result: normalizedResult };
 }
 
 /** MCP 2026-07-28 discovery result for clients that probe before initialize. */

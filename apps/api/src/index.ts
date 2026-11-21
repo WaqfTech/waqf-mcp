@@ -1,6 +1,10 @@
 import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
-import { buildDiscoverResult, buildInitializeResult } from "./core/server-metadata";
+import {
+  buildDiscoverResult,
+  buildInitializeResult,
+  withCompleteResult,
+} from "./core/server-metadata";
 import { AGENT_DISCOVERY_LINK_HEADER, CORS_HEADERS, DISCOVERY_HEADERS } from "./http";
 import { checkAdminAuth } from "./admin";
 import { handleCacheStatsRequest } from "./routes/cache-stats";
@@ -688,7 +692,7 @@ export default {
       };
 
       const jsonResponse = (payload: unknown, status = 200) => {
-        const bodyStr = JSON.stringify(payload);
+        const bodyStr = JSON.stringify(withCompleteResult(payload));
         const bytes = textEncoder.encode(bodyStr).length;
         return {
           response: new Response(bodyStr, {

@@ -6,7 +6,9 @@ It initializes a session, lists every tool, calls all 55 advertised tools with
 sample arguments, reads all resources, runs all prompts, and checks the public
 transport paths:
 
-- `POST /mcp` and `notifications/initialized`
+- MCP 2026 `server/discover`, `tools/list`, and `tools/call` with per-request
+  metadata, `resultType: complete`, and serverInfo
+- Legacy `initialize` and `notifications/initialized`
 - `GET /mcp` discovery JSON and finite SSE
 - CORS preflight
 - both protocol hosts, `.app` and `.dev`

@@ -22,6 +22,18 @@ describe("D1TelemetryService", () => {
     expect(telemetry.detectClientApp("Antigravity-Agent/2.0")).toBe("antigravity");
     expect(telemetry.detectClientApp("Cline/3.5")).toBe("cline");
     expect(telemetry.detectClientApp("curl/8.5.0")).toBe("curl");
+    expect(telemetry.detectClientApp("openai-mcp/1.0.0 (Codex)")).toBe("codex");
+    expect(telemetry.detectClientApp("openai-mcp/1.0.0")).toBe("codex");
+    expect(telemetry.detectClientApp("MistralAI-MCPClient/1.0")).toBe("mistral");
+    expect(telemetry.detectClientApp("opencode/latest/2.2.7/cli")).toBe("opencode");
+    expect(telemetry.detectClientApp("grok-connectors-manager/0.1.0")).toBe("grok");
+    expect(telemetry.detectClientApp("Wabi-MCP/1.0")).toBe("wabi");
+    expect(telemetry.detectClientApp("mcpregistry-bot/0.1")).toBe("mcp-registry");
+    expect(telemetry.detectClientApp("Google")).toBe("google");
+    expect(telemetry.detectClientApp("Go-http-client/2.0")).toBe("go-client");
+    expect(telemetry.detectClientApp("okhttp/5.3.2")).toBe("okhttp");
+    expect(telemetry.detectClientApp("node")).toBe("node");
+    expect(telemetry.detectClientApp("CensysInspect/1.1")).toBe("crawler");
     expect(telemetry.detectClientApp("Mozilla/5.0 Chrome/120.0")).toBe("other");
     expect(telemetry.detectClientApp(null)).toBe("unknown");
   });

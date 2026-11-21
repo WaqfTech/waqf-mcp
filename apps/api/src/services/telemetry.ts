@@ -50,11 +50,31 @@ export class D1TelemetryService {
   public detectClientApp(userAgent: string | null): string {
     if (!userAgent) return "unknown";
     const lower = userAgent.toLowerCase();
+    if (lower.includes("openai-mcp") || lower.includes("codex")) return "codex";
     if (lower.includes("claude")) return "claude";
     if (lower.includes("cursor")) return "cursor";
     if (lower.includes("antigravity") || lower.includes("gemini")) return "antigravity";
     if (lower.includes("cline") || lower.includes("roo")) return "cline";
     if (lower.includes("continue")) return "continue";
+    if (lower.includes("mistral")) return "mistral";
+    if (lower.includes("opencode")) return "opencode";
+    if (lower.includes("grok")) return "grok";
+    if (lower.includes("wabi")) return "wabi";
+    if (lower.includes("mcpregistry")) return "mcp-registry";
+    if (lower.includes("google")) return "google";
+    if (lower.includes("go-http-client")) return "go-client";
+    if (lower.includes("okhttp")) return "okhttp";
+    if (lower.includes("undici") || lower === "node") return "node";
+    if (
+      lower.includes("censys") ||
+      lower.includes("agent-index") ||
+      lower.includes("mcp-ad-measurement") ||
+      lower.includes("mcp-discovery-measurement")
+    ) {
+      return "crawler";
+    }
+    if (lower.includes("islamic-mcp-gateway")) return "gateway";
+    if (lower.includes("waqfdeploycheck")) return "deploy-check";
     if (lower.includes("python")) return "python-sdk";
     if (lower.includes("curl")) return "curl";
     return "other";

@@ -156,4 +156,25 @@ describe("Shamela suite routing", () => {
     expect(shamelaConfig.cacheTtlSeconds).toBe(604800);
     expect(shamelaConfig.tools).toHaveLength(4);
   });
+
+  it("preserves upstream citation metadata when Shamela returns structuredContent", async () => {
+    const registry = new ProviderRegistry([]);
+    const adapter = createAdapter();
+    vi.spyOn(adapter, "callTool").mockResolvedValue({
+      content: [{ type: "text", text: "مسألة" }],
+      structuredContent: {
+        book_id: 1681,
+        page_id: 883,
+        citation: { markdown: "[مجموع الفتاوى](https://shamela.ws/book/1681/883)" },
+      },
+    });
+    registry.register(adapter);
+    const router = new FederationRouter(registry, normalizer);
+    const res = await router.callTool("shamela__shamela_open", { bookId: 1681, pageId: 883 });
+    expect(res.result.structuredContent).toEqual({
+      book_id: 1681,
+      page_id: 883,
+      citation: { markdown: "[مجموع الفتاوى](https://shamela.ws/book/1681/883)" },
+    });
+  });
 });

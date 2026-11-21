@@ -233,4 +233,37 @@ describe("Canonical books cache keys", () => {
       await cache.computeKey("canonical", "waqf_books_search", secondArgs)
     );
   });
+
+  it("exposes OCR warning status and PDF link in waqf_books_read_page structuredContent", async () => {
+    const registry = new ProviderRegistry([]);
+    const adapter = createAdapter();
+    vi.spyOn(adapter, "callTool").mockResolvedValue({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            file_id: 65664,
+            page_number: 247,
+            book_title: "الرسالة",
+            url: "https://aljam3.com/book/65664/247",
+            pdf_url: "https://aljam3.com/files/65664.pdf#page=247",
+            ocr_warning: "Extracted text may contain OCR errors; verify against PDF.",
+            text: "باب في بيان وجوب اتباع سنة رسول الله ﷺ",
+          }),
+        },
+      ],
+    });
+    registry.register(adapter);
+    const router = new FederationRouter(registry, new SchemaNormalizer());
+    const res = await router.callTool("waqf_books_read_page", { fileId: 65664, pageNumber: 247 });
+    const sc = res.result.structuredContent as {
+      results: Array<{
+        content: { ocr_status: string; verbatim: string };
+        citation: { pdf_url: string | null };
+      }>;
+    };
+    expect(sc.results[0].content.ocr_status).toBe("possible_ocr_errors");
+    expect(sc.results[0].citation.pdf_url).toBe("https://aljam3.com/files/65664.pdf#page=247");
+    expect(sc.results[0].content.verbatim).toBe("باب في بيان وجوب اتباع سنة رسول الله ﷺ");
+  });
 });

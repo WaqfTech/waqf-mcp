@@ -627,8 +627,8 @@ describe("Canonical Tools & Schema Normalization", () => {
                   url: "https://aljam3.com/ar/3741/9025/3",
                   pdf_url: "https://example.com/03_74943.pdf#page=3",
                 },
-                text: "باب صلاة المسافر",
-                navigation: { next_offset: null },
+                text: { content: "باب صلاة المسافر", offset: 0, total_chars: 1999, next_offset: 201 },
+                navigation: { previous_page: 2, next_page: 4 },
               }),
             },
           ],
@@ -640,10 +640,17 @@ describe("Canonical Tools & Schema Normalization", () => {
         results: Array<{
           kind: string;
           work: { id: string | null; title: string | null; author: string | null };
-          location: { digital_page_number: number | null; file_id: number | null; page_id: string | null };
-          content: { verbatim: string };
+          location: {
+            digital_page_number: number | null;
+            file_id: number | null;
+            page_id: string | null;
+            offset: number | null;
+            next_offset: number | null;
+          };
+          content: { verbatim: string; is_excerpt: boolean };
           citation: { source_url: string | null; pdf_url: string | null };
         }>;
+        pagination: { has_more: boolean; next_cursor: string | null };
       };
       expect(aljam3Sc.results[0].kind).toBe("book_page");
       expect(aljam3Sc.results[0].work).toEqual({
@@ -655,8 +662,13 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect(aljam3Sc.results[0].location.file_id).toBe(9025);
       expect(aljam3Sc.results[0].location.digital_page_number).toBe(3);
       expect(aljam3Sc.results[0].location.page_id).toBe("3547087");
+      expect(aljam3Sc.results[0].location.offset).toBe(0);
+      expect(aljam3Sc.results[0].location.next_offset).toBe(201);
       expect(aljam3Sc.results[0].content.verbatim).toBe("باب صلاة المسافر");
+      expect(aljam3Sc.results[0].content.is_excerpt).toBe(true);
       expect(aljam3Sc.results[0].citation.pdf_url).toBe("https://example.com/03_74943.pdf#page=3");
+      expect(aljam3Sc.pagination.has_more).toBe(true);
+      expect(aljam3Sc.pagination.next_cursor).toBe("201");
 
       const turathNormalized = normalizer.normalizeToolResult(
         {

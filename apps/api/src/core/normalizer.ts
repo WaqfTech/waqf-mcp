@@ -1012,13 +1012,15 @@ export class SchemaNormalizer {
               : "raw_text";
 
     // Preserve exact verbatim source text without mutating diacritics or orthography.
+    const textObj = asRecord(rec.text);
     const verbatim =
-      (typeof rec.text_uthmani === "string" && rec.text_uthmani) ||
-      (typeof rec.text === "string" && rec.text) ||
-      (typeof rec.excerpt === "string" && rec.excerpt) ||
-      (typeof rec.snip === "string" && rec.snip) ||
-      (typeof rec.snippet === "string" && rec.snippet) ||
-      (typeof rec.description === "string" && rec.description) ||
+      (typeof rec.text_uthmani === "string" && rec.text_uthmani ? rec.text_uthmani : null) ??
+      (typeof rec.text === "string" ? rec.text : null) ??
+      (typeof textObj?.content === "string" ? textObj.content : null) ??
+      (typeof rec.excerpt === "string" && rec.excerpt ? rec.excerpt : null) ??
+      (typeof rec.snip === "string" && rec.snip ? rec.snip : null) ??
+      (typeof rec.snippet === "string" && rec.snippet ? rec.snippet : null) ??
+      (typeof rec.description === "string" && rec.description ? rec.description : null) ??
       rawFallbackText;
 
     const sourceUrl =
@@ -1132,6 +1134,7 @@ export class SchemaNormalizer {
     } else if (parsedObj) {
       const list = parsedObj.results ?? parsedObj.items ?? parsedObj.hits ?? parsedObj.data;
       const pageObj = asRecord(parsedObj.page);
+      const parsedTextObj = asRecord(parsedObj.text);
       if (Array.isArray(list)) {
         rawItems = list;
       } else if (pageObj) {
@@ -1141,7 +1144,17 @@ export class SchemaNormalizer {
             ...parsedObj,
             ...pageObj,
             ...(navObj ?? {}),
-            ...(typeof parsedObj.text === "string" && !pageObj.text ? { text: parsedObj.text } : {}),
+            ...(parsedTextObj
+              ? {
+                  offset: parsedTextObj.offset ?? parsedObj.offset,
+                  next_offset: parsedTextObj.next_offset ?? parsedObj.next_offset,
+                  is_excerpt:
+                    parsedTextObj.next_offset !== null && parsedTextObj.next_offset !== undefined,
+                  ...(typeof parsedTextObj.content === "string" ? { text: parsedTextObj.content } : {}),
+                }
+              : typeof parsedObj.text === "string" && !pageObj.text
+                ? { text: parsedObj.text }
+                : {}),
           },
         ];
       } else if (Object.keys(parsedObj).length > 0) {
@@ -1155,12 +1168,16 @@ export class SchemaNormalizer {
       this.mapRecordToEvidenceItem(item, idx, providerId, retrievedAt, combinedText)
     );
 
+    const parsedTextObj = asRecord(parsedObj?.text);
+    const rawNextOffset = parsedObj?.next_offset ?? parsedTextObj?.next_offset;
     const nextCursor =
       asString(parsedObj?.next_cursor) ??
       asString(parsedObj?.nextCursor) ??
-      (parsedObj?.next_offset !== undefined && parsedObj?.next_offset !== null
-        ? String(parsedObj.next_offset)
-        : null);
+      (rawNextOffset !== undefined && rawNextOffset !== null
+        ? String(rawNextOffset)
+        : results[0]?.location.next_offset !== null && results[0]?.location.next_offset !== undefined
+          ? String(results[0].location.next_offset)
+          : null);
     const total =
       asInt(parsedObj?.total_available) ??
       asInt(parsedObj?.total) ??

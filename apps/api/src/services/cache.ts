@@ -8,6 +8,23 @@ import type { ToolResult } from "@waqf/types";
  * isolate, naming the command that fixes it, instead of logging every request.
  */
 let warnedD1Unavailable = false;
+let warnedOversizeCache = false;
+
+/** New entries live for one day; a cache hit promotes them to the provider TTL. */
+export const INITIAL_CACHE_TTL_SECONDS = 60 * 60 * 24;
+
+/** Used when a provider does not declare its own cache lifetime. */
+export const DEFAULT_CACHE_TTL_SECONDS = 60 * 60 * 24 * 30;
+
+/**
+ * D1 rejects rows above 2 MB. Cache payloads are bound twice by the upsert,
+ * so cap them well below the row limit; oversized answers are served live.
+ */
+export const MAX_CACHE_PAYLOAD_BYTES = 256 * 1024;
+
+export function initialCacheTtl(ttlSeconds: number): number {
+  return ttlSeconds > 0 ? Math.min(ttlSeconds, INITIAL_CACHE_TTL_SECONDS) : 0;
+}
 
 function warnD1Unavailable(operation: string, error: unknown): void {
   if (warnedD1Unavailable) {
@@ -18,6 +35,33 @@ function warnD1Unavailable(operation: string, error: unknown): void {
   console.warn(
     `[cache] D1 ${operation} failed — is the local schema applied? Run "aube run db:migrate:local". (${detail})`
   );
+}
+
+function warnOversizeCacheOnce(bytes: number): void {
+  if (warnedOversizeCache) {
+    return;
+  }
+  warnedOversizeCache = true;
+  console.warn(
+    `[cache] skipped a ${bytes}-byte payload; the cap is ${MAX_CACHE_PAYLOAD_BYTES} bytes.`
+  );
+}
+
+export interface CacheProviderToolStats {
+  providerId: string;
+  toolName: string;
+  entries: number;
+  uses: number;
+}
+
+export interface CacheStats {
+  provider: string | null;
+  totals: {
+    entries: number;
+    uses: number;
+    providerTools: number;
+  };
+  byProviderTool: CacheProviderToolStats[];
 }
 
 export class D1CacheService {
@@ -64,12 +108,23 @@ export class D1CacheService {
     }
   }
 
-  public async recordHit(cacheKey: string): Promise<void> {
+  public async recordHit(
+    cacheKey: string,
+    ttlSeconds = DEFAULT_CACHE_TTL_SECONDS
+  ): Promise<void> {
     try {
       const db = createDb(this.d1);
+      const expiresAt =
+        ttlSeconds > 0
+          ? new Date(Date.now() + ttlSeconds * 1000).toISOString()
+          : null;
+
       await db
         .update(mcpCache)
-        .set({ hitCount: sql`${mcpCache.hitCount} + 1` })
+        .set({
+          hitCount: sql`${mcpCache.hitCount} + 1`,
+          expiresAt,
+        })
         .where(eq(mcpCache.cacheKey, cacheKey));
     } catch (err) {
       warnD1Unavailable("hit counter update", err);
@@ -81,12 +136,23 @@ export class D1CacheService {
     providerId: string,
     toolName: string,
     result: ToolResult,
-    ttlSeconds = 60 * 60 * 24 * 30 // default 30 days
+    ttlSeconds = DEFAULT_CACHE_TTL_SECONDS
   ): Promise<void> {
     try {
+      const payload = JSON.stringify(result);
+      const payloadBytes = new TextEncoder().encode(payload).byteLength;
+      if (payloadBytes > MAX_CACHE_PAYLOAD_BYTES) {
+        warnOversizeCacheOnce(payloadBytes);
+        return;
+      }
+
       const db = createDb(this.d1);
       const now = new Date();
-      const expires = ttlSeconds > 0 ? new Date(now.getTime() + ttlSeconds * 1000).toISOString() : null;
+      const effectiveTtl = initialCacheTtl(ttlSeconds);
+      const expires =
+        effectiveTtl > 0
+          ? new Date(now.getTime() + effectiveTtl * 1000).toISOString()
+          : null;
 
       await db
         .insert(mcpCache)
@@ -94,7 +160,7 @@ export class D1CacheService {
           cacheKey,
           providerId,
           toolName,
-          responsePayloadJson: JSON.stringify(result),
+          responsePayloadJson: payload,
           hitCount: 1,
           createdAt: now.toISOString(),
           expiresAt: expires,
@@ -102,7 +168,7 @@ export class D1CacheService {
         .onConflictDoUpdate({
           target: mcpCache.cacheKey,
           set: {
-            responsePayloadJson: JSON.stringify(result),
+            responsePayloadJson: payload,
             hitCount: sql`${mcpCache.hitCount} + 1`,
             expiresAt: expires,
           },
@@ -110,5 +176,54 @@ export class D1CacheService {
     } catch (err) {
       warnD1Unavailable("write", err);
     }
+  }
+
+  /**
+   * Counts cache entries and uses by provider/tool. This is the reader for
+   * idx_mcp_cache_provider_tool: grouping and the optional provider filter use
+   * the index, and no payload column is selected, so the scan stays cheap.
+   */
+  public async getStats(providerId?: string): Promise<CacheStats> {
+    const filter = providerId ? " WHERE provider_id = ?" : "";
+    const groupStmt = this.d1.prepare(`
+      SELECT provider_id, tool_name, COUNT(*) AS entries, SUM(hit_count) AS uses
+      FROM mcp_cache${filter}
+      GROUP BY provider_id, tool_name
+      ORDER BY entries DESC
+      LIMIT 100
+    `);
+    const totalsStmt = this.d1.prepare(`
+      SELECT COUNT(*) AS entries,
+             COALESCE(SUM(hit_count), 0) AS uses,
+             COUNT(DISTINCT provider_id || ':' || tool_name) AS provider_tools
+      FROM mcp_cache${filter}
+    `);
+
+    const [groupResult, totalsResult] = await this.d1.batch([
+      providerId ? groupStmt.bind(providerId) : groupStmt,
+      providerId ? totalsStmt.bind(providerId) : totalsStmt,
+    ]);
+
+    const byProviderTool = (groupResult.results as Array<Record<string, unknown>>).map(
+      (row) => ({
+        providerId: String(row.provider_id),
+        toolName: String(row.tool_name),
+        entries: Number(row.entries ?? 0),
+        uses: Number(row.uses ?? 0),
+      })
+    );
+    const totalsRow = totalsResult.results[0] as Record<string, unknown> | undefined;
+
+    return {
+      provider: providerId ?? null,
+      totals: {
+        entries: Number(totalsRow?.entries ?? 0),
+        uses: Number(totalsRow?.uses ?? 0),
+        providerTools: Number(
+          totalsRow?.provider_tools ?? byProviderTool.length
+        ),
+      },
+      byProviderTool,
+    };
   }
 }

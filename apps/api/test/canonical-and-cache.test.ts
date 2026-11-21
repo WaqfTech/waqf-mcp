@@ -4,7 +4,12 @@ import { FederationRouter, resetProviderWarnings } from "../src/core/router";
 import { ProviderRegistry } from "../src/core/registry";
 import { JsonRpcMcpAdapter } from "../src/adapters/jsonrpc";
 import { SseMcpAdapter } from "../src/adapters/sse";
-import { D1CacheService } from "../src/services/cache";
+import {
+  D1CacheService,
+  INITIAL_CACHE_TTL_SECONDS,
+  MAX_CACHE_PAYLOAD_BYTES,
+  initialCacheTtl,
+} from "../src/services/cache";
 
 describe("Canonical Tools & Schema Normalization", () => {
   const normalizer = new SchemaNormalizer();
@@ -99,6 +104,85 @@ describe("Canonical Tools & Schema Normalization", () => {
     expect(res.providerId).toBe("tafsir_net");
     expect(res.result.content[0].type).toBe("text");
     expect((res.result.content[0] as { text: string }).text).toContain("اللَّهُ لَا إِلَٰهَ");
+  });
+
+  it("caps the first TTL and keeps provider TTLs that are shorter", () => {
+    expect(initialCacheTtl(604800)).toBe(INITIAL_CACHE_TTL_SECONDS);
+    expect(initialCacheTtl(3600)).toBe(3600);
+    expect(initialCacheTtl(0)).toBe(0);
+  });
+
+  it("skips caching payloads above the payload cap without touching D1", async () => {
+    const prepare = vi.fn();
+    const cache = new D1CacheService({ prepare } as unknown as D1Database);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await cache.set(
+      "oversized-key",
+      "turath",
+      "get_book",
+      { content: [{ type: "text", text: "x".repeat(MAX_CACHE_PAYLOAD_BYTES) }] },
+      604800
+    );
+
+    expect(prepare).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("extends the cache TTL on a namespaced hit using the provider TTL", async () => {
+    const registry = new ProviderRegistry([]);
+    const adapter = new JsonRpcMcpAdapter({
+      id: "aljam3",
+      name: "Aljam3 Library",
+      baseUrl: "https://aljam3.com/mcp",
+      transport: "json-rpc",
+      description: "Aljam3 books corpus",
+      cacheTtlSeconds: 604800,
+    });
+    registry.register(adapter);
+
+    const cache = {
+      computeKey: vi.fn().mockResolvedValue("cache-key"),
+      get: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "cached" }] }),
+      set: vi.fn(),
+      recordHit: vi.fn().mockResolvedValue(undefined),
+    } as unknown as D1CacheService;
+    const router = new FederationRouter(registry, normalizer);
+
+    const res = await router.callTool("aljam3__search", { query: "x" }, cache);
+
+    expect(res.isCacheHit).toBe(true);
+    expect(cache.recordHit).toHaveBeenCalledWith("cache-key", 604800);
+  });
+
+  it("extends the canonical cache TTL using the primary provider TTL", async () => {
+    const registry = new ProviderRegistry([]);
+    const tafsir = new SseMcpAdapter({
+      id: "tafsir_net",
+      name: "Tafsir.net",
+      baseUrl: "https://mcp.tafsir.net/mcp",
+      transport: "sse",
+      description: "Tafsir",
+      cacheTtlSeconds: 2592000,
+    });
+    registry.register(tafsir);
+
+    const cache = {
+      computeKey: vi.fn().mockResolvedValue("cache-key"),
+      get: vi.fn().mockResolvedValue({ content: [{ type: "text", text: "cached" }] }),
+      set: vi.fn(),
+      recordHit: vi.fn().mockResolvedValue(undefined),
+    } as unknown as D1CacheService;
+    const router = new FederationRouter(registry, normalizer);
+
+    const res = await router.callTool(
+      "waqf_quran_get_ayah",
+      { surah: 1, ayah: 1 },
+      cache
+    );
+
+    expect(res.isCacheHit).toBe(true);
+    expect(cache.recordHit).toHaveBeenCalledWith("cache-key", 2592000);
   });
 
   it("D1CacheService computes deterministic SHA-256 keys", async () => {

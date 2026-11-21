@@ -2,6 +2,8 @@ import { ProviderRegistry } from "./core/registry";
 import { FederationRouter } from "./core/router";
 import { buildDiscoverResult, buildInitializeResult } from "./core/server-metadata";
 import { AGENT_DISCOVERY_LINK_HEADER, CORS_HEADERS, DISCOVERY_HEADERS } from "./http";
+import { checkAdminAuth } from "./admin";
+import { handleCacheStats } from "./routes/cache-stats";
 import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
@@ -53,27 +55,6 @@ export function isSubmissionRateLimited(ip: string): boolean {
 
 export function resetSubmissionRateLimits(): void {
   submissionRateLimits.clear();
-}
-
-function checkAdminAuth(request: Request, env: Env): Response | null {
-  const expectedKey = env.ADMIN_API_KEY;
-  if (!expectedKey) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized: Admin API key not configured on server" }),
-      { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-    );
-  }
-
-  const authHeader = request.headers.get("authorization") || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  if (!token || token !== expectedKey) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized: Invalid or missing Bearer token" }),
-      { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-    );
-  }
-
-  return null;
 }
 
 // Not exported: the Worker entry module may only export handlers.
@@ -606,6 +587,19 @@ export default {
           headers: { "Content-Type": "application/json", ...CORS_HEADERS },
         });
       }
+    }
+
+    // Authenticated Cache Inventory Endpoint
+    if (request.method === "GET" && pathname === "/api/cache/stats") {
+      const authErr = checkAdminAuth(request, env);
+      if (authErr) return authErr;
+      if (!env.DB) {
+        return new Response(
+          JSON.stringify({ error: "Database not configured" }),
+          { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+        );
+      }
+      return handleCacheStats(request, env.DB);
     }
 
     // MCP Streamable HTTP / POST Endpoint

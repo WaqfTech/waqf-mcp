@@ -9,7 +9,7 @@ import type {
 } from "@waqf/types";
 import { ProviderRegistry } from "./registry";
 import { SchemaNormalizer } from "./normalizer";
-import type { D1CacheService } from "../services/cache";
+import { DEFAULT_CACHE_TTL_SECONDS, type D1CacheService } from "../services/cache";
 
 export interface CallToolResponse {
   providerId: string;
@@ -25,6 +25,15 @@ export interface ReadResourceResponse {
 }
 
 const CANONICAL_TOOL_HINT = `Available canonical tools: ${CANONICAL_TOOL_NAMES.join(", ")}.`;
+
+const CANONICAL_PRIMARY_PROVIDER: Record<string, string> = {
+  waqf_quran_get_ayah: "tafsir_net",
+  waqf_turath_search_books: "turath",
+  waqf_hadith_search: "turath",
+  waqf_search_scholarship: "fihris",
+  waqf_books_search: "aljam3",
+  waqf_books_read_page: "aljam3",
+};
 
 /**
  * Invalid or unknown tool names are caller errors, not gateway failures. The
@@ -214,10 +223,11 @@ export class FederationRouter {
       cacheKey = await cacheService.computeKey(providerId, originalToolName, sanitizedArgs);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
+        const hitTtl = provider.cacheTtlSeconds ?? DEFAULT_CACHE_TTL_SECONDS;
         if (ctx) {
-          ctx.waitUntil(cacheService.recordHit(cacheKey));
+          ctx.waitUntil(cacheService.recordHit(cacheKey, hitTtl));
         } else {
-          cacheService.recordHit(cacheKey).catch(() => {});
+          cacheService.recordHit(cacheKey, hitTtl).catch(() => {});
         }
         return {
           providerId,
@@ -257,6 +267,14 @@ export class FederationRouter {
     };
   }
 
+  private canonicalCacheTtl(toolName: string): number {
+    const providerId = CANONICAL_PRIMARY_PROVIDER[toolName];
+    return (
+      (providerId ? this.registry.get(providerId)?.cacheTtlSeconds : undefined) ??
+      DEFAULT_CACHE_TTL_SECONDS
+    );
+  }
+
   private async handleCanonicalCall(
     toolName: string,
     args: Record<string, unknown>,
@@ -279,10 +297,11 @@ export class FederationRouter {
       cacheKey = await cacheService.computeKey("canonical", toolName, bookArgs ?? args);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
+        const hitTtl = this.canonicalCacheTtl(toolName);
         if (ctx) {
-          ctx.waitUntil(cacheService.recordHit(cacheKey));
+          ctx.waitUntil(cacheService.recordHit(cacheKey, hitTtl));
         } else {
-          cacheService.recordHit(cacheKey).catch(() => {});
+          cacheService.recordHit(cacheKey, hitTtl).catch(() => {});
         }
         return {
           providerId: "canonical",

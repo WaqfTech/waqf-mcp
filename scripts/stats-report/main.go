@@ -41,6 +41,7 @@ type summary struct {
 
 type report struct {
 	GeneratedAt string                 `json:"generated_at"`
+	Source      string                 `json:"source"`
 	Since       string                 `json:"since"`
 	Days        int                    `json:"days"`
 	Public      bool                   `json:"public"`
@@ -55,14 +56,16 @@ var dimensions = map[string]string{
 	"tool":     "COALESCE(tool_name, '(non-tool)')",
 	"method":   "method",
 	"status":   "CAST(status_code AS TEXT)",
+	"colo":     "COALESCE(colo, 'unknown')",
 }
 
-var displayOrder = []string{"provider", "tool", "country", "client", "method", "status", "trend"}
+var displayOrder = []string{"provider", "tool", "country", "client", "method", "status", "colo", "trend"}
 
 func main() {
 	days := flag.Int("days", 30, "lookback window in days")
 	sinceFlag := flag.String("since", "", "RFC3339 start timestamp; overrides -days")
-	dimension := flag.String("dimension", "all", "provider, country, client, tool, method, status, trend, or all")
+	source := flag.String("source", "rollup", "rollup (mcp_stats_daily) or raw (mcp_logs)")
+	dimension := flag.String("dimension", "all", "provider, country, client, tool, method, status, colo, trend, or all")
 	format := flag.String("format", "table", "table, markdown, csv, or json")
 	database := flag.String("db", "waqf-app", "D1 database name")
 	remote := flag.Bool("remote", true, "query the remote database (false uses local D1)")
@@ -76,9 +79,12 @@ func main() {
 	if *format != "table" && *format != "markdown" && *format != "csv" && *format != "json" {
 		fail("-format must be table, markdown, csv, or json")
 	}
+	if *source != "rollup" && *source != "raw" {
+		fail("-source must be rollup or raw")
+	}
 	if *dimension != "all" {
 		if _, ok := dimensions[*dimension]; !ok && *dimension != "trend" {
-			fail("-dimension must be all, trend, or one of: provider, country, client, tool, method, status")
+			fail("-dimension must be all, trend, or one of: provider, country, client, tool, method, status, colo")
 		}
 	}
 
@@ -90,26 +96,35 @@ func main() {
 		}
 		sinceTime = parsed.UTC()
 	}
+	if *source == "rollup" {
+		// Rollups are day-granular; make the reported window match the data.
+		sinceTime = time.Date(sinceTime.Year(), sinceTime.Month(), sinceTime.Day(), 0, 0, 0, 0, time.UTC)
+	}
 	since := sinceTime.Format("2006-01-02T15:04:05.000Z")
+	sinceDay := sinceTime.Format("2006-01-02")
 	result := report{
 		GeneratedAt: time.Now().UTC().Format(time.RFC3339),
+		Source:      *source,
 		Since:       since,
 		Days:        int(time.Since(sinceTime).Hours() / 24),
 		Public:      *public,
 		Dimensions:  map[string][]metricRow{},
 	}
 
-	result.Summary = mustSummary(*database, *remote, since)
+	result.Summary = mustSummary(*database, *remote, *source, since, sinceDay)
+	if *source == "rollup" && result.Summary.Calls == 0 {
+		fmt.Fprintln(os.Stderr, "No rollup rows in this window; run POST /api/stats/aggregate or use -source raw.")
+	}
 
 	selected := displayOrder
 	if *dimension != "all" {
 		selected = []string{*dimension}
 	}
 	for _, name := range selected {
-		if *public && (name == "method" || name == "status") {
+		if *public && (name == "method" || name == "status" || name == "colo") {
 			continue
 		}
-		rows := mustRows(*database, *remote, since, name)
+		rows := mustRows(*database, *remote, *source, since, sinceDay, name)
 		if *public {
 			rows = publicFilter(rows, *minCalls)
 		}
@@ -130,18 +145,8 @@ func main() {
 	}
 }
 
-func mustSummary(database string, remote bool, since string) summary {
-	sql := fmt.Sprintf(`
-		SELECT COUNT(*) AS calls,
-		       SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) AS errors,
-		       SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) AS cache_hits,
-		       COUNT(DISTINCT client_ip_hash) AS unique_clients,
-		       ROUND(AVG(latency_ms), 1) AS avg_ms,
-		       MAX(latency_ms) AS max_ms
-		FROM mcp_logs
-		WHERE timestamp >= '%s'
-	`, since)
-	rows, err := queryRows(database, remote, sql)
+func mustSummary(database string, remote bool, source, since, sinceDay string) summary {
+	rows, err := queryRows(database, remote, summarySQL(source, since, sinceDay))
 	if err != nil {
 		fail(err.Error())
 	}
@@ -159,30 +164,8 @@ func mustSummary(database string, remote bool, since string) summary {
 	}
 }
 
-func mustRows(database string, remote bool, since, dimension string) []metricRow {
-	expr := dimensions[dimension]
-	order := "calls DESC"
-	limit := 50
-	if dimension == "trend" {
-		expr = "substr(timestamp, 1, 10)"
-		order = "value ASC"
-		limit = 400
-	}
-	sql := fmt.Sprintf(`
-		SELECT %s AS value,
-		       COUNT(*) AS calls,
-		       SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) AS errors,
-		       SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) AS cache_hits,
-		       ROUND(AVG(latency_ms), 1) AS avg_ms,
-		       MAX(latency_ms) AS max_ms
-		FROM mcp_logs
-		WHERE timestamp >= '%s'
-		GROUP BY value
-		ORDER BY %s
-		LIMIT %d
-	`, expr, since, order, limit)
-
-	rows, err := queryRows(database, remote, sql)
+func mustRows(database string, remote bool, source, since, sinceDay, dimension string) []metricRow {
+	rows, err := queryRows(database, remote, dimensionSQL(source, dimension, since, sinceDay))
 	if err != nil {
 		fail(err.Error())
 	}
@@ -198,6 +181,86 @@ func mustRows(database string, remote bool, since, dimension string) []metricRow
 		})
 	}
 	return out
+}
+
+func summarySQL(source, since, sinceDay string) string {
+	if source == "rollup" {
+		return fmt.Sprintf(`
+			SELECT SUM(calls) AS calls,
+			       SUM(errors) AS errors,
+			       SUM(cache_hits) AS cache_hits,
+			       SUM(unique_clients) AS unique_clients,
+			       ROUND(SUM(latency_sum_ms) * 1.0 / NULLIF(SUM(calls), 0), 1) AS avg_ms,
+			       MAX(latency_max_ms) AS max_ms
+			FROM mcp_stats_daily
+			WHERE dimension = 'total' AND day >= '%s'
+		`, sinceDay)
+	}
+
+	return fmt.Sprintf(`
+		SELECT COUNT(*) AS calls,
+		       SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) AS errors,
+		       SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) AS cache_hits,
+		       COUNT(DISTINCT client_ip_hash) AS unique_clients,
+		       ROUND(AVG(latency_ms), 1) AS avg_ms,
+		       MAX(latency_ms) AS max_ms
+		FROM mcp_logs
+		WHERE timestamp >= '%s'
+	`, since)
+}
+
+func dimensionSQL(source, dimension, since, sinceDay string) string {
+	if source == "rollup" {
+		if dimension == "trend" {
+			return fmt.Sprintf(`
+				SELECT day AS value,
+				       calls,
+				       errors,
+				       cache_hits,
+				       ROUND(latency_sum_ms * 1.0 / NULLIF(calls, 0), 1) AS avg_ms,
+				       latency_max_ms AS max_ms
+				FROM mcp_stats_daily
+				WHERE dimension = 'total' AND day >= '%s'
+				ORDER BY value ASC
+				LIMIT 400
+			`, sinceDay)
+		}
+		return fmt.Sprintf(`
+			SELECT value,
+			       SUM(calls) AS calls,
+			       SUM(errors) AS errors,
+			       SUM(cache_hits) AS cache_hits,
+			       ROUND(SUM(latency_sum_ms) * 1.0 / NULLIF(SUM(calls), 0), 1) AS avg_ms,
+			       MAX(latency_max_ms) AS max_ms
+			FROM mcp_stats_daily
+			WHERE dimension = '%s' AND day >= '%s'
+			GROUP BY value
+			ORDER BY calls DESC
+			LIMIT 50
+		`, dimension, sinceDay)
+	}
+
+	expr := dimensions[dimension]
+	order := "calls DESC"
+	limit := 50
+	if dimension == "trend" {
+		expr = "substr(timestamp, 1, 10)"
+		order = "value ASC"
+		limit = 400
+	}
+	return fmt.Sprintf(`
+		SELECT %s AS value,
+		       COUNT(*) AS calls,
+		       SUM(CASE WHEN status_code >= 400 OR error_message IS NOT NULL THEN 1 ELSE 0 END) AS errors,
+		       SUM(CASE WHEN is_cache_hit = 1 THEN 1 ELSE 0 END) AS cache_hits,
+		       ROUND(AVG(latency_ms), 1) AS avg_ms,
+		       MAX(latency_ms) AS max_ms
+		FROM mcp_logs
+		WHERE timestamp >= '%s'
+		GROUP BY value
+		ORDER BY %s
+		LIMIT %d
+	`, expr, since, order, limit)
 }
 
 func queryRows(database string, remote bool, sql string) ([]map[string]any, error) {
@@ -240,16 +303,21 @@ func printReport(result report, format string, public bool) {
 		return
 	}
 
-	fmt.Printf("Gateway stats: since %s\n", result.Since)
+	fmt.Printf("Gateway stats: since %s (source: %s)\n", result.Since, result.Source)
 	if public {
-		fmt.Println("Public-safe view: method/status omitted, small rows suppressed.")
+		fmt.Println("Public-safe view: method/status/colo omitted, small rows suppressed.")
 	}
-	fmt.Printf("Calls %d | errors %d (%.1f%%) | cache hits %d (%.1f%%) | unique clients %d\n",
+	clientLabel := "unique clients"
+	if result.Source == "rollup" {
+		clientLabel = "unique client-days"
+	}
+	fmt.Printf("Calls %d | errors %d (%.1f%%) | cache hits %d (%.1f%%) | %s %d\n",
 		result.Summary.Calls,
 		result.Summary.Errors,
 		percent(result.Summary.Errors, result.Summary.Calls),
 		result.Summary.CacheHits,
 		percent(result.Summary.CacheHits, result.Summary.Calls),
+		clientLabel,
 		result.Summary.UniqueClients,
 	)
 	fmt.Printf("Avg latency %.1f ms | max %d ms\n\n", result.Summary.AvgMs, result.Summary.MaxMs)

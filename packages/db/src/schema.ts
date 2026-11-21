@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, primaryKey } from "drizzle-orm/sqlite-core";
 
 // 1. High-Precision Telemetry Logs
 export const mcpLogs = sqliteTable(
@@ -68,6 +68,27 @@ export const mcpSubmissions = sqliteTable(
   ]
 );
 
+// 4. Daily Usage Rollups (survive raw-log and cache-payload retention)
+export const mcpStatsDaily = sqliteTable(
+  "mcp_stats_daily",
+  {
+    day: text("day").notNull(), // YYYY-MM-DD UTC
+    dimension: text("dimension").notNull(), // provider | tool | country | client | method | status | colo | total
+    value: text("value").notNull(),
+    calls: integer("calls").notNull().default(0),
+    errors: integer("errors").notNull().default(0),
+    cacheHits: integer("cache_hits").notNull().default(0),
+    latencySumMs: integer("latency_sum_ms").notNull().default(0),
+    latencyMaxMs: integer("latency_max_ms").notNull().default(0),
+    responseBytes: integer("response_bytes").notNull().default(0),
+    uniqueClients: integer("unique_clients").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({ columns: [table.day, table.dimension, table.value] }),
+    index("idx_mcp_stats_daily_dimension").on(table.dimension, table.day),
+  ]
+);
+
 export type McpLog = typeof mcpLogs.$inferSelect;
 export type NewMcpLog = typeof mcpLogs.$inferInsert;
 
@@ -76,3 +97,6 @@ export type NewMcpCacheEntry = typeof mcpCache.$inferInsert;
 
 export type McpSubmission = typeof mcpSubmissions.$inferSelect;
 export type NewMcpSubmissionRecord = typeof mcpSubmissions.$inferInsert;
+
+export type McpStatsDaily = typeof mcpStatsDaily.$inferSelect;
+export type NewMcpStatsDaily = typeof mcpStatsDaily.$inferInsert;

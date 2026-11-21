@@ -3,7 +3,9 @@ import { FederationRouter } from "./core/router";
 import { buildDiscoverResult, buildInitializeResult } from "./core/server-metadata";
 import { AGENT_DISCOVERY_LINK_HEADER, CORS_HEADERS, DISCOVERY_HEADERS } from "./http";
 import { checkAdminAuth } from "./admin";
-import { handleCacheStats } from "./routes/cache-stats";
+import { handleCacheStatsRequest } from "./routes/cache-stats";
+import { handleStatsAggregateRequest } from "./routes/stats-aggregate";
+import { runScheduledAggregation } from "./services/stats";
 import { setRequestFetcher } from "./adapters/base";
 import { D1CacheService } from "./services/cache";
 import { D1TelemetryService } from "./services/telemetry";
@@ -591,15 +593,12 @@ export default {
 
     // Authenticated Cache Inventory Endpoint
     if (request.method === "GET" && pathname === "/api/cache/stats") {
-      const authErr = checkAdminAuth(request, env);
-      if (authErr) return authErr;
-      if (!env.DB) {
-        return new Response(
-          JSON.stringify({ error: "Database not configured" }),
-          { status: 503, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
-        );
-      }
-      return handleCacheStats(request, env.DB);
+      return handleCacheStatsRequest(request, env);
+    }
+
+    // Authenticated Daily Rollup Backfill
+    if (request.method === "POST" && pathname === "/api/stats/aggregate") {
+      return handleStatsAggregateRequest(request, env);
     }
 
     // MCP Streamable HTTP / POST Endpoint
@@ -987,5 +986,13 @@ export default {
       status: 404,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
+  },
+
+  async scheduled(
+    _controller: ScheduledController,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<void> {
+    runScheduledAggregation(env, ctx);
   },
 };

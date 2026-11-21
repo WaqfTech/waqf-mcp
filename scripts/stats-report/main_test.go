@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -26,6 +27,36 @@ func TestPercentHandlesZeroTotal(t *testing.T) {
 	}
 	if got := percent(25, 100); got != 25 {
 		t.Fatalf("expected 25, got %v", got)
+	}
+}
+
+func TestSQLSources(t *testing.T) {
+	rollupSummary := summarySQL("rollup", "2026-11-21T00:00:00.000Z", "2026-11-20")
+	if !strings.Contains(rollupSummary, "mcp_stats_daily") {
+		t.Fatalf("rollup summary should read mcp_stats_daily: %s", rollupSummary)
+	}
+	if !strings.Contains(rollupSummary, "dimension = 'total'") {
+		t.Fatalf("rollup summary should use the total row: %s", rollupSummary)
+	}
+
+	rawSummary := summarySQL("raw", "2026-11-21T00:00:00.000Z", "2026-11-20")
+	if !strings.Contains(rawSummary, "mcp_logs") {
+		t.Fatalf("raw summary should read mcp_logs: %s", rawSummary)
+	}
+
+	rollupProvider := dimensionSQL("rollup", "provider", "", "2026-11-20")
+	if !strings.Contains(rollupProvider, "dimension = 'provider'") {
+		t.Fatalf("rollup provider SQL missing dimension filter: %s", rollupProvider)
+	}
+
+	rawProvider := dimensionSQL("raw", "provider", "2026-11-21T00:00:00.000Z", "2026-11-20")
+	if !strings.Contains(rawProvider, "COALESCE(upstream_provider") {
+		t.Fatalf("raw provider SQL missing provider expression: %s", rawProvider)
+	}
+
+	trend := dimensionSQL("rollup", "trend", "", "2026-11-20")
+	if !strings.Contains(trend, "SELECT day AS value") {
+		t.Fatalf("rollup trend SQL should key on day: %s", trend)
 	}
 }
 

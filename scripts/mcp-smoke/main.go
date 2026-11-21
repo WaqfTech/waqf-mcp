@@ -155,6 +155,9 @@ func main() {
 	delay := flag.Duration("delay", 200*time.Millisecond, "pause between tool calls")
 	timeout := flag.Duration("timeout", 45*time.Second, "HTTP timeout per request")
 	jsonOut := flag.String("json", "", "optional path for a JSON report")
+	strict := flag.Bool("strict", false, "exit non-zero on transport/protocol errors, missing tools or missing sample arguments")
+	strictTools := flag.Bool("strict-tools", false, "also exit non-zero on unexpected tool errors")
+	expectTools := flag.Int("expect-tools", 55, "expected advertised tool count; 0 disables")
 	flag.Parse()
 
 	c := &client{
@@ -252,6 +255,39 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "wrote %s\n", *jsonOut)
 	}
+
+	if *strict {
+		failures := strictFailures(report, *expectTools, *strictTools)
+		if len(failures) > 0 {
+			fmt.Fprintln(os.Stderr, "strict smoke check failed:")
+			for _, failure := range failures {
+				fmt.Fprintln(os.Stderr, "- "+failure)
+			}
+			os.Exit(1)
+		}
+		fmt.Println("strict smoke check passed")
+	}
+}
+
+func strictFailures(report smokeReport, expectTools int, strictTools bool) []string {
+	var failures []string
+	if expectTools > 0 && report.ToolCount != expectTools {
+		failures = append(failures, fmt.Sprintf("tools listed %d, expected %d", report.ToolCount, expectTools))
+	}
+	if len(report.ToolMissing) > 0 {
+		failures = append(failures, "missing sample arguments: "+strings.Join(report.ToolMissing, ", "))
+	}
+	for _, a := range report.Attempts {
+		switch a.Class {
+		case "HTTP_ERROR", "PROTOCOL_ERROR":
+			failures = append(failures, fmt.Sprintf("%s %s: %s (%s)", a.Kind, a.Name, a.Class, a.Detail))
+		case "TOOL_ERROR":
+			if strictTools && a.Name != "waqf_search" {
+				failures = append(failures, fmt.Sprintf("%s %s: %s (%s)", a.Kind, a.Name, a.Class, a.Detail))
+			}
+		}
+	}
+	return failures
 }
 
 func (c *client) initialize() (attempt, error) {

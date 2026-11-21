@@ -268,7 +268,16 @@ aube run build
 
 # Aggregated usage report from production D1 (Go, read-only)
 go run ./scripts/stats-report/main.go -days 30
+
+# Pre-deploy gate: tests, typechecks and full-surface MCP smoke on both hosts
+aube run release:check
+
+# Emergency deploy without the live gate
+aube run deploy:fast
 ```
+
+`aube run deploy` runs the release check first. Use `deploy:fast` only when the
+current production is down and the gate cannot pass.
 
 Usage snapshot: [العربية](analytics/index.html) · [English](analytics/en/index.html) (public-safe, generated from daily rollups).
 

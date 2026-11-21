@@ -30,6 +30,12 @@ Flags:
 | `-delay` | `200ms` | Pause between tool calls |
 | `-timeout` | `45s` | Per-request timeout |
 | `-json` | empty | Optional JSON report path |
+| `-strict` | false | Fail on HTTP/protocol errors, missing tools or missing sample args |
+| `-strict-tools` | false | Also fail on unexpected tool errors; the intentional `waqf_search` probe is ignored |
+| `-expect-tools` | 55 | Expected advertised tool count; 0 disables |
+
+The pre-deploy gate is `bash scripts/release-check.sh` or `aube run release:check`.
+It runs unit/type checks and the strict smoke against both hosts.
 
 The script classifies each attempt as `OK`, `TOOL_ERROR`, `PROTOCOL_ERROR`, or
 `HTTP_ERROR`. A `TOOL_ERROR` is a valid MCP result with `isError: true`, not a

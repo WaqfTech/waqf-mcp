@@ -1,5 +1,7 @@
 import { CANONICAL_TOOL_NAMES, PROVIDER_CATALOG } from "@waqf/types";
 import type {
+  CanonicalEvidenceItem,
+  CanonicalResultEnvelope,
   GatewayErrorCode,
   GetPromptResult,
   PromptDefinition,
@@ -47,6 +49,19 @@ const CANONICAL_PRIMARY_PROVIDER: Record<string, string> = {
   waqf_search_scholarship: "fihris",
   waqf_books_search: "aljam3",
   waqf_books_read_page: "aljam3",
+  waqf_research_search: "shamela",
+};
+
+const RESEARCH_DOMAIN_PROVIDERS: Record<string, readonly string[]> = {
+  quran: ["tafsir_net", "bahouth"],
+  tafsir: ["tafsir_net", "shamela", "turath"],
+  hadith: ["shamela", "turath", "maheralfahel"],
+  fiqh: ["shamela", "aljam3", "turath", "fihris"],
+  aqidah: ["shamela", "turath", "fihris"],
+  linguistics: ["bahouth", "tafsir_net", "shamela"],
+  history: ["shamela", "aljam3", "turath"],
+  biography: ["shamela", "aljam3", "turath"],
+  general: ["shamela", "aljam3", "turath", "fihris"],
 };
 
 /**
@@ -672,6 +687,17 @@ export class FederationRouter {
         break;
       }
 
+      case "waqf_research_search": {
+        const federated = await this.handleFederatedResearchSearch(args);
+        if (federated.result.isError) {
+          return federated;
+        }
+        result = federated.result;
+        targetProvider = federated.providerId;
+        servedByFallback = federated.isPartial;
+        break;
+      }
+
       default:
         throw new Error(`Unhandled canonical tool: '${toolName}'`);
     }
@@ -693,6 +719,218 @@ export class FederationRouter {
       originalToolName: toolName,
       result,
       isCacheHit: false,
+    };
+  }
+
+  private async handleFederatedResearchSearch(
+    args: Record<string, unknown>
+  ): Promise<CallToolResponse & { isPartial: boolean }> {
+    const query = String(args.query ?? "").trim();
+    if (!query) {
+      return {
+        ...toolError(
+          "canonical",
+          "waqf_research_search",
+          "Missing required 'query' parameter for waqf_research_search.",
+          "INVALID_ARGUMENT",
+          false
+        ),
+        isPartial: false,
+      };
+    }
+
+    const domain = String(args.domain ?? "general");
+    const parsedMax = Number(args.max_results ?? 10);
+    const maxResults = Number.isFinite(parsedMax)
+      ? Math.min(20, Math.max(1, Math.trunc(parsedMax)))
+      : 10;
+    const perProviderLimit = Math.min(5, maxResults);
+
+    const warnings: string[] = [];
+    let requestedIds: string[];
+    if (Array.isArray(args.providers)) {
+      requestedIds = [];
+      for (const rawId of args.providers) {
+        const pid = String(rawId).trim();
+        if (!pid) continue;
+        if (this.registry.get(pid)) {
+          if (!requestedIds.includes(pid)) requestedIds.push(pid);
+        } else {
+          warnings.push(`Skipped unknown or disabled provider '${pid}'.`);
+        }
+      }
+    } else {
+      const candidates = RESEARCH_DOMAIN_PROVIDERS[domain] ?? RESEARCH_DOMAIN_PROVIDERS.general;
+      requestedIds = candidates.filter((pid) => Boolean(this.registry.get(pid)));
+    }
+
+    if (requestedIds.length === 0) {
+      return {
+        ...toolError(
+          "canonical",
+          "waqf_research_search",
+          "No requested providers are available for federated research search.",
+          "SOURCE_UNAVAILABLE",
+          true
+        ),
+        isPartial: false,
+      };
+    }
+
+    const buildProviderCall = (
+      pid: string
+    ): { toolName: string; toolArgs: Record<string, unknown> } => {
+      switch (pid) {
+        case "tafsir_net":
+          return { toolName: "search_quran_text", toolArgs: { query, limit: perProviderLimit } };
+        case "bahouth":
+          return { toolName: "find_root", toolArgs: { root_text: query } };
+        case "turath":
+          return { toolName: "search_turath", toolArgs: { q: query } };
+        case "maheralfahel":
+          return { toolName: "search-content", toolArgs: { query } };
+        case "fihris":
+          return { toolName: "search_islamic_sources", toolArgs: { query } };
+        case "aljam3":
+          return { toolName: "search", toolArgs: { q: query, per_page: perProviderLimit } };
+        case "shamela":
+          return { toolName: "shamela_find", toolArgs: { keywords: [query] } };
+        default:
+          return { toolName: "search", toolArgs: { query } };
+      }
+    };
+
+    const settled = await Promise.allSettled(
+      requestedIds.map(async (pid) => {
+        const provider = this.registry.get(pid)!;
+        const spec = buildProviderCall(pid);
+        const raw = await provider.callTool(spec.toolName, spec.toolArgs);
+        if (raw.isError) {
+          const msg = raw.error?.message ?? `Provider '${pid}' returned a tool error.`;
+          throw new Error(msg);
+        }
+        const bounded = this.normalizer.boundResultList(raw, perProviderLimit);
+        const normalized = this.normalizer.normalizeToolResult(bounded.result, provider.name, {
+          providerId: pid,
+          query,
+          mode: `federated:${domain}`,
+          limit: perProviderLimit,
+        });
+        const sc = normalized.structuredContent as CanonicalResultEnvelope | undefined;
+        return { pid, items: sc?.results ?? [] };
+      })
+    );
+
+    const collected: CanonicalEvidenceItem[] = [];
+    const succeededProviders: string[] = [];
+    const failedProviders: string[] = [];
+    const seenExact = new Set<string>();
+
+    settled.forEach((outcome, index) => {
+      const pid = requestedIds[index];
+      if (outcome.status === "fulfilled") {
+        succeededProviders.push(pid);
+        for (const item of outcome.value.items) {
+          const dedupKey = `${item.provider}:${item.work.id ?? ""}:${item.location.page_id ?? ""}:${item.content.verbatim}`;
+          if (seenExact.has(dedupKey)) continue;
+          seenExact.add(dedupKey);
+          collected.push(item);
+        }
+      } else {
+        failedProviders.push(pid);
+        const reason =
+          outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason);
+        warnings.push(`Provider '${pid}' failed: ${reason}`);
+      }
+    });
+
+    if (succeededProviders.length === 0) {
+      return {
+        ...toolError(
+          "canonical",
+          "waqf_research_search",
+          `All queried providers failed (${failedProviders.join(", ")}): ${warnings.join(" | ")}`,
+          "SOURCE_UNAVAILABLE",
+          true
+        ),
+        isPartial: false,
+      };
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const scoreItem = (item: CanonicalEvidenceItem): number => {
+      let score = 0;
+      if (item.content.verbatim.toLowerCase().includes(lowerQuery)) score += 4;
+      if ((item.work.title ?? "").toLowerCase().includes(lowerQuery)) score += 2;
+      if (item.citation.source_url || item.citation.pdf_url) score += 2;
+      if (item.location.printed_page_label || item.location.digital_page_number !== null) score += 1;
+      return score;
+    };
+
+    const ranked = [...collected].sort((a, b) => scoreItem(b) - scoreItem(a)).slice(0, maxResults);
+    const isPartial = failedProviders.length > 0;
+    const status: CanonicalResultEnvelope["status"] =
+      ranked.length === 0 ? "no_results" : isPartial ? "partial_results" : "ok";
+
+    const envelope: CanonicalResultEnvelope & {
+      trust_boundary: "external_untrusted_source";
+      providers_queried: string[];
+      providers_succeeded: string[];
+      providers_failed: string[];
+    } = {
+      schema_version: "1.0.0",
+      trust_boundary: "external_untrusted_source",
+      status,
+      query: {
+        original: query,
+        mode: `federated:${domain}`,
+        limit: maxResults,
+      },
+      results: ranked,
+      pagination: {
+        page: 1,
+        limit: maxResults,
+        total: collected.length,
+        has_more: collected.length > maxResults,
+        next_cursor: null,
+      },
+      warnings,
+      providers_queried: requestedIds,
+      providers_succeeded: succeededProviders,
+      providers_failed: failedProviders,
+    };
+
+    const summaryHeader = `[Federated Research (${domain}) | queried: ${requestedIds.join(", ")} | succeeded: ${succeededProviders.join(", ")}${isPartial ? ` | failed: ${failedProviders.join(", ")}` : ""}]`;
+
+    return {
+      providerId: succeededProviders.length === 1 ? succeededProviders[0] : "canonical",
+      originalToolName: "waqf_research_search",
+      isCacheHit: false,
+      isPartial,
+      result: {
+        content: [
+          {
+            type: "text",
+            text: `${summaryHeader}\n${JSON.stringify(
+              {
+                status,
+                results: ranked.map((r) => ({
+                  provider: r.provider,
+                  title: r.work.title,
+                  author: r.work.author,
+                  page: r.location.printed_page_label ?? r.location.digital_page_number,
+                  verbatim: r.content.verbatim,
+                  citation_markdown: r.citation.citation_markdown,
+                })),
+                warnings,
+              },
+              null,
+              2
+            )}`,
+          },
+        ],
+        structuredContent: envelope as unknown as Record<string, unknown>,
+      },
     };
   }
 

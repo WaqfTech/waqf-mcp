@@ -386,7 +386,7 @@ export default {
             usage: "Send JSON-RPC 2.0 requests via POST /mcp (e.g. initialize, tools/list, tools/call)",
             suites: {
               all: "All available upstream tools across federated Islamic servers",
-              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page)",
+              core: "High-level normalized canonical tools (waqf_quran_get_ayah, waqf_hadith_search, waqf_turath_search_books, waqf_search_scholarship, waqf_books_search, waqf_books_read_page, waqf_research_search)",
               quran: "Quran & Tafsir specialized suite",
               turath: "Hadith, Islamic heritage and classical books suite (Turath, Maher Al-Fahel, Aljam3, Shamela)",
               search: "Scholarly web search across vetted Islamic portals (Fihris)",

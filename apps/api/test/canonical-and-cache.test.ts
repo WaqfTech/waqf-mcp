@@ -669,6 +669,125 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect(router.isEmptyResult(res.result)).toBe(true);
       expect(cache.set).not.toHaveBeenCalled();
     });
+
+    it("routes waqf_research_search concurrently across domain providers and preserves partial results", async () => {
+      const registry = new ProviderRegistry([]);
+      const shamela = new JsonRpcMcpAdapter({
+        id: "shamela",
+        name: "Shamela",
+        baseUrl: "https://mcp.shamela.ws",
+        transport: "json-rpc",
+        description: "Shamela",
+      });
+      const aljam3 = new JsonRpcMcpAdapter({
+        id: "aljam3",
+        name: "Aljam3",
+        baseUrl: "https://aljam3.com/mcp",
+        transport: "json-rpc",
+        description: "Aljam3",
+      });
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+
+      vi.spyOn(shamela, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              results: [
+                {
+                  book_id: 10,
+                  title: "المجموع",
+                  printed_page: "6/12",
+                  text: "زكاة الفطر طعمة",
+                  url: "https://shamela.ws/book/10/12",
+                },
+              ],
+            }),
+          },
+        ],
+      });
+      vi.spyOn(aljam3, "callTool").mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              results: [
+                {
+                  book_id: 20,
+                  title: "المجموع (طبعة أخرى)",
+                  page_number: 15,
+                  text: "زكاة الفطر طعمة",
+                  url: "https://aljam3.com/book/20/15",
+                },
+              ],
+            }),
+          },
+        ],
+      });
+      vi.spyOn(turath, "callTool").mockRejectedValue(new Error("Turath timed out"));
+
+      registry.register(shamela);
+      registry.register(aljam3);
+      registry.register(turath);
+      const cache = {
+        computeKey: vi.fn().mockResolvedValue("federated-key"),
+        get: vi.fn().mockResolvedValue(null),
+        set: vi.fn().mockResolvedValue(undefined),
+        recordHit: vi.fn(),
+      } as unknown as D1CacheService;
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool(
+        "waqf_research_search",
+        { query: "زكاة الفطر", domain: "fiqh", max_results: 10 },
+        cache
+      );
+
+      const sc = res.result.structuredContent as {
+        status: string;
+        results: Array<{ provider: string; work: { title: string } }>;
+        warnings: string[];
+        providers_queried: string[];
+        providers_succeeded: string[];
+        providers_failed: string[];
+      };
+      expect(sc.status).toBe("partial_results");
+      // Same wording from two providers/editions must never be collapsed.
+      expect(sc.results).toHaveLength(2);
+      expect(sc.providers_queried).toEqual(["shamela", "aljam3", "turath"]);
+      expect(sc.providers_succeeded).toEqual(["shamela", "aljam3"]);
+      expect(sc.providers_failed).toEqual(["turath"]);
+      expect(sc.warnings.some((w) => w.includes("turath"))).toBe(true);
+      // Partial results are never cached as complete answers.
+      expect(cache.set).not.toHaveBeenCalled();
+    });
+
+    it("fails with SOURCE_UNAVAILABLE when all federated providers fail", async () => {
+      const registry = new ProviderRegistry([]);
+      const shamela = new JsonRpcMcpAdapter({
+        id: "shamela",
+        name: "Shamela",
+        baseUrl: "https://mcp.shamela.ws",
+        transport: "json-rpc",
+        description: "Shamela",
+      });
+      vi.spyOn(shamela, "callTool").mockRejectedValue(new Error("Upstream unreachable"));
+      registry.register(shamela);
+      const router = new FederationRouter(registry, normalizer);
+
+      const res = await router.callTool("waqf_research_search", {
+        query: "الصلاة",
+        providers: ["shamela"],
+      });
+      expect(res.result.isError).toBe(true);
+      expect(res.result.error?.code).toBe("SOURCE_UNAVAILABLE");
+    });
   });
 });
 

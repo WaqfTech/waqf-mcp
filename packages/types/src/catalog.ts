@@ -216,6 +216,7 @@ export const CANONICAL_TOOL_NAMES: readonly string[] = [
   "waqf_search_scholarship",
   "waqf_books_search",
   "waqf_books_read_page",
+  "waqf_research_search",
 ];
 
 export const TOTAL_GATEWAY_TOOL_COUNT: number =

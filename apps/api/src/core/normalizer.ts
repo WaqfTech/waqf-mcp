@@ -391,6 +391,73 @@ export class SchemaNormalizer {
         },
         outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
       },
+      {
+        name: "waqf_research_search",
+        description:
+          "Run a concurrent federated research query across relevant Islamic providers by scholarly domain, returning attributed evidence, citation metadata, and partial-failure warnings without merging distinct editions or positions.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              maxLength: 500,
+              description: "Research query in Arabic or English",
+            },
+            domain: {
+              type: "string",
+              enum: [
+                "quran",
+                "tafsir",
+                "hadith",
+                "fiqh",
+                "aqidah",
+                "linguistics",
+                "history",
+                "biography",
+                "general",
+              ],
+              default: "general",
+              description: "Scholarly domain used to select candidate providers when providers is 'auto'",
+            },
+            providers: {
+              oneOf: [
+                { type: "string", enum: ["auto"] },
+                {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    enum: [
+                      "tafsir_net",
+                      "bahouth",
+                      "turath",
+                      "maheralfahel",
+                      "fihris",
+                      "aljam3",
+                      "shamela",
+                    ],
+                  },
+                },
+              ],
+              default: "auto",
+              description: "Provider selection: 'auto' for domain routing, or an explicit list of provider IDs",
+            },
+            max_results: {
+              type: "integer",
+              minimum: 1,
+              maximum: 20,
+              default: 10,
+              description: "Maximum total evidence items to return across providers",
+            },
+            language: {
+              type: "string",
+              default: "ar",
+              description: "Preferred query/link language code (default: 'ar')",
+            },
+          },
+          required: ["query"],
+        },
+        outputSchema: CANONICAL_RESULT_OUTPUT_SCHEMA,
+      },
     ];
   }
 

@@ -37,7 +37,7 @@ Loading 50+ tools into an LLM's system prompt consumes excessive context tokens.
 - `https://mcp.waqf.app/mcp?suite=quran`: Exposes Quran, Tafsir, and Arabic root analysis tools.
 - `https://mcp.waqf.app/mcp?suite=turath`: Exposes classical Islamic heritage books, the Aljam3 books corpus, the official Shamela corpus, Hadith critique, and scholarly libraries.
 - `https://mcp.waqf.app/mcp?suite=search`: Exposes verified academic Islamic web search (Fihris).
-- `https://mcp.waqf.app/mcp` (or `?suite=all`): Full federation suite with all 55 tools across all 7 providers.
+- `https://mcp.waqf.app/mcp` (or `?suite=all`): Full federation suite with all 56 tools across all 7 providers.
 
 ## Federated Providers
 
@@ -115,6 +115,15 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
   - `offset` (number, optional): Character offset to continue reading from, using the next offset returned by the previous call.
   - `maxChars` (number, optional): Maximum characters of page text (default: `6000`, max: `12000`).
   - `locale` (string, optional): `"ar" | "ur" | "en"` — language of the returned links only.
+
+### 7. `waqf_research_search`
+Run a concurrent federated research query across relevant Islamic providers by scholarly domain, returning attributed evidence and partial-failure warnings.
+- **Parameters**:
+  - `query` (string, required): Research query in Arabic or English.
+  - `domain` (string, optional): `"quran" | "tafsir" | "hadith" | "fiqh" | "aqidah" | "linguistics" | "history" | "biography" | "general"` (default: `"general"`).
+  - `providers` (`"auto"` or array of provider IDs, optional): Default `"auto"`.
+  - `max_results` (integer, optional): Maximum items across providers (`1` to `20`, default: `10`).
+  - `language` (string, optional): Preferred language code (default: `"ar"`).
 
 ## Client Configurations
 

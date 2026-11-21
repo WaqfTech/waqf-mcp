@@ -92,6 +92,7 @@ var toolArgs = map[string]map[string]any{
 	"waqf_search_scholarship":  {"query": "الصلاة"},
 	"waqf_books_search":        {"query": "الصلاة", "limit": 3},
 	"waqf_books_read_page":     {"fileId": 65664, "pageNumber": 247, "maxChars": 2000},
+	"waqf_research_search":     {"query": "الصلاة", "domain": "fiqh", "max_results": 4},
 
 	"tafsir_net__fetch_ayah":            {"surah": 1, "ayah": 1},
 	"tafsir_net__fetch_tafsir":          {"surah": 1, "ayah": 1},
@@ -157,7 +158,7 @@ func main() {
 	jsonOut := flag.String("json", "", "optional path for a JSON report")
 	strict := flag.Bool("strict", false, "exit non-zero on transport/protocol errors, missing tools or missing sample arguments")
 	strictTools := flag.Bool("strict-tools", false, "also exit non-zero on unexpected tool errors")
-	expectTools := flag.Int("expect-tools", 55, "expected advertised tool count; 0 disables")
+	expectTools := flag.Int("expect-tools", 56, "expected advertised tool count; 0 disables")
 	flag.Parse()
 
 	c := &client{

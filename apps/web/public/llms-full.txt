@@ -42,13 +42,14 @@ User-Agent: MyAgentName/1.0 (+https://example.com)
 To prevent prompt context window exhaustion, append the `?suite=` parameter to the MCP endpoint:
 
 ### A. `?suite=core` (Recommended for AI Agents)
-Exposes only the 6 canonical, high-level normalized tools. Context overhead: ~1,400 tokens.
+Exposes only the 7 canonical, high-level normalized tools. Context overhead: ~1,700 tokens.
 - `waqf_quran_get_ayah`
 - `waqf_hadith_search`
 - `waqf_turath_search_books`
 - `waqf_search_scholarship`
 - `waqf_books_search`
 - `waqf_books_read_page`
+- `waqf_research_search`
 
 ### B. `?suite=quran`
 Exposes Quranic, Tafsir, linguistic, and morphological tools from **Bahouth** and **Tafsir.net**.
@@ -70,7 +71,7 @@ Exposes verified academic web search across vetted Islamic portals from **Fihris
 - Fihris: `fihris__*` (2 tools)
 
 ### E. Default (`?suite=all` or omitted)
-Exposes all 55 tools across all 7 federated providers.
+Exposes all 56 tools across all 7 federated providers.
 
 ---
 
@@ -234,6 +235,29 @@ Read one exact page of a digitized book in context, with citation metadata, a PD
       "locale": { "type": "string", "enum": ["ar", "ur", "en"], "description": "Language of the returned links" }
     },
     "required": ["fileId", "pageNumber"]
+  }
+  ```
+
+#### `waqf_research_search`
+Run a concurrent federated research query across relevant Islamic providers by scholarly domain, returning attributed evidence, citation metadata, and partial-failure warnings without merging distinct editions or positions.
+- **Input Schema**:
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string", "description": "Research query in Arabic or English" },
+      "domain": {
+        "type": "string",
+        "enum": ["quran", "tafsir", "hadith", "fiqh", "aqidah", "linguistics", "history", "biography", "general"],
+        "description": "Scholarly domain for provider routing (default: 'general')"
+      },
+      "providers": {
+        "description": "'auto' or explicit list of provider IDs"
+      },
+      "max_results": { "type": "integer", "description": "Maximum items across providers (1-20, default: 10)" },
+      "language": { "type": "string", "description": "Preferred language code (default: 'ar')" }
+    },
+    "required": ["query"]
   }
   ```
 

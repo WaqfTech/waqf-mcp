@@ -2,7 +2,7 @@
 
 Full-surface, read-only smoke test for the public MCP gateway.
 
-It initializes a session, lists every tool, calls all 55 advertised tools with
+It initializes a session, lists every tool, calls all 56 advertised tools with
 sample arguments, reads all resources, runs all prompts, and checks the public
 transport paths:
 
@@ -34,7 +34,7 @@ Flags:
 | `-json` | empty | Optional JSON report path |
 | `-strict` | false | Fail on HTTP/protocol errors, missing tools or missing sample args |
 | `-strict-tools` | false | Also fail on unexpected tool errors; the intentional `waqf_search` probe is ignored |
-| `-expect-tools` | 55 | Expected advertised tool count; 0 disables |
+| `-expect-tools` | 56 | Expected advertised tool count; 0 disables |
 
 The pre-deploy gate is `bash scripts/release-check.sh` or `aube run release:check`.
 It runs unit/type checks and the strict smoke against both hosts.

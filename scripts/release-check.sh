@@ -17,13 +17,13 @@ go test waqf-mcp/stats-report/...
 echo "== full-surface smoke: protocol host =="
 go run ./scripts/mcp-smoke/main.go \
   -base https://mcp.waqf.app/mcp \
-  -strict -expect-tools 55 -delay 250ms \
+  -strict -expect-tools 56 -delay 250ms \
   -json /tmp/waqf-mcp-smoke-app.json
 
 echo "== full-surface smoke: human host =="
 go run ./scripts/mcp-smoke/main.go \
   -base https://mcp.waqf.dev/mcp \
-  -strict -expect-tools 55 -delay 250ms \
+  -strict -expect-tools 56 -delay 250ms \
   -json /tmp/waqf-mcp-smoke-dev.json
 
 echo "release check passed"

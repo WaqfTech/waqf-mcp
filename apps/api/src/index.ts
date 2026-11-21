@@ -900,9 +900,19 @@ export default {
               return resData.response;
             }
 
+            // MCP prompt arguments are strings, but clients routinely send
+            // numbers (surah: 1). Coerce once here so upstream prompt
+            // validators do not reject an otherwise valid call.
+            const promptArgs = Object.fromEntries(
+              Object.entries(params.arguments ?? {}).map(([key, value]) => [
+                key,
+                String(value),
+              ])
+            );
+
             const { providerId, result } = await router.getPrompt(
               params.name,
-              params.arguments ?? {}
+              promptArgs
             );
 
             const resData = jsonResponse({
@@ -914,7 +924,7 @@ export default {
             logExecution(
               "prompts/get",
               params.name,
-              (params.arguments as Record<string, unknown>) ?? null,
+              promptArgs,
               providerId,
               false,
               200,

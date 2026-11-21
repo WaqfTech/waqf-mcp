@@ -741,6 +741,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
   it("POST /mcp prompts/list and prompts/get work through gateway", async () => {
     const listSse = `event: message\ndata: {"result":{"prompts":[{"name":"study_ayah","description":"Ayah study"}]}}\n\n`;
     const getSse = `event: message\ndata: {"result":{"messages":[{"role":"user","content":{"type":"text","text":"Study 1:1"}}]}}\n\n`;
+    let capturedPromptArgs: Record<string, unknown> | undefined;
 
     const mockFetch = vi.fn().mockImplementation(async (input: string | URL | Request, init?: RequestInit) => {
       const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
@@ -754,6 +755,7 @@ describe("Waqf MCP Gateway Worker E2E", () => {
           });
         }
         if (body.method === "prompts/get") {
+          capturedPromptArgs = body.params.arguments;
           return new Response(getSse, {
             status: 200,
             headers: { "Content-Type": "text/event-stream" },
@@ -800,13 +802,14 @@ describe("Waqf MCP Gateway Worker E2E", () => {
         jsonrpc: "2.0",
         id: "prompt-get-01",
         method: "prompts/get",
-        params: { name: "study_ayah", arguments: { surah: "1", ayah: "1" } },
+        params: { name: "study_ayah", arguments: { surah: 1, ayah: 1 } },
       }),
     });
     const resGet = await worker.fetch(reqGet, mockEnv, mockCtx);
     expect(resGet.status).toBe(200);
     const bodyGet = (await resGet.json()) as { result: { messages: Array<{ role: string }> } };
     expect(bodyGet.result.messages[0].role).toBe("user");
+    expect(capturedPromptArgs).toEqual({ surah: "1", ayah: "1" });
   });
 });
 

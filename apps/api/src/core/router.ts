@@ -1,4 +1,4 @@
-import { CANONICAL_TOOL_NAMES } from "@waqf/types";
+import { CANONICAL_TOOL_NAMES, PROVIDER_CATALOG } from "@waqf/types";
 import type {
   GetPromptResult,
   PromptDefinition,
@@ -25,6 +25,18 @@ export interface ReadResourceResponse {
 }
 
 const CANONICAL_TOOL_HINT = `Available canonical tools: ${CANONICAL_TOOL_NAMES.join(", ")}.`;
+
+const PROVIDERS_WITH_RESOURCES = new Set<string>(
+  PROVIDER_CATALOG.filter((entry) => (entry.resources?.length ?? 0) > 0).map(
+    (entry) => entry.id
+  )
+);
+
+const PROVIDERS_WITH_PROMPTS = new Set<string>(
+  PROVIDER_CATALOG.filter((entry) => (entry.prompts?.length ?? 0) > 0).map(
+    (entry) => entry.id
+  )
+);
 
 const CANONICAL_PRIMARY_PROVIDER: Record<string, string> = {
   waqf_quran_get_ayah: "tafsir_net",
@@ -598,7 +610,12 @@ export class FederationRouter {
       return [];
     }
 
-    let providers = this.registry.getAll();
+    // Only providers that advertise resources in the catalog are queried.
+    // Calling every upstream produced a failed subrequest and a warning per
+    // request for servers that do not implement resources/list.
+    let providers = this.registry
+      .getAll()
+      .filter((provider) => PROVIDERS_WITH_RESOURCES.has(provider.id));
     if (suite === "quran") {
       providers = providers.filter((p) => p.id === "tafsir_net" || p.id === "bahouth");
     }
@@ -698,7 +715,9 @@ export class FederationRouter {
       return [];
     }
 
-    let providers = this.registry.getAll();
+    let providers = this.registry
+      .getAll()
+      .filter((provider) => PROVIDERS_WITH_PROMPTS.has(provider.id));
     if (suite === "quran") {
       providers = providers.filter((p) => p.id === "tafsir_net" || p.id === "bahouth");
     }

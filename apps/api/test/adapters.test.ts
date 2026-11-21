@@ -305,6 +305,45 @@ describe("MCP Adapters & Federation Router", () => {
     expect(mockFetch.mock.calls[0][0]).toBe("https://example.com/api/mcp/");
   });
 
+  it("skips providers that do not advertise resources or prompts", async () => {
+    const registry = new ProviderRegistry([]);
+    const tafsir = new SseMcpAdapter({
+      id: "tafsir_net",
+      name: "Tafsir.net",
+      baseUrl: "https://mcp.tafsir.net/mcp",
+      transport: "sse",
+      description: "Tafsir Suite",
+    });
+    const fihris = new JsonRpcMcpAdapter({
+      id: "fihris",
+      name: "Fihris",
+      baseUrl: "https://search.waqf.app/api/mcp",
+      transport: "json-rpc",
+      description: "Search",
+    });
+
+    vi.spyOn(tafsir, "listResources").mockResolvedValue([
+      { uri: "quran://surahs", name: "surahs_catalog" },
+    ]);
+    vi.spyOn(tafsir, "listPrompts").mockResolvedValue([
+      { name: "study_ayah", description: "Ayah study template" },
+    ]);
+    const fihrisResources = vi.spyOn(fihris, "listResources");
+    const fihrisPrompts = vi.spyOn(fihris, "listPrompts");
+
+    registry.register(tafsir);
+    registry.register(fihris);
+    const router = new FederationRouter(registry);
+
+    const resources = await router.listAllResources("all");
+    expect(resources).toHaveLength(1);
+    expect(fihrisResources).not.toHaveBeenCalled();
+
+    const prompts = await router.listAllPrompts("all");
+    expect(prompts).toHaveLength(1);
+    expect(fihrisPrompts).not.toHaveBeenCalled();
+  });
+
   it("FederationRouter federates and routes resources and prompts", async () => {
     const registry = new ProviderRegistry([]);
 

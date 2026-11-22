@@ -9,6 +9,7 @@
     "dev:web": "bash scripts/dev.sh web",
     "build": "aube -F @waqf/web run build",
     "release:check": "bash scripts/release-check.sh",
+    "verify:inspector": "npx @modelcontextprotocol/inspector --cli https://mcp.waqf.app/mcp --transport http --method tools/list --strict >/dev/null",
     "deploy": "bash scripts/release-check.sh && aube -F @waqf/api run deploy && aube -F @waqf/web run deploy",
     "deploy:fast": "aube -F @waqf/api run deploy && aube -F @waqf/web run deploy",
     "deploy:api": "aube -F @waqf/api run deploy",

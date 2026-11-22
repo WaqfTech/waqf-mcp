@@ -152,6 +152,27 @@ describe("Waqf MCP Gateway Worker E2E", () => {
     expect(body.result.serverInfo.websiteUrl).toBe("https://waqftech.org");
   });
 
+  it("POST /mcp initialize negotiates client protocolVersion and returns instructions", async () => {
+    for (const version of ["2026-07-28", "2025-11-25", "2025-06-18", "2024-11-05"]) {
+      const req = new Request("http://localhost:8787/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 11,
+          method: "initialize",
+          params: { protocolVersion: version },
+        }),
+      });
+      const res = await worker.fetch(req, mockEnv, mockCtx);
+      const body = (await res.json()) as {
+        result: { protocolVersion: string; instructions?: string };
+      };
+      expect(body.result.protocolVersion).toBe(version);
+      expect(body.result.instructions).toContain("Islamic sources gateway");
+    }
+  });
+
   it("POST /mcp handles 'ping' method", async () => {
     const req = new Request("http://localhost:8787/mcp", {
       method: "POST",

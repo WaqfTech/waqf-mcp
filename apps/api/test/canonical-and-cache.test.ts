@@ -1503,6 +1503,83 @@ describe("Canonical Tools & Schema Normalization", () => {
       expect(sc.pagination.has_more).toBe(true);
       expect(sc.warnings.some((w) => w.includes("18 KB"))).toBe(true);
     });
+
+    it("unwraps Turath catalog arrays in waqf_turath_search_books and preserves non-empty content on no_results", async () => {
+      const registry = new ProviderRegistry([]);
+      const turath = new JsonRpcMcpAdapter({
+        id: "turath",
+        name: "Turath",
+        baseUrl: "https://mcp.turath.io/mcp/",
+        transport: "json-rpc",
+        description: "Turath",
+      });
+      const tafsir = new SseMcpAdapter({
+        id: "tafsir_net",
+        name: "Tafsir.net",
+        baseUrl: "https://mcp.tafsir.net/mcp",
+        transport: "sse",
+        description: "Tafsir",
+      });
+
+      vi.spyOn(turath, "callTool").mockResolvedValueOnce({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              counts: { books: 8609 },
+              books: [
+                {
+                  id: 104,
+                  name: "المدخل إلى صحيح البخاري",
+                  author_name: "محمد أبو الهدى اليعقوبي",
+                  link: "https://app.turath.io/book/104",
+                },
+                {
+                  id: 115,
+                  name: "أصل الزراري شرح صحيح البخاري",
+                  author_name: "عبد القادر الأسطواني",
+                  link: "https://app.turath.io/book/115",
+                },
+              ],
+            }),
+          },
+        ],
+      });
+
+      vi.spyOn(tafsir, "callTool").mockResolvedValueOnce({
+        content: [],
+        structuredContent: { result: [] },
+      });
+
+      registry.register(turath);
+      registry.register(tafsir);
+      const router = new FederationRouter(registry, normalizer);
+
+      const catRes = await router.callTool("waqf_turath_search_books", {
+        query: "صحيح البخاري",
+        kind: "books",
+      });
+      const catSc = catRes.result.structuredContent as {
+        status: string;
+        results: Array<{ kind: string; work: { title: string | null }; content: { verbatim: string } }>;
+        pagination: { total: number | null };
+      };
+      expect(catSc.status).toBe("ok");
+      expect(catSc.results).toHaveLength(2);
+      expect(catSc.results[0].kind).toBe("catalog_entry");
+      expect(catSc.results[0].work.title).toBe("المدخل إلى صحيح البخاري");
+      expect(catSc.results[0].content.verbatim).toContain("المدخل إلى صحيح البخاري");
+      expect(catSc.results[0].content.verbatim).not.toContain("counts");
+      expect(catSc.pagination.total).toBe(8609);
+
+      const emptyRes = await router.callTool("waqf_quran_search", {
+        query: "الرحمة",
+        mode: "root",
+      });
+      expect(emptyRes.result.content.length).toBeGreaterThanOrEqual(1);
+      expect(emptyRes.result.content[0].type).toBe("text");
+      expect((emptyRes.result.content[0] as { text: string }).text).toContain("No results found");
+    });
   });
 });
 

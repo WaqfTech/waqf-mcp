@@ -999,7 +999,19 @@ export class SchemaNormalizer {
       return { result: raw, hasMore: false, total: null };
     }
 
-    for (const key of ["results", "result", "items", "hits", "data", "verses", "occurrences"] as const) {
+    for (const key of [
+      "results",
+      "result",
+      "items",
+      "hits",
+      "data",
+      "verses",
+      "occurrences",
+      "books",
+      "authors",
+      "cats",
+      "categories",
+    ] as const) {
       const list = obj[key];
       if (!Array.isArray(list)) continue;
       const total = asInt(obj.total) ?? asInt(obj.count) ?? list.length;
@@ -1211,7 +1223,9 @@ export class SchemaNormalizer {
       (typeof rec.snippet === "string" && rec.snippet ? rec.snippet : null) ??
       (typeof rec.word === "string" && rec.word ? rec.word : null) ??
       (typeof rec.description === "string" && rec.description ? rec.description : null) ??
-      rawFallbackText;
+      (kind === "catalog_entry"
+        ? [title, author, workId ? `ID: ${workId}` : null].filter(Boolean).join(" | ")
+        : rawFallbackText);
 
     const sourceUrl =
       asString(rec.source_url) ??
@@ -1348,10 +1362,22 @@ export class SchemaNormalizer {
         parsedObj.data ??
         parsedObj.verses ??
         parsedObj.occurrences;
+      const hasTurathCatalogArrays =
+        Array.isArray(parsedObj.books) ||
+        Array.isArray(parsedObj.authors) ||
+        Array.isArray(parsedObj.cats) ||
+        Array.isArray(parsedObj.categories);
       const pageObj = asRecord(parsedObj.page);
       const parsedTextObj = asRecord(parsedObj.text);
       if (Array.isArray(list)) {
         rawItems = list;
+      } else if (hasTurathCatalogArrays) {
+        rawItems = [
+          ...(Array.isArray(parsedObj.books) ? parsedObj.books : []),
+          ...(Array.isArray(parsedObj.authors) ? parsedObj.authors : []),
+          ...(Array.isArray(parsedObj.cats) ? parsedObj.cats : []),
+          ...(Array.isArray(parsedObj.categories) ? parsedObj.categories : []),
+        ];
       } else if (
         parsedObj.found === false &&
         !parsedObj.verse &&
@@ -1399,6 +1425,7 @@ export class SchemaNormalizer {
 
     const parsedTextObj = asRecord(parsedObj?.text);
     const parsedPaginationObj = asRecord(parsedObj?.pagination);
+    const countsObj = asRecord(parsedObj?.counts);
     const rawNextOffset = parsedObj?.next_offset ?? parsedTextObj?.next_offset;
     const nextCursor =
       asString(parsedObj?.next_cursor) ??
@@ -1408,12 +1435,22 @@ export class SchemaNormalizer {
         : results[0]?.location.next_offset !== null && results[0]?.location.next_offset !== undefined
           ? String(results[0].location.next_offset)
           : null);
+    const countsModeKey = context.mode === "categories" ? "cats" : context.mode;
+    const catalogTotal =
+      countsObj && countsModeKey && countsModeKey !== "all"
+        ? asInt(countsObj[countsModeKey])
+        : countsObj
+          ? (asInt(countsObj.books) ?? 0) +
+            (asInt(countsObj.authors) ?? 0) +
+            (asInt(countsObj.cats) ?? 0)
+          : null;
     const total =
       parsedTotalOverride ??
       asInt(parsedObj?.total_available) ??
       asInt(parsedObj?.total) ??
       asInt(parsedPaginationObj?.total) ??
       asInt(parsedObj?.count) ??
+      (catalogTotal !== null && catalogTotal > 0 ? catalogTotal : null) ??
       (results.length > 0 ? results.length : 0);
     const hasMore = Boolean(context.hasMore || parsedObj?.has_more || nextCursor);
 
@@ -1443,17 +1480,42 @@ export class SchemaNormalizer {
       warnings: [...(context.warnings ?? [])],
     };
 
+    const mappedContent = raw.content.map((block) => {
+      if (block.type === "text") {
+        return {
+          type: "text" as const,
+          text: `[Source: ${sourceTag}]\n${block.text}`,
+        };
+      }
+      return block;
+    });
+    const hasText = mappedContent.some(
+      (b) => b.type === "text" && b.text.replace(`[Source: ${sourceTag}]`, "").trim().length > 0
+    );
+    if (!hasText) {
+      const rootHint =
+        context.mode === "quran_search_root"
+          ? " Root mode expects 3-4 Arabic root letters (e.g. 'رحم' or 'كتب'); try mode 'text' for words or phrases."
+          : "";
+      const summaryText =
+        status === "no_results"
+          ? `[Source: ${sourceTag}]\nNo results found for '${context.query ?? ""}'.${rootHint}`
+          : `[Source: ${sourceTag}]\n${JSON.stringify({
+              status,
+              results: results.map((item) => ({
+                id: item.result_id,
+                title: item.work.title,
+                verbatim: item.content.verbatim,
+                url: item.citation.source_url,
+              })),
+              pagination: envelope.pagination,
+            })}`;
+      mappedContent.push({ type: "text", text: summaryText });
+    }
+
     const finalResult: ToolResult = {
       isError: raw.isError,
-      content: raw.content.map((block) => {
-        if (block.type === "text") {
-          return {
-            type: "text",
-            text: `[Source: ${sourceTag}]\n${block.text}`,
-          };
-        }
-        return block;
-      }),
+      content: mappedContent,
       structuredContent: envelope as unknown as Record<string, unknown>,
     };
     return context.skipByteBound ? finalResult : this.boundResponseByBytes(finalResult);

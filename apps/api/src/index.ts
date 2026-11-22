@@ -845,10 +845,12 @@ export default {
           }
 
           case "initialize": {
+            const requestedVersion = (rpc.params as { protocolVersion?: unknown } | undefined)
+              ?.protocolVersion;
             const resData = jsonResponse({
               jsonrpc: "2.0",
               id: reqId,
-              result: buildInitializeResult(),
+              result: buildInitializeResult(requestedVersion),
             });
             logExecution("initialize", null, null, "internal", false, 200, null, resData.bytes);
             return resData.response;

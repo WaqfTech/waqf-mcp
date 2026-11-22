@@ -26,4 +26,8 @@ go run ./scripts/mcp-smoke/main.go \
   -strict -expect-tools 57 -delay 250ms \
   -json /tmp/waqf-mcp-smoke-dev.json
 
+echo "== official inspector CLI strict check =="
+npx @modelcontextprotocol/inspector --cli https://mcp.waqf.app/mcp --transport http --method tools/list --strict >/dev/null
+npx @modelcontextprotocol/inspector --cli https://mcp.waqf.dev/mcp --transport http --method tools/list --strict >/dev/null
+
 echo "release check passed"

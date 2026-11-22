@@ -542,15 +542,19 @@ export class FederationRouter {
         const query = String(args.query ?? "");
         const requestedKind = String(args.kind ?? "books");
         const upstreamKind = requestedKind === "categories" ? "cats" : requestedKind;
+        const limit = 10;
         try {
           const raw = await turathProvider.callTool("discover_turath", {
             q: query,
             kind: upstreamKind,
           });
-          result = this.normalizer.normalizeToolResult(raw, "Turath Library", {
+          const bounded = this.normalizer.boundResultList(raw, limit);
+          result = this.normalizer.normalizeToolResult(bounded.result, "Turath Library", {
             providerId: "turath",
             query,
             mode: requestedKind,
+            limit,
+            hasMore: bounded.hasMore,
           });
         } catch (err: unknown) {
           const classified = classifyThrownError("turath", err);
